@@ -2,11 +2,11 @@
 // 為求簡潔,先做「列表 + 新增」;停用/編輯可在後續 Phase 補上。
 import { useEffect, useState } from "react";
 import { ApiError } from "../api/client";
-import { companiesApi, processItemsApi, productsApi } from "../api/resources";
+import { companiesApi, printingApi, processItemsApi, productsApi } from "../api/resources";
 import { Button, Card, ErrorBar, Field, Input, Select, Spinner } from "../components/ui";
 import type { Company, ProcessItem, Product } from "../lib/types";
 
-type Tab = "companies" | "products" | "process";
+type Tab = "companies" | "products" | "process" | "calibration";
 
 export default function MastersPage() {
   const [tab, setTab] = useState<Tab>("companies");
@@ -20,11 +20,69 @@ export default function MastersPage() {
         <TabBtn active={tab === "companies"} onClick={() => setTab("companies")}>公司</TabBtn>
         <TabBtn active={tab === "products"} onClick={() => setTab("products")}>品名</TabBtn>
         <TabBtn active={tab === "process"} onClick={() => setTab("process")}>加工項目</TabBtn>
+        <TabBtn active={tab === "calibration"} onClick={() => setTab("calibration")}>套表校正</TabBtn>
       </div>
 
       {tab === "companies" && <CompaniesPanel />}
       {tab === "products" && <ProductsPanel />}
       {tab === "process" && <ProcessPanel />}
+      {tab === "calibration" && <CalibrationPanel />}
+    </div>
+  );
+}
+
+// 點陣套表校正:下載校正頁、調整 offset 並存檔(免改程式微調對位)
+function CalibrationPanel() {
+  const [offsetX, setOffsetX] = useState("0");
+  const [offsetY, setOffsetY] = useState("0");
+  const [layout, setLayout] = useState<Record<string, unknown> | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    printingApi.getLayout().then((l) => {
+      setLayout(l);
+      const off = (l.offset as { x: number; y: number }) ?? { x: 0, y: 0 };
+      setOffsetX(String(off.x));
+      setOffsetY(String(off.y));
+    }).catch(() => {});
+  }, []);
+
+  async function save() {
+    if (!layout) return;
+    setMsg(null);
+    setError(null);
+    try {
+      await printingApi.saveLayout({ ...layout, offset: { x: Number(offsetX), y: Number(offsetY) } });
+      setMsg("已儲存,重新下載校正頁即可看到位移");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "儲存失敗");
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card className="space-y-3">
+        <h2 className="font-bold">點陣套表校正</h2>
+        <p className="text-sm text-slate-500">
+          流程:① 下載「校正頁」印在現成三聯單上 → ② 量測資料偏移多少 point(1/72 吋)→
+          ③ 調整下方 offset 並儲存 → ④ 重新下載再印,反覆對準。
+        </p>
+        <a className="inline-block" href={printingApi.calibrationUrl()} target="_blank" rel="noreferrer">
+          <Button type="button" variant="secondary">下載 / 預覽校正頁</Button>
+        </a>
+        <div className="grid grid-cols-2 gap-3 sm:max-w-xs">
+          <Field label="offset X (point)">
+            <Input type="number" value={offsetX} onChange={(e) => setOffsetX(e.target.value)} />
+          </Field>
+          <Field label="offset Y (point)">
+            <Input type="number" value={offsetY} onChange={(e) => setOffsetY(e.target.value)} />
+          </Field>
+        </div>
+        <ErrorBar message={error} />
+        {msg && <p className="text-sm text-green-600">{msg}</p>}
+        <Button type="button" onClick={save} disabled={!layout}>儲存 offset</Button>
+      </Card>
     </div>
   );
 }

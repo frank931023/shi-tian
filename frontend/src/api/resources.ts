@@ -97,9 +97,18 @@ export const ordersApi = {
   remove: (id: number) => api<{ deleted: number }>(`/orders/${id}`, { method: "DELETE" }),
   // PDF 預覽走瀏覽器直接開(GET 帶 cookie),這裡只提供 URL
   pdfUrl: (id: number) => `/api/orders/${id}/pdf`,
+  dotmatrixPdfUrl: (id: number) => `/api/orders/${id}/dotmatrix-pdf`,
   print: (id: number, target: "normal" | "dotmatrix" = "normal") =>
     api<{ queue: string; job: string; status: string }>(`/orders/${id}/print`, {
       method: "POST",
       body: { target },
     }),
+};
+
+// ---- 點陣套表校正(Phase 7)----
+export const printingApi = {
+  calibrationUrl: () => "/api/print/calibration",
+  getLayout: () => api<Record<string, unknown>>("/print/dotmatrix-layout"),
+  saveLayout: (layout: Record<string, unknown>) =>
+    api("/print/dotmatrix-layout", { method: "PUT", body: layout }),
 };

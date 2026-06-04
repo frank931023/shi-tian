@@ -26,6 +26,7 @@ pgdata/
 # ---- generated artifacts ----
 archive/          # PDF 封存(執行期產生,不進 git)
 backups/
+backend/config/   # 點陣套表座標設定(執行期產生/使用者微調)
 
 # ---- editor / OS ----
 .vscode/

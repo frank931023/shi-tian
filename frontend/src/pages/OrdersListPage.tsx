@@ -228,6 +228,15 @@ function RowActions({
       <button className="rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100" onClick={onPrint}>
         列印
       </button>
+      <a
+        className="rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+        href={ordersApi.dotmatrixPdfUrl(order.id)}
+        target="_blank"
+        rel="noreferrer"
+        title="點陣套表(只有資料,印在三聯單上)"
+      >
+        套表
+      </a>
       <button className="rounded-lg px-3 py-2 text-sm text-brand hover:bg-blue-50" onClick={() => navigate(`/orders/${order.id}/edit`)}>
         編輯
       </button>

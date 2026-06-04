@@ -30,7 +30,7 @@
 - [x] **Phase 4** — PDF 產生(WeasyPrint,中文字型)+ 一般印表機(CUPS)列印 + 封存
 - [x] **Phase 5** — 觸控建單最佳化(品項上下移、規格主檔快選、送出前預覽確認)
 - [x] **Phase 6** — 報表(DB 端 SQL 聚合)+ Bento 版面 + Recharts(數字卡/圓餅/長條)
-- [ ] Phase 7 — 點陣套表列印(進階)
+- [x] **Phase 7** — 點陣套表列印(ReportLab 座標套表 + 座標設定檔 + 校正頁 + dotmatrix 佇列)
 - [ ] Phase 5 — 觸控建單最佳化
 - [ ] Phase 6 — 報表 + 圖表
 - [ ] Phase 7 — 點陣套表列印(進階)

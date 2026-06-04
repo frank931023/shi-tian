@@ -33,6 +33,7 @@ def create_app(config_object: type = Config) -> Flask:
     from app.api.companies import companies_bp
     from app.api.health import health_bp
     from app.api.orders import orders_bp
+    from app.api.printing import printing_bp
     from app.api.products import products_bp
     from app.api.reports import reports_bp
 
@@ -42,6 +43,7 @@ def create_app(config_object: type = Config) -> Flask:
     app.register_blueprint(products_bp, url_prefix="/api")
     app.register_blueprint(orders_bp, url_prefix="/api")
     app.register_blueprint(reports_bp, url_prefix="/api")
+    app.register_blueprint(printing_bp, url_prefix="/api")
 
     # --- 自訂 CLI ---
     from app.core.cli import register_cli

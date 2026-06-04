@@ -17,7 +17,7 @@ from app.core.security import admin_required
 from app.core.validation import validate_body
 from app.models import Order, OrderItem
 from app.schemas.order import OrderIn
-from app.services import audit_service, order_service, pdf_service, print_service
+from app.services import audit_service, dotmatrix_service, order_service, pdf_service, print_service
 
 orders_bp = Blueprint("orders", __name__)
 
@@ -164,31 +164,50 @@ def generate_pdf(order_id: int):
     return ok({"archived": str(path)})
 
 
+@orders_bp.get("/orders/<int:order_id>/dotmatrix-pdf")
+@login_required
+def preview_dotmatrix(order_id: int):
+    """預覽點陣套表(只有資料、無框線)的 PDF。"""
+    order = db.session.get(Order, order_id)
+    if not order:
+        return err("not_found", "找不到該訂單", 404)
+    pdf = dotmatrix_service.render_overlay_pdf(order)
+    return send_file(BytesIO(pdf), mimetype="application/pdf",
+                     as_attachment=False, download_name=f"{order.order_no}-dotmatrix.pdf")
+
+
 @orders_bp.post("/orders/<int:order_id>/print")
 @login_required
 def print_order(order_id: int):
-    """送印到 CUPS 佇列。body: {"target": "normal"|"dotmatrix"}(預設 normal)。"""
+    """送印到 CUPS 佇列。body: {"target": "normal"|"dotmatrix"}(預設 normal)。
+
+    - normal:WeasyPrint 完整版面(框線+資料)送一般印表機。
+    - dotmatrix:ReportLab 套表(只有資料)送點陣機,印在現成三聯單上。
+    """
     order = db.session.get(Order, order_id)
     if not order:
         return err("not_found", "找不到該訂單", 404)
     target = (request.get_json(silent=True) or {}).get("target", "normal")
-    queue = (
-        current_app.config["CUPS_DOTMATRIX_QUEUE"]
-        if target == "dotmatrix"
-        else current_app.config["CUPS_NORMAL_QUEUE"]
-    )
-    # 先確保 PDF 已封存(順便當列印來源)
-    try:
-        path = pdf_service.generate_and_archive(order)
-    except pdf_service.PdfUnavailable as e:
-        return err("pdf_unavailable", str(e), 503)
+
+    if target == "dotmatrix":
+        queue = current_app.config["CUPS_DOTMATRIX_QUEUE"]
+        # 套表 overlay 寫到封存資料夾當列印來源
+        path = pdf_service.archive_path(order).with_name(f"{order.order_no}-dotmatrix.pdf")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(dotmatrix_service.render_overlay_pdf(order))
+    else:
+        queue = current_app.config["CUPS_NORMAL_QUEUE"]
+        try:
+            path = pdf_service.generate_and_archive(order)
+        except pdf_service.PdfUnavailable as e:
+            return err("pdf_unavailable", str(e), 503)
+
     try:
         job = print_service.print_pdf(path, queue)
     except print_service.PrintError as e:
         return err(e.code, str(e), 503)
-    # 標記為已列印
     order.status = "printed"
-    audit_service.record("print_order", "order", order.id, {"queue": queue, "job": job})
+    audit_service.record("print_order", "order", order.id, {"queue": queue, "target": target, "job": job})
     db.session.commit()
     return ok({"queue": queue, "job": job, "status": order.status})
 

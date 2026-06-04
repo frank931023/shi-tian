@@ -30,6 +30,9 @@ class Config:
     CUPS_NORMAL_QUEUE = os.environ.get("CUPS_NORMAL_QUEUE", "normal")
     CUPS_DOTMATRIX_QUEUE = os.environ.get("CUPS_DOTMATRIX_QUEUE", "dotmatrix")
 
+    # 點陣套表的座標設定檔(可微調 offset/欄位座標而不改程式;Phase 7)
+    DOTMATRIX_LAYOUT = os.environ.get("DOTMATRIX_LAYOUT", "config/dotmatrix_layout.json")
+
     # 單據抬頭(公司資訊),可由環境覆蓋
     COMPANY_NAME_1 = os.environ.get("COMPANY_NAME_1", "旭田興有限公司")
     COMPANY_NAME_2 = os.environ.get("COMPANY_NAME_2", "旭田工業社")

@@ -24,3 +24,7 @@ Flask-Limiter==3.8.0          # rate limit(至少對 login)
 # pydyf 需固定,否則新版會與 weasyprint 62.3 不相容(super().transform 錯誤)。
 weasyprint==62.3
 pydyf==0.10.0
+
+# --- 點陣套表(Phase 7)---
+# ReportLab 以精準座標輸出套表 PDF + 校正頁(純 Python,跨平台,可在 Windows 驗證)。
+reportlab==4.2.5
