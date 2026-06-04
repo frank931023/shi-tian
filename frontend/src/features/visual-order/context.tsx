@@ -1,10 +1,18 @@
 // 視覺化建單(欄位節點版)的共享狀態 context。
 import { createContext, useContext } from "react";
 import type { Company, ProcessItem, Product } from "../../lib/types";
+import type { Combo } from "./recentCombos";
 
 // 欄位節點的種類
 export type FieldKind = "品名" | "規格" | "加工" | "數量" | "單位";
 export const FIELD_KINDS: FieldKind[] = ["品名", "規格", "加工", "數量", "單位"];
+
+// 側欄拖曳到畫布時帶的內容(可含預填值)
+export type DragPayload =
+  | { kind: "company"; role: "vendor" | "receiver"; companyId?: string }
+  | { kind: "field"; field: FieldKind; value?: string }
+  | { kind: "row" }
+  | { kind: "combo"; combo: Combo };
 
 // 各節點 data 形狀
 export interface FieldNodeData {
