@@ -33,6 +33,7 @@ import FieldNode from "../features/visual-order/FieldNode";
 import OrderNode from "../features/visual-order/OrderNode";
 import Palette from "../features/visual-order/Palette";
 import NodeContextMenu from "../features/visual-order/NodeContextMenu";
+import BendableEdge from "../features/visual-order/BendableEdge";
 import {
   FIELD_KINDS,
   VisualOrderProvider,
@@ -44,6 +45,8 @@ import { ORDER_ID, reconstruct } from "../features/visual-order/reconstruct";
 import { loadRecent, pushRecent, type Combo } from "../features/visual-order/recentCombos";
 
 const nodeTypes = { company: CompanyNode, field: FieldNode, order: OrderNode };
+const edgeTypes = { bendable: BendableEdge };
+const E = "bendable"; // 所有連線都用可折彎線型
 const ROW_GAP = 200; // 一排內欄位節點的水平間距(避免重疊,排版整齊)
 
 function useIsDesktop() {
@@ -65,15 +68,15 @@ function initialGraph(): { nodes: Node[]; edges: Edge[] } {
     { id: "receiver-1", type: "company", position: { x: 20, y: 190 }, data: { role: "receiver", companyId: "" } },
   ];
   const edges: Edge[] = [
-    { id: "ev", source: "vendor-1", target: ORDER_ID, targetHandle: "header" },
-    { id: "er", source: "receiver-1", target: ORDER_ID, targetHandle: "header" },
+    { id: "ev", type: E, source: "vendor-1", target: ORDER_ID, targetHandle: "header" },
+    { id: "er", type: E, source: "receiver-1", target: ORDER_ID, targetHandle: "header" },
   ];
   FIELD_KINDS.forEach((field, i) => {
     const id = `field-init-${i}`;
     nodes.push({ id, type: "field", position: { x: 680 + i * ROW_GAP, y: 110 }, data: { field, value: "" } });
-    if (i > 0) edges.push({ id: `ef-init-${i}`, source: `field-init-${i - 1}`, target: id });
+    if (i > 0) edges.push({ id: `ef-init-${i}`, type: E, source: `field-init-${i - 1}`, target: id });
   });
-  edges.push({ id: "ef-init-order", source: ORDER_ID, sourceHandle: "items", target: "field-init-0" });
+  edges.push({ id: "ef-init-order", type: E, source: ORDER_ID, sourceHandle: "items", target: "field-init-0" });
   return { nodes, edges };
 }
 
@@ -162,7 +165,7 @@ function VisualOrderInner() {
             !(e.source === c.source && (e.sourceHandle ?? null) === (c.sourceHandle ?? null)) &&
             !(e.target === c.target && (e.targetHandle ?? null) === (c.targetHandle ?? null)),
         );
-        return addEdge(c, cleaned);
+        return addEdge({ ...c, type: E }, cleaned);
       }),
     [setEdges],
   );
@@ -187,7 +190,7 @@ function VisualOrderInner() {
       setNodes((ns) => [...ns, { id: newId, type: "field", position: { x: src.position.x + ROW_GAP, y: src.position.y }, data: { field, value: "" } }]);
       setEdges((es) => {
         const cleaned = es.filter((e) => !(e.source === src.id && (e.sourceHandle ?? null) === null));
-        return [...cleaned, { id: `e-${src.id}-${newId}`, source: src.id, target: newId }];
+        return [...cleaned, { id: `e-${src.id}-${newId}`, type: E, source: src.id, target: newId }];
       });
       setSuggest(null);
     },
@@ -239,7 +242,7 @@ function VisualOrderInner() {
             const s = nodes.find((n) => n.id === e.source);
             return !(s?.type === "company" && (s.data as { role: string }).role === payload.role && e.target === ORDER_ID);
           });
-          return [...filtered, { id: `e-${id}-header`, source: id, target: ORDER_ID, targetHandle: "header" }];
+          return [...filtered, { id: `e-${id}-header`, type: E, source: id, target: ORDER_ID, targetHandle: "header" }];
         });
       } else if (payload.kind === "field") {
         newNodes.push({ id: nid(), type: "field", position: pos, data: { field: payload.field, value: payload.value ?? "" } });
@@ -259,10 +262,10 @@ function VisualOrderInner() {
           const id = nid();
           if (i === 0) head = id;
           newNodes.push({ id, type: "field", position: { x: pos.x + i * ROW_GAP, y: pos.y }, data: { field, value: valueOf(field) } });
-          if (prev) newEdges.push({ id: `e-${prev}-${id}`, source: prev, target: id });
+          if (prev) newEdges.push({ id: `e-${prev}-${id}`, type: E, source: prev, target: id });
           prev = id;
         });
-        if (head) newEdges.push({ id: `e-order-${head}`, source: ORDER_ID, sourceHandle: "items", target: head });
+        if (head) newEdges.push({ id: `e-order-${head}`, type: E, source: ORDER_ID, sourceHandle: "items", target: head });
       }
 
       setNodes((ns) => [...ns, ...newNodes]);
@@ -392,6 +395,8 @@ function VisualOrderInner() {
                 onPaneClick={() => { setMenu(null); setSuggest(null); }}
                 onMoveStart={() => { setMenu(null); setSuggest(null); }}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
+                defaultEdgeOptions={{ type: E }}
                 fitView
                 // 模式:移動(左鍵平移)/ 選取(左鍵框選);兩者皆可滾輪平移
                 selectionOnDrag={mode === "select"}
