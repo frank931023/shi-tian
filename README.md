@@ -25,7 +25,7 @@
 - [x] **Phase 0** — 專案骨架(可運行的空骨架、health API、反向代理串接)
 - [x] **Phase 1** — 資料模型 + CRUD API(7 張表、Alembic migration、訂單/主檔 CRUD、後端重算金額、pydantic 驗證)
 - [x] **Phase 2** — 登入與權限(bcrypt、session、admin/operator 分權、CSRF、login rate limit、audit_log)
-- [ ] Phase 3 — 表單模式 + 資料管理介面
+- [x] **Phase 3** — 前端表單模式 + 資料管理(登入、建單/改單/複製、清單篩選分頁、主檔管理,RWD 手機/平板/筆電)
 - [ ] Phase 4 — PDF + 一般印表機列印
 - [ ] Phase 5 — 觸控建單最佳化
 - [ ] Phase 6 — 報表 + 圖表
@@ -161,6 +161,45 @@ flask create-admin --username admin --display-name 管理員
 ```bash
 DATABASE_URL="sqlite:///smoke2.db" SECRET_KEY=test SESSION_COOKIE_SECURE=false PYTHONPATH=. python tests/smoke_phase2.py
 ```
+
+---
+
+## Phase 3 — 前端(表單模式 + 資料管理)
+
+### 本機跑前端
+
+```bash
+# 1. 先確保 db 與後端有起來
+docker compose up -d db
+cd backend && . .venv/Scripts/activate
+$env:FLASK_APP="wsgi.py"; $env:SESSION_COOKIE_SECURE="false"
+$env:DATABASE_URL="postgresql+psycopg://shitian_app:devpassword@localhost:5433/shitian"
+flask db upgrade
+flask create-admin --username admin --display-name 管理員   # 第一次才需要
+python wsgi.py        # 後端在 http://localhost:8000
+
+# 2. 另開終端跑前端
+cd frontend && npm run dev   # http://localhost:5173(/api 自動 proxy 到 8000)
+```
+
+開 http://localhost:5173 → 用 admin 登入 → 建單 / 清單 / 主檔。
+
+### 前端結構與狀態管理
+
+- `src/api/`:`client.ts`(fetch 封裝:帶 cookie、自動補 CSRF header、解析 `{data,error}`、401 攔截)、`resources.ts`(各資源呼叫)。
+- `src/lib/`:`types.ts`(型別)、`AuthContext.tsx`(登入狀態用 React Context)、`format.ts`(金額/日期)。
+- `src/components/`:`ui.tsx`(Button/Input/Card…大字大點擊區)、`Layout.tsx`(RWD 導覽)、`ProtectedRoute.tsx`。
+- `src/pages/`:登入、訂單清單、建單/改單、主檔、報表(Phase 6)。
+
+> **狀態管理選擇**:登入狀態用 Context(全域、輕量);各頁資料用區域 `useState/useEffect`。
+> 不引入 Redux / React Query —— 這個規模用原生 hooks 最好懂、相依最少。
+
+### RWD 策略(手機 / 平板 / 筆電同一套)
+
+- **手機**:單欄表單、訂單以卡片呈現、底部固定導覽。
+- **平板**:雙/三欄表單、底部導覽。
+- **筆電(lg+)**:左側邊欄導覽、訂單用完整表格。
+- 全站基準字級 18px、主要按鈕/輸入框高度 ≥ 48px(長輩友善、觸控好點)。
 
 ---
 
