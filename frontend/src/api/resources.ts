@@ -47,6 +47,25 @@ export const specsApi = {
   create: (body: { name: string }) => api<Spec>("/specs", { method: "POST", body }),
 };
 
+// ---- 報表 ----
+export interface ReportRange { from?: string; to?: string; }
+export interface Summary {
+  total_amount: number;
+  total_count: number;
+  total_quantity: number;
+  group_by: "week" | "month";
+  series: { period: string; amount: number }[];
+}
+export interface Share { name: string; amount: number; quantity?: number; count?: number; }
+
+type Params = Record<string, string | number | undefined>;
+export const reportsApi = {
+  summary: (range: ReportRange & { group_by: "week" | "month" }) =>
+    api<Summary>("/reports/summary", { params: range as unknown as Params }),
+  byProduct: (range: ReportRange) => api<Share[]>("/reports/by-product", { params: range as unknown as Params }),
+  byCompany: (range: ReportRange) => api<Share[]>("/reports/by-company", { params: range as unknown as Params }),
+};
+
 // ---- 訂單 ----
 export interface OrderFilters {
   from?: string;

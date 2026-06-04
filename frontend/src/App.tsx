@@ -1,13 +1,17 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Spinner } from "./components/ui";
 import LoginPage from "./pages/LoginPage";
 import OrdersListPage from "./pages/OrdersListPage";
 import OrderFormPage from "./pages/OrderFormPage";
-import VisualOrderPage from "./pages/VisualOrderPage";
 import BuildChooserPage from "./pages/BuildChooserPage";
 import MastersPage from "./pages/MastersPage";
-import ReportsPage from "./pages/ReportsPage";
+
+// 懶載入含重型套件的頁面,減少首次載入體積
+const VisualOrderPage = lazy(() => import("./pages/VisualOrderPage")); // React Flow
+const ReportsPage = lazy(() => import("./pages/ReportsPage")); // Recharts
 
 export default function App() {
   return (
@@ -25,9 +29,9 @@ export default function App() {
         <Route path="/orders" element={<OrdersListPage />} />
         <Route path="/orders/build" element={<BuildChooserPage />} />
         <Route path="/orders/new" element={<OrderFormPage />} />
-        <Route path="/orders/visual" element={<VisualOrderPage />} />
+        <Route path="/orders/visual" element={<Suspense fallback={<Spinner />}><VisualOrderPage /></Suspense>} />
         <Route path="/orders/:id/edit" element={<OrderFormPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports" element={<Suspense fallback={<Spinner />}><ReportsPage /></Suspense>} />
         <Route path="/masters" element={<MastersPage />} />
       </Route>
 
