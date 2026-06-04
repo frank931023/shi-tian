@@ -13,7 +13,7 @@ export default function OrderNode() {
       <Handle id="items" type="source" position={Position.Right} className="!h-5 !w-5 !border-2 !border-white !bg-blue-500" />
       <p className="text-center text-base font-bold text-brand">訂單</p>
       <div className="flex justify-between px-1 text-[10px] text-slate-400">
-        <span>← 單頭</span>
+        <span>← 公司名稱</span>
         <span>品項 →</span>
       </div>
 

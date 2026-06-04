@@ -101,6 +101,7 @@ function VisualOrderInner() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [menu, setMenu] = useState<MenuState | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [savedId, setSavedId] = useState<number | null>(null);
   const [orderDate, setOrderDate] = useState(today());
   // 「+建議下一個」浮動選單
   const [suggest, setSuggest] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -357,11 +358,12 @@ function VisualOrderInner() {
     };
     setBusy(true);
     try {
-      await ordersApi.create(body);
+      const saved = await ordersApi.create(body);
       setRecent(pushRecent(recon.rows.map((r) => ({
         product_name: r.product_name, spec: r.spec, process_item: r.process_item, quantity: r.quantity, unit: r.unit,
       }))));
-      navigate("/orders");
+      setConfirmOpen(false);
+      setSavedId(saved.id); // 改問是否列印
     } catch (err) {
       setConfirmOpen(false);
       setError(err instanceof ApiError ? err.message : "建立失敗");
@@ -588,6 +590,29 @@ function VisualOrderInner() {
             <p className="text-sm text-amber-600">提醒:廠商或接收單位尚未選擇,確認後仍可送出(可日後補)。</p>
           )}
         </div>
+      </Modal>
+
+      {/* 建立成功 → 是否列印 */}
+      <Modal
+        open={savedId !== null}
+        title="訂單已建立"
+        onClose={() => navigate("/orders")}
+        footer={
+          <>
+            <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>稍後再印</Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (savedId !== null) window.open(ordersApi.pdfUrl(savedId), "_blank");
+                navigate("/orders");
+              }}
+            >
+              產生 PDF 並列印
+            </Button>
+          </>
+        }
+      >
+        <p className="text-slate-600 dark:text-slate-300">訂單已建立,要現在產生三聯單 PDF 列印嗎?</p>
       </Modal>
 
       <datalist id="vo-product-options">

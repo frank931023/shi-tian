@@ -18,6 +18,7 @@ const NAV: NavItem[] = [
   { to: "/orders", label: "訂單", icon: "📋" },
   { to: "/reports", label: "報表", icon: "📊" },
   { to: "/masters", label: "主檔", icon: "🗂️", adminOnly: true },
+  { to: "/settings", label: "設定", icon: "⚙️" },
 ];
 
 export default function Layout() {
@@ -29,7 +30,7 @@ export default function Layout() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition ${
       collapsed ? "justify-center !px-0" : ""
-    } ${isActive ? "bg-brand text-white" : "text-slate-700 hover:bg-slate-100"}`;
+    } ${isActive ? "bg-brand text-white" : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"}`;
 
   // 底部導覽用的樣式(手機/平板)
   const bottomClass = ({ isActive }: { isActive: boolean }) =>
@@ -40,7 +41,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen lg:flex">
       {/* 側邊欄(筆電,可收合成窄條) */}
-      <aside className={`hidden shrink-0 border-r border-slate-200 bg-white p-3 lg:flex lg:flex-col ${collapsed ? "w-16" : "w-60"}`}>
+      <aside className={`hidden shrink-0 border-r border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 lg:flex lg:flex-col ${collapsed ? "w-16" : "w-60"}`}>
         <div className="flex items-center justify-between px-1 py-2">
           {!collapsed && (
             <div>
@@ -83,7 +84,7 @@ export default function Layout() {
       {/* 主內容 */}
       <div className="flex flex-1 flex-col">
         {/* 頂部列(手機/平板顯示品牌與登出;筆電隱藏品牌) */}
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
           <span className="text-lg font-bold text-brand">旭田 · 移轉單</span>
           <button
             onClick={() => logout().then(() => navigate("/login"))}
@@ -100,7 +101,7 @@ export default function Layout() {
       </div>
 
       {/* 底部導覽(手機/平板) */}
-      <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-slate-200 bg-white lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:hidden">
         {items.map((n) => (
           <NavLink key={n.to} to={n.to} className={bottomClass}>
             <span className="text-2xl">{n.icon}</span>

@@ -54,6 +54,28 @@ def register_cli(app: Flask) -> None:
         db.session.commit()
         click.echo(f"已建立 admin:{username}")
 
+    @app.cli.command("create-user")
+    @click.option("--username", required=True)
+    @click.option("--role", default="operator", type=click.Choice(["admin", "operator"]))
+    @click.option("--display-name", default=None)
+    @click.option("--password", default=None, help="省略則互動輸入")
+    def create_user(username: str, role: str, display_name: str, password: str):
+        """建立任意角色的使用者(admin 或 operator)。"""
+        if db.session.scalar(db.select(User).where(User.username == username)):
+            click.echo(f"帳號 {username} 已存在,取消。")
+            return
+        if not password:
+            password = getpass.getpass("請輸入密碼:")
+        user = User(
+            username=username,
+            display_name=display_name or username,
+            role=role,
+            password_hash=auth_service.hash_password(password),
+        )
+        db.session.add(user)
+        db.session.commit()
+        click.echo(f"已建立 {role}:{username}")
+
     @app.cli.command("seed-mock")
     @click.option("--path", "path_str", default=None, help="mockdata 資料夾路徑(預設為專案根目錄的 mockdata)")
     def seed_mock(path_str: str):

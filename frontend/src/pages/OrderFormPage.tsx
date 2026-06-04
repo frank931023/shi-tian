@@ -46,6 +46,7 @@ export default function OrderFormPage() {
   const [processItems, setProcessItems] = useState<ProcessItem[]>([]);
   const [specs, setSpecs] = useState<Spec[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [savedId, setSavedId] = useState<number | null>(null); // 建立/儲存後的訂單 id(供列印)
 
   // 表單欄位
   const [vendorId, setVendorId] = useState("");
@@ -169,12 +170,10 @@ export default function OrderFormPage() {
 
     setBusy(true);
     try {
-      if (editingId) {
-        await ordersApi.update(editingId, body);
-      } else {
-        await ordersApi.create(body);
-      }
-      navigate("/orders");
+      const saved = editingId ? await ordersApi.update(editingId, body) : await ordersApi.create(body);
+      // 不直接離開:改問是否列印三聯單
+      setConfirmOpen(false);
+      setSavedId(saved.id);
     } catch (err) {
       setConfirmOpen(false);
       setError(err instanceof ApiError ? err.message : "儲存失敗");
@@ -367,6 +366,32 @@ export default function OrderFormPage() {
             ))}
           </ul>
         </div>
+      </Modal>
+
+      {/* 建立/儲存成功 → 詢問是否列印三聯單 */}
+      <Modal
+        open={savedId !== null}
+        title="訂單已儲存"
+        onClose={() => navigate("/orders")}
+        footer={
+          <>
+            <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>稍後再印</Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (savedId !== null) window.open(ordersApi.pdfUrl(savedId), "_blank");
+                navigate("/orders");
+              }}
+            >
+              產生 PDF 並列印
+            </Button>
+          </>
+        }
+      >
+        <p className="text-slate-600 dark:text-slate-300">
+          訂單已儲存。要現在產生三聯單 PDF 列印嗎?(會開新分頁顯示 PDF,可直接列印;
+          正式環境也可由伺服器送印到印表機)
+        </p>
       </Modal>
     </form>
   );

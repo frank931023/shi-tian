@@ -12,9 +12,9 @@ type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 const variantClass: Record<Variant, string> = {
   primary: "bg-brand text-white hover:bg-brand-dark",
-  secondary: "bg-white text-slate-800 border border-slate-300 hover:bg-slate-50",
+  secondary: "bg-white text-slate-800 border border-slate-300 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-700",
   danger: "bg-red-600 text-white hover:bg-red-700",
-  ghost: "bg-transparent text-slate-600 hover:bg-slate-100",
+  ghost: "bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800",
 };
 
 export function Button({
@@ -46,7 +46,7 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">
+      <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {label} {required && <span className="text-red-500">*</span>}
       </span>
       {children}
@@ -56,7 +56,7 @@ export function Field({
 }
 
 const inputBase =
-  "w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30";
+  "w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder:text-slate-500";
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={`${inputBase} ${props.className ?? ""}`} {...props} />;
@@ -77,7 +77,7 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl bg-white p-4 shadow-sm sm:p-6 ${className}`}>{children}</div>
+    <div className={`rounded-2xl bg-white p-4 shadow-sm sm:p-6 dark:bg-slate-900 dark:shadow-none dark:ring-1 dark:ring-slate-800 ${className}`}>{children}</div>
   );
 }
 
@@ -142,7 +142,7 @@ export function Modal({
       onClick={onClose}
     >
       <div
-        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl"
+        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900 dark:ring-1 dark:ring-slate-700"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
