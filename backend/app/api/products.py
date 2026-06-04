@@ -1,0 +1,52 @@
+"""品名 + 加工項目主檔 API。"""
+
+from flask import Blueprint
+
+from app.core.db import db
+from app.core.responses import ok
+from app.core.validation import validate_body
+from app.models import ProcessItem, Product
+from app.schemas.master import ProcessItemIn, ProductIn
+from app.services import audit_service
+
+products_bp = Blueprint("products", __name__)
+
+
+# ---- 品名 ----
+@products_bp.get("/products")
+def list_products():
+    products = db.session.scalars(
+        db.select(Product).where(Product.is_active.is_(True)).order_by(Product.name)
+    ).all()
+    return ok([p.to_dict() for p in products])
+
+
+@products_bp.post("/products")
+@validate_body(ProductIn)
+def create_product(payload: ProductIn):
+    product = Product(**payload.model_dump())
+    db.session.add(product)
+    db.session.flush()
+    audit_service.record("create_product", "product", product.id)
+    db.session.commit()
+    return ok(product.to_dict(), 201)
+
+
+# ---- 加工項目 ----
+@products_bp.get("/process-items")
+def list_process_items():
+    items = db.session.scalars(
+        db.select(ProcessItem).where(ProcessItem.is_active.is_(True)).order_by(ProcessItem.name)
+    ).all()
+    return ok([i.to_dict() for i in items])
+
+
+@products_bp.post("/process-items")
+@validate_body(ProcessItemIn)
+def create_process_item(payload: ProcessItemIn):
+    item = ProcessItem(**payload.model_dump())
+    db.session.add(item)
+    db.session.flush()
+    audit_service.record("create_process_item", "process_item", item.id)
+    db.session.commit()
+    return ok(item.to_dict(), 201)

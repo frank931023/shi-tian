@@ -5,7 +5,14 @@ gunicorn==22.0.0
 # --- 設定 / 環境變數 ---
 python-dotenv==1.0.1
 
-# 註:Phase 1 之後會再加入
-#   SQLAlchemy / Flask-SQLAlchemy / psycopg / alembic(資料層)
-#   pydantic(驗證) / passlib[bcrypt](密碼) / Flask-Login(認證)
-# 這個 Phase 只做可運行的空骨架,先維持最小相依。
+# --- 資料層(Phase 1) ---
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7          # Alembic 的 Flask 整合
+SQLAlchemy==2.0.35
+psycopg[binary]==3.2.3        # PostgreSQL 驅動(v3)
+
+# --- 驗證(Phase 1) ---
+pydantic==2.9.2
+
+# 註:Phase 2 會再加入
+#   passlib[bcrypt](密碼雜湊) / Flask-Login(session 認證) / Flask-Limiter(rate limit)

@@ -15,7 +15,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 複製應用程式碼
 COPY . .
 
+# Flask CLI 需要知道 app 在哪(entrypoint 的 flask db upgrade 會用到)
+ENV FLASK_APP=wsgi.py
+
+# 讓 entrypoint 可執行
+RUN chmod +x entrypoint.sh
+
 EXPOSE 8000
 
-# 以 gunicorn 啟動,載入 wsgi.py 裡的 app 物件
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:app"]
+# 啟動:先套 migration 再起 gunicorn
+CMD ["./entrypoint.sh"]
