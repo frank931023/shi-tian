@@ -1,0 +1,23 @@
+# Caddy 反向代理設定
+#
+# {$SITE_ADDRESS} 來自環境變數(docker-compose 傳入):
+#   - 本機開發:localhost → Caddy 用內建 CA 自簽 https(瀏覽器會提示一次)
+#   - 正式環境:你的網域 → Caddy 自動申請 Let's Encrypt 憑證(Phase 8)
+#
+# 路由規則:
+#   /api/*  → 後端 Flask(backend:8000)
+#   其餘    → 前端靜態站(frontend:80)
+
+{$SITE_ADDRESS} {
+	# API 走後端
+	handle /api/* {
+		reverse_proxy backend:8000
+	}
+
+	# 其餘走前端(SPA)
+	handle {
+		reverse_proxy frontend:80
+	}
+
+	encode gzip
+}

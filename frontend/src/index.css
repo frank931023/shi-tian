@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 長輩友善基準設定:字級偏大、行高舒適、避免長按選取干擾觸控。 */
+@layer base {
+  html {
+    /* 基準字級 18px(文件要求 18–22px),手機到筆電都從這裡放大縮小。 */
+    font-size: 18px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  }
+}
+
+@layer components {
+  /* 主要按鈕:點擊區 >= 48px,觸控好按。 */
+  .btn-primary {
+    @apply inline-flex min-h-[48px] items-center justify-center rounded-xl bg-brand px-6
+           text-lg font-semibold text-white shadow-sm transition
+           hover:bg-brand-dark active:scale-[0.98] disabled:opacity-50;
+  }
+}

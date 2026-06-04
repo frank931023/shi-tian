@@ -1,0 +1,11 @@
+# --- Web 框架 ---
+Flask==3.0.3
+gunicorn==22.0.0
+
+# --- 設定 / 環境變數 ---
+python-dotenv==1.0.1
+
+# 註:Phase 1 之後會再加入
+#   SQLAlchemy / Flask-SQLAlchemy / psycopg / alembic(資料層)
+#   pydantic(驗證) / passlib[bcrypt](密碼) / Flask-Login(認證)
+# 這個 Phase 只做可運行的空骨架,先維持最小相依。

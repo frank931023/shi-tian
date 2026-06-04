@@ -1,0 +1,68 @@
+# ============================================================
+# Phase 0 骨架:把四個服務串起來
+#   proxy(Caddy)→ frontend(nginx+React)/ backend(Flask+gunicorn)
+#   backend → db(PostgreSQL)  ※ Phase 0 後端還沒真的連 db,但服務先備好
+#
+# 對外只有 proxy 開埠;frontend / backend / db 都只在內部網路,
+# 不直接對公網曝露(CLAUDE.md §5)。
+# ============================================================
+
+services:
+  proxy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Caddyfile 裡用 {$SITE_ADDRESS} 取這個值(本機用 localhost)
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    # 不對外開埠,只讓 proxy 在內部網路存取
+    expose:
+      - "80"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - "8000"
+    depends_on:
+      - db
+    # 容器自我健康檢查:打 /api/health
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      # 本機開發掛在專案內的 pgdata/(已被 .gitignore 排除)
+      # 正式部署在 NAS 時改成 NAS 實體路徑(見 Phase 8)
+      - ./pgdata:/var/lib/postgresql/data
+    # db 不對外開埠,只在內部網路供 backend 連線
+    expose:
+      - "5432"
+
+volumes:
+  caddy_data:
+  caddy_config:
