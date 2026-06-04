@@ -14,8 +14,7 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { to: "/orders/new", label: "建單", icon: "➕" },
-  { to: "/orders/visual", label: "視覺建單", icon: "🧩" },
+  { to: "/orders/build", label: "建單", icon: "➕" },
   { to: "/orders", label: "訂單", icon: "📋" },
   { to: "/reports", label: "報表", icon: "📊" },
   { to: "/masters", label: "主檔", icon: "🗂️", adminOnly: true },

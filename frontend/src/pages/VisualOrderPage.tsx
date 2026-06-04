@@ -12,6 +12,7 @@ import {
   Panel,
   ReactFlow,
   ReactFlowProvider,
+  reconnectEdge,
   useEdgesState,
   useNodesState,
   useReactFlow,
@@ -97,6 +98,9 @@ function VisualOrderInner() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [menu, setMenu] = useState<MenuState | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [orderDate, setOrderDate] = useState(today());
+  // 「+建議下一個」浮動選單
+  const [suggest, setSuggest] = useState<{ id: string; x: number; y: number } | null>(null);
 
   const init = useMemo(initialGraph, []);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(init.nodes);
@@ -149,10 +153,46 @@ function VisualOrderInner() {
     },
     [setNodes],
   );
-  const onConnect = useCallback((c: Connection) => setEdges((es) => addEdge(c, es)), [setEdges]);
+  // 連線:同一個輸出點 / 輸入點只允許一條線 → 接新的會自動斷舊的(防止不合理分叉)
+  const onConnect = useCallback(
+    (c: Connection) =>
+      setEdges((es) => {
+        const cleaned = es.filter(
+          (e) =>
+            !(e.source === c.source && (e.sourceHandle ?? null) === (c.sourceHandle ?? null)) &&
+            !(e.target === c.target && (e.targetHandle ?? null) === (c.targetHandle ?? null)),
+        );
+        return addEdge(c, cleaned);
+      }),
+    [setEdges],
+  );
+  // 拖曳線的端點重接到別的節點
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConn: Connection) => setEdges((es) => reconnectEdge(oldEdge, newConn, es)),
+    [setEdges],
+  );
   const onSelectionChange = useCallback((p: OnSelectionChangeParams) => {
     setSelectedIds(p.nodes.filter((n) => n.id !== ORDER_ID).map((n) => n.id));
   }, []);
+
+  // 點欄位節點的「+」→ 開建議選單
+  const suggestNext = useCallback((id: string, x: number, y: number) => setSuggest({ id, x, y }), []);
+  // 從建議選單選一個欄位 → 在右側建立並自動連線(同輸出點只一條線)
+  const createNext = useCallback(
+    (field: FieldKind) => {
+      if (!suggest) return;
+      const src = nodes.find((n) => n.id === suggest.id);
+      if (!src) { setSuggest(null); return; }
+      const newId = `n-${++seq.current}`;
+      setNodes((ns) => [...ns, { id: newId, type: "field", position: { x: src.position.x + ROW_GAP, y: src.position.y }, data: { field, value: "" } }]);
+      setEdges((es) => {
+        const cleaned = es.filter((e) => !(e.source === src.id && (e.sourceHandle ?? null) === null));
+        return [...cleaned, { id: `e-${src.id}-${newId}`, source: src.id, target: newId }];
+      });
+      setSuggest(null);
+    },
+    [suggest, nodes, setNodes, setEdges],
+  );
 
   // 連線合理性檢查:拖線當下就擋掉不合理的連法
   const isValidConnection = useCallback(
@@ -266,7 +306,7 @@ function VisualOrderInner() {
     const body = {
       vendor_id: recon.vendorId ? Number(recon.vendorId) : null,
       receiver_id: recon.receiverId ? Number(recon.receiverId) : null,
-      order_date: today(),
+      order_date: orderDate,
       items: recon.rows.map((r) => ({
         product_name: r.product_name, spec: r.spec || null, process_item: r.process_item || null,
         quantity: r.quantity ? Number(r.quantity) : 0, unit: r.unit || null,
@@ -285,13 +325,13 @@ function VisualOrderInner() {
     } finally {
       setBusy(false);
     }
-  }, [recon, navigate]);
+  }, [recon, navigate, orderDate]);
 
   const ctx: VisualOrderCtx = {
     products, processItems, vendors, receivers,
-    rows: recon.rows, totalQty, updateNode,
+    rows: recon.rows, totalQty, orderDate, setOrderDate, updateNode,
     removeNode: (id) => removeNodes([id]),
-    submit: openConfirm, busy,
+    suggestNext, submit: openConfirm, busy,
   };
 
   const vendorName = vendors.find((v) => String(v.id) === recon.vendorId)?.name ?? "—";
@@ -317,7 +357,7 @@ function VisualOrderInner() {
 
       <div className={`grid grid-cols-1 gap-3 ${paletteOpen ? "lg:grid-cols-[220px_1fr]" : "lg:grid-cols-[40px_1fr]"}`}>
         {paletteOpen ? (
-          <Card className="h-[72vh] !p-3">
+          <Card className="h-full !p-3">
             <Palette
               vendors={vendors} receivers={receivers} products={products}
               processItems={processItems} specs={specs} recent={recent}
@@ -328,7 +368,7 @@ function VisualOrderInner() {
           <button
             onClick={() => setPaletteOpen(true)}
             title="展開側欄"
-            className="hidden h-[72vh] items-start justify-center rounded-2xl border border-slate-200 bg-white pt-3 text-slate-500 hover:bg-slate-50 lg:flex"
+            className="hidden h-full items-start justify-center rounded-2xl border border-slate-200 bg-white pt-3 text-slate-500 hover:bg-slate-50 lg:flex"
           >
             ⟩
           </button>
@@ -343,13 +383,14 @@ function VisualOrderInner() {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onReconnect={onReconnect}
                 isValidConnection={isValidConnection}
                 connectionRadius={45}
                 onSelectionChange={onSelectionChange}
                 onNodeContextMenu={onNodeContextMenu}
                 onPaneContextMenu={(e) => { e.preventDefault(); setMenu(null); }}
-                onPaneClick={() => setMenu(null)}
-                onMoveStart={() => setMenu(null)}
+                onPaneClick={() => { setMenu(null); setSuggest(null); }}
+                onMoveStart={() => { setMenu(null); setSuggest(null); }}
                 nodeTypes={nodeTypes}
                 fitView
                 // 模式:移動(左鍵平移)/ 選取(左鍵框選);兩者皆可滾輪平移
@@ -422,6 +463,26 @@ function VisualOrderInner() {
           onDelete={() => removeNodes([menu.id])}
           onClose={() => setMenu(null)}
         />
+      )}
+
+      {/* 「+」建議下一個欄位的浮動選單 */}
+      {suggest && (
+        <div
+          className="fixed z-50 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+          style={{ left: suggest.x, top: suggest.y }}
+          onMouseLeave={() => setSuggest(null)}
+        >
+          <p className="px-3 py-1 text-xs text-slate-400">新增下一個欄位</p>
+          {FIELD_KINDS.map((f) => (
+            <button
+              key={f}
+              className="block w-full rounded-lg px-4 py-1.5 text-left text-sm hover:bg-slate-100"
+              onClick={() => createNext(f)}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
       )}
 
       {/* 產生訂單前的確認 Modal:讓使用者核對選的內容 */}

@@ -3,7 +3,7 @@ import { Handle, Position } from "@xyflow/react";
 import { useVisualOrder } from "./context";
 
 export default function OrderNode() {
-  const { rows, totalQty, submit, busy } = useVisualOrder();
+  const { rows, totalQty, orderDate, setOrderDate, submit, busy } = useVisualOrder();
 
   return (
     <div className="w-56 rounded-2xl border-2 border-brand bg-white p-4 shadow-lg">
@@ -16,6 +16,17 @@ export default function OrderNode() {
         <span>← 單頭</span>
         <span>品項 →</span>
       </div>
+
+      {/* 日期 */}
+      <label className="mt-2 block">
+        <span className="text-xs text-slate-500">日期</span>
+        <input
+          type="date"
+          className="nodrag w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-brand"
+          value={orderDate}
+          onChange={(e) => setOrderDate(e.target.value)}
+        />
+      </label>
       <div className="mt-3 rounded-xl bg-slate-50 p-3 text-center">
         <p className="text-2xl font-bold text-brand">{rows.length} 排</p>
         <p className="text-xs text-slate-500">合計數量 {totalQty}</p>

@@ -14,13 +14,13 @@ const STYLE: Record<string, { color: string; placeholder: string }> = {
 
 export default function FieldNode({ id, data }: NodeProps) {
   const d = data as FieldNodeData;
-  const { processItems, updateNode, removeNode } = useVisualOrder();
+  const { processItems, updateNode, removeNode, suggestNext } = useVisualOrder();
   const s = STYLE[d.field];
   const inputCls =
     "nodrag w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-brand";
 
   return (
-    <div className={`w-44 rounded-xl border-2 ${s.color} bg-white p-2.5 shadow-md`}>
+    <div className={`relative w-44 rounded-xl border-2 ${s.color} bg-white p-2.5 shadow-md`}>
       <div className="mb-1 flex items-center justify-between">
         <span className="text-xs font-bold text-slate-600">{d.field}</span>
         <button className="nodrag text-xs text-red-500 hover:underline" onClick={() => removeNode(id)}>
@@ -53,6 +53,15 @@ export default function FieldNode({ id, data }: NodeProps) {
           onChange={(e) => updateNode(id, { value: e.target.value })}
         />
       )}
+
+      {/* 點「+」:建議並建立下一個欄位節點,自動連線 */}
+      <button
+        className="nodrag absolute -right-3 top-1/2 z-10 flex h-6 w-6 -translate-y-1/2 translate-x-full items-center justify-center rounded-full border border-brand bg-white text-sm font-bold text-brand shadow hover:bg-brand hover:text-white"
+        title="新增下一個欄位並連線"
+        onClick={(e) => { e.stopPropagation(); suggestNext(id, e.clientX, e.clientY); }}
+      >
+        +
+      </button>
 
       <Handle type="target" position={Position.Left} className="!h-4 !w-4 !border-2 !border-white !bg-slate-400" />
       <Handle type="source" position={Position.Right} className="!h-4 !w-4 !border-2 !border-white !bg-brand" />

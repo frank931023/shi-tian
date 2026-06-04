@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import OrdersListPage from "./pages/OrdersListPage";
 import OrderFormPage from "./pages/OrderFormPage";
 import VisualOrderPage from "./pages/VisualOrderPage";
+import BuildChooserPage from "./pages/BuildChooserPage";
 import MastersPage from "./pages/MastersPage";
 import ReportsPage from "./pages/ReportsPage";
 
@@ -22,6 +23,7 @@ export default function App() {
         }
       >
         <Route path="/orders" element={<OrdersListPage />} />
+        <Route path="/orders/build" element={<BuildChooserPage />} />
         <Route path="/orders/new" element={<OrderFormPage />} />
         <Route path="/orders/visual" element={<VisualOrderPage />} />
         <Route path="/orders/:id/edit" element={<OrderFormPage />} />

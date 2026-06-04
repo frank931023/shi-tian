@@ -127,12 +127,15 @@ export default function Palette({
           <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "field", field: "規格" })} accent />
         </Section>
 
-        <Section title="數量 / 單位">
-          <Chip label="＋ 數量" onDragStart={startDrag({ kind: "field", field: "數量" })} accent />
+        <Section title="數量">
+          <Chip label="＋ 數量(可填數字)" onDragStart={startDrag({ kind: "field", field: "數量" })} accent />
+        </Section>
+
+        <Section title="單位">
           {COMMON_UNITS.map((u) => (
             <Chip key={u} label={u} onDragStart={startDrag({ kind: "field", field: "單位", value: u })} />
           ))}
-          <Chip label="＋ 單位(自填)" onDragStart={startDrag({ kind: "field", field: "單位" })} accent />
+          <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "field", field: "單位" })} accent />
         </Section>
 
         <Section title="整排" defaultOpen>

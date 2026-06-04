@@ -42,8 +42,12 @@ export interface VisualOrderCtx {
   receivers: Company[];
   rows: ReconstructedRow[]; // 即時還原的排
   totalQty: number;         // 合計數量(視覺建單不含單價)
+  orderDate: string;        // 訂單日期(YYYY-MM-DD)
+  setOrderDate: (v: string) => void;
   updateNode: (id: string, patch: Record<string, unknown>) => void;
   removeNode: (id: string) => void;
+  // 點節點上的「+」:在該節點旁建議並建立下一個欄位節點
+  suggestNext: (id: string, x: number, y: number) => void;
   submit: () => void;
   busy: boolean;
 }
