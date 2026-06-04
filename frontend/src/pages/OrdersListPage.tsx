@@ -4,7 +4,6 @@ import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, type OrderFilters } from "../api/resources";
 import { Button, Card, ErrorBar, Select, Spinner } from "../components/ui";
 import { useAuth } from "../lib/AuthContext";
-import { money } from "../lib/format";
 import type { Company, Order, Paginated } from "../lib/types";
 
 const PAGE_SIZE = 20;
@@ -117,7 +116,6 @@ export default function OrdersListPage() {
                   <th className="py-2 pr-3">單號</th>
                   <th className="py-2 pr-3">日期</th>
                   <th className="py-2 pr-3">廠商</th>
-                  <th className="py-2 pr-3 text-right">金額</th>
                   <th className="py-2 text-right">操作</th>
                 </tr>
               </thead>
@@ -127,7 +125,6 @@ export default function OrdersListPage() {
                     <td className="py-3 pr-3 font-medium">{o.order_no}</td>
                     <td className="py-3 pr-3">{o.order_date}</td>
                     <td className="py-3 pr-3">{o.vendor_name ?? "-"}</td>
-                    <td className="py-3 pr-3 text-right font-semibold">{money(o.total_amount)}</td>
                     <td className="py-3 text-right">
                       <RowActions order={o} isAdmin={user?.role === "admin"} onDelete={onDelete} navigate={navigate} />
                     </td>
@@ -145,7 +142,6 @@ export default function OrdersListPage() {
                   <p className="font-bold">{o.order_no}</p>
                   <p className="text-sm text-slate-500">{o.order_date} · {o.vendor_name ?? "-"}</p>
                 </div>
-                <p className="text-lg font-semibold text-brand">{money(o.total_amount)}</p>
                 <RowActions order={o} isAdmin={user?.role === "admin"} onDelete={onDelete} navigate={navigate} />
               </Card>
             ))}

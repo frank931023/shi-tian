@@ -7,7 +7,6 @@ import {
 import { ApiError } from "../api/client";
 import { reportsApi, type Share, type Summary } from "../api/resources";
 import { Card, ErrorBar, Spinner } from "../components/ui";
-import { money } from "../lib/format";
 
 const COLORS = ["#1d4ed8", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6"];
 
@@ -57,7 +56,7 @@ export default function ReportsPage() {
   }, [range, groupBy]);
 
   const productPie = useMemo(
-    () => byProduct.filter((p) => p.amount > 0).slice(0, 8),
+    () => byProduct.filter((p) => p.quantity > 0).slice(0, 8),
     [byProduct],
   );
 
@@ -88,20 +87,19 @@ export default function ReportsPage() {
       ) : (
         // Bento grid:數字卡 + 長條 + 圓餅
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="總金額" value={money(summary?.total_amount ?? 0)} className="col-span-2" />
-          <StatCard label="總筆數" value={String(summary?.total_count ?? 0)} />
-          <StatCard label="總數量" value={String(summary?.total_quantity ?? 0)} />
+          <StatCard label="總筆數" value={String(summary?.total_count ?? 0)} className="col-span-2" />
+          <StatCard label="總數量" value={String(summary?.total_quantity ?? 0)} className="col-span-2" />
 
-          {/* 每期金額長條圖 */}
+          {/* 每期數量長條圖 */}
           <Card className="col-span-2 lg:col-span-2">
-            <h2 className="mb-2 font-bold">每{groupBy === "week" ? "週" : "月"}金額</h2>
+            <h2 className="mb-2 font-bold">每{groupBy === "week" ? "週" : "月"}數量</h2>
             {summary && summary.series.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={summary.series}>
                   <XAxis dataKey="period" fontSize={11} />
                   <YAxis fontSize={11} width={50} />
-                  <Tooltip formatter={(v: number) => money(v)} />
-                  <Bar dataKey="amount" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
+                  <Tooltip />
+                  <Bar dataKey="quantity" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -109,18 +107,18 @@ export default function ReportsPage() {
             )}
           </Card>
 
-          {/* 品名占比圓餅 */}
+          {/* 品名占比圓餅(數量) */}
           <Card className="col-span-2 lg:col-span-2">
-            <h2 className="mb-2 font-bold">品名占比(金額)</h2>
+            <h2 className="mb-2 font-bold">品名占比(數量)</h2>
             {productPie.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
-                  <Pie data={productPie} dataKey="amount" nameKey="name" outerRadius={90} label={(e) => e.name}>
+                  <Pie data={productPie} dataKey="quantity" nameKey="name" outerRadius={90} label={(e) => e.name}>
                     {productPie.map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => money(v)} />
+                  <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -128,15 +126,15 @@ export default function ReportsPage() {
             )}
           </Card>
 
-          {/* 廠商占比清單(也可換成圓餅) */}
+          {/* 廠商數量排行 */}
           <Card className="col-span-2 lg:col-span-4">
-            <h2 className="mb-2 font-bold">廠商金額排行</h2>
-            {byCompany.filter((c) => c.amount > 0).length > 0 ? (
+            <h2 className="mb-2 font-bold">廠商數量排行</h2>
+            {byCompany.filter((c) => c.quantity > 0).length > 0 ? (
               <ul className="divide-y divide-slate-100">
-                {byCompany.filter((c) => c.amount > 0).map((c, i) => (
+                {byCompany.filter((c) => c.quantity > 0).map((c, i) => (
                   <li key={i} className="flex items-center justify-between py-2">
                     <span className="font-medium">{c.name}</span>
-                    <span className="text-slate-500">{c.count} 筆 · <span className="font-semibold text-brand">{money(c.amount)}</span></span>
+                    <span className="text-slate-500">{c.count} 筆 · 數量 <span className="font-semibold text-brand">{c.quantity}</span></span>
                   </li>
                 ))}
               </ul>

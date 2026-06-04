@@ -60,15 +60,13 @@
     <thead>
       <tr>
         <th style="width:5%">#</th>
-        <th style="width:16%">品名</th>
-        <th style="width:14%">規格</th>
-        <th style="width:18%">加工項目</th>
-        <th style="width:9%">淨重(KG)</th>
-        <th style="width:8%">數量</th>
-        <th style="width:6%">單位</th>
-        <th style="width:9%">單價</th>
-        <th style="width:9%">金額</th>
-        <th style="width:6%">備註</th>
+        <th style="width:20%">品名</th>
+        <th style="width:16%">規格</th>
+        <th style="width:22%">加工項目</th>
+        <th style="width:11%">淨重(KG)</th>
+        <th style="width:10%">數量</th>
+        <th style="width:8%">單位</th>
+        <th style="width:8%">備註</th>
       </tr>
     </thead>
     <tbody>
@@ -81,23 +79,14 @@
         <td class="num">{{ '%.2f'|format(it.net_weight_kg) if it.net_weight_kg is not none else '' }}</td>
         <td class="num">{{ '%g'|format(it.quantity) if it.quantity is not none else '' }}</td>
         <td>{{ it.unit or '' }}</td>
-        <td class="num">{{ '%g'|format(it.unit_price) if it.unit_price is not none else '' }}</td>
-        <td class="num">{{ '%.2f'|format(it.amount) if it.amount is not none else '' }}</td>
         <td>{{ it.remark or '' }}</td>
       </tr>
       {% endfor %}
       {# 補滿空白列讓表格高度穩定 #}
       {% for _ in range(blank_rows) %}
-      <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
       {% endfor %}
     </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="8" style="text-align:right">總金額</td>
-        <td class="num">{{ '%.2f'|format(order.total_amount) }}</td>
-        <td></td>
-      </tr>
-    </tfoot>
   </table>
 
   {% if order.note %}<p style="margin-top:8px">備註：{{ order.note }}</p>{% endif %}

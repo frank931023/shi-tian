@@ -50,13 +50,12 @@ export const specsApi = {
 // ---- 報表 ----
 export interface ReportRange { from?: string; to?: string; }
 export interface Summary {
-  total_amount: number;
   total_count: number;
   total_quantity: number;
   group_by: "week" | "month";
-  series: { period: string; amount: number }[];
+  series: { period: string; quantity: number }[];
 }
-export interface Share { name: string; amount: number; quantity?: number; count?: number; }
+export interface Share { name: string; quantity: number; count?: number; }
 
 type Params = Record<string, string | number | undefined>;
 export const reportsApi = {

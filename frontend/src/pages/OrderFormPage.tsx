@@ -7,7 +7,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
 import { Button, Card, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
-import { lineAmount, money, today } from "../lib/format";
+import { today } from "../lib/format";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 
 // 表單內部用:數值欄位以字串保存,方便輸入(送出時再轉)
@@ -18,7 +18,6 @@ interface RowState {
   net_weight_kg: string;
   quantity: string;
   unit: string;
-  unit_price: string;
   remark: string;
 }
 
@@ -29,7 +28,6 @@ const emptyRow = (): RowState => ({
   net_weight_kg: "",
   quantity: "",
   unit: "",
-  unit_price: "",
   remark: "",
 });
 
@@ -93,7 +91,6 @@ export default function OrderFormPage() {
               net_weight_kg: it.net_weight_kg != null ? String(it.net_weight_kg) : "",
               quantity: String(it.quantity ?? ""),
               unit: it.unit ?? "",
-              unit_price: it.unit_price != null ? String(it.unit_price) : "",
               remark: it.remark ?? "",
             })),
           );
@@ -113,8 +110,9 @@ export default function OrderFormPage() {
   const vendors = companies.filter((c) => c.role_type === "vendor" || c.role_type === "both");
   const receivers = companies.filter((c) => c.role_type === "receiver" || c.role_type === "both");
 
-  const total = useMemo(
-    () => rows.reduce((sum, r) => sum + lineAmount(Number(r.quantity), Number(r.unit_price)), 0),
+  // 純移轉單:不算金額,改算合計數量
+  const totalQty = useMemo(
+    () => rows.reduce((sum, r) => sum + (Number(r.quantity) || 0), 0),
     [rows],
   );
 
@@ -163,7 +161,6 @@ export default function OrderFormPage() {
         net_weight_kg: r.net_weight_kg ? Number(r.net_weight_kg) : null,
         quantity: r.quantity ? Number(r.quantity) : 0,
         unit: r.unit || null,
-        unit_price: r.unit_price ? Number(r.unit_price) : null,
         remark: r.remark || null,
       })),
     };
@@ -237,7 +234,6 @@ export default function OrderFormPage() {
         </div>
 
         {rows.map((r, idx) => {
-          const amt = lineAmount(Number(r.quantity), Number(r.unit_price));
           return (
             <div key={idx} className="rounded-xl border border-slate-200 p-3">
               <div className="mb-2 flex items-center justify-between">
@@ -281,14 +277,6 @@ export default function OrderFormPage() {
                 <Field label="單位">
                   <Input list="unit-options" value={r.unit} onChange={(e) => updateRow(idx, { unit: e.target.value })} placeholder="K / 件" />
                 </Field>
-                <Field label="單價">
-                  <Input type="number" inputMode="decimal" step="0.01" value={r.unit_price} onChange={(e) => updateRow(idx, { unit_price: e.target.value })} />
-                </Field>
-                <Field label="金額(自動)">
-                  <div className="flex min-h-[48px] items-center rounded-xl bg-slate-50 px-3 font-semibold">
-                    {money(amt)}
-                  </div>
-                </Field>
               </div>
               <div className="mt-3">
                 <Field label="備註">
@@ -326,8 +314,7 @@ export default function OrderFormPage() {
         </Field>
         <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
           <div className="text-lg">
-            總金額:<span className="text-2xl font-bold text-brand">{money(total)}</span>
-            <span className="ml-2 text-sm text-slate-400">(最終以後端重算為準)</span>
+            合計數量:<span className="text-2xl font-bold text-brand">{totalQty}</span>
           </div>
           <div className="flex gap-3">
             <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>
@@ -357,7 +344,7 @@ export default function OrderFormPage() {
             <div className="rounded-lg bg-slate-50 p-2"><span className="text-slate-400">廠商</span><p className="font-medium">{vendorName}</p></div>
             <div className="rounded-lg bg-slate-50 p-2"><span className="text-slate-400">接收</span><p className="font-medium">{receiverName}</p></div>
           </div>
-          <p className="text-sm text-slate-500">日期 {orderDate} · {previewRows.length} 項 · 總金額 {money(total)}</p>
+          <p className="text-sm text-slate-500">日期 {orderDate} · {previewRows.length} 項 · 合計數量 {totalQty}</p>
           <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
             {previewRows.map((r, i) => (
               <li key={i} className="flex flex-wrap items-center gap-x-3 px-3 py-2 text-sm">
@@ -366,7 +353,7 @@ export default function OrderFormPage() {
                 {r.spec && <span className="text-slate-500">{r.spec}</span>}
                 {r.process_item && <span className="text-slate-500">{r.process_item}</span>}
                 {r.quantity && <span className="text-slate-500">× {r.quantity}{r.unit}</span>}
-                {r.unit_price && <span className="text-slate-500">@{r.unit_price}</span>}
+                {r.remark && <span className="text-slate-400">註 {r.remark}</span>}
               </li>
             ))}
           </ul>

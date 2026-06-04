@@ -51,13 +51,12 @@ DEFAULT_LAYOUT = {
         "max_rows": 12,
         "cols": {
             "product_name": 70,
-            "spec": 150,
-            "process_item": 235,
-            "net_weight_kg": 330,
-            "quantity": 385,
-            "unit": 425,
-            "unit_price": 460,
-            "amount": 510,
+            "spec": 165,
+            "process_item": 260,
+            "net_weight_kg": 360,
+            "quantity": 420,
+            "unit": 465,
+            "remark": 505,
         },
     },
 }
@@ -128,8 +127,8 @@ def render_overlay_pdf(order: Order, layout: dict | None = None) -> bytes:
         put(cols["net_weight_kg"], y, _fmt(it.get("net_weight_kg"), numeric=True))
         put(cols["quantity"], y, _fmt(it.get("quantity"), numeric=True))
         put(cols["unit"], y, _fmt(it.get("unit")))
-        put(cols["unit_price"], y, _fmt(it.get("unit_price"), numeric=True))
-        put(cols["amount"], y, _fmt(it.get("amount"), numeric=True))
+        if "remark" in cols:
+            put(cols["remark"], y, _fmt(it.get("remark")))
         y -= items_cfg["row_height"]
 
     c.showPage()
