@@ -35,6 +35,7 @@ import Palette from "../features/visual-order/Palette";
 import NodeContextMenu from "../features/visual-order/NodeContextMenu";
 import BendableEdge from "../features/visual-order/BendableEdge";
 import {
+  ADDABLE_KINDS,
   FIELD_KINDS,
   VisualOrderProvider,
   type DragPayload,
@@ -286,7 +287,7 @@ function VisualOrderInner() {
           return [...filtered, { id: `e-${id}-header`, type: E, source: id, target: ORDER_ID, targetHandle: "header" }];
         });
       } else if (payload.kind === "field") {
-        newNodes.push({ id: nid(), type: "field", position: pos, data: { field: payload.field, value: payload.value ?? "" } });
+        newNodes.push({ id: nid(), type: "field", position: pos, data: { field: payload.field, value: payload.value ?? "", custom: payload.custom } });
       } else if (payload.kind === "row" || payload.kind === "combo") {
         const combo = payload.kind === "combo" ? payload.combo : null;
         const valueOf = (f: FieldKind): string => {
@@ -353,7 +354,7 @@ function VisualOrderInner() {
       order_date: orderDate,
       items: recon.rows.map((r) => ({
         product_name: r.product_name, spec: r.spec || null, process_item: r.process_item || null,
-        quantity: r.quantity ? Number(r.quantity) : 0, unit: r.unit || null,
+        quantity: r.quantity ? Number(r.quantity) : 0, unit: r.unit || null, remark: r.remark || null,
       })),
     };
     setBusy(true);
@@ -373,7 +374,7 @@ function VisualOrderInner() {
   }, [recon, navigate, orderDate]);
 
   const ctx: VisualOrderCtx = {
-    products, processItems, vendors, receivers,
+    products, processItems, specs, vendors, receivers,
     rows: recon.rows, totalQty, orderDate, setOrderDate, updateNode,
     removeNode: (id) => removeNodes([id]),
     suggestNext, submit: openConfirm, busy,
@@ -498,6 +499,7 @@ function VisualOrderInner() {
                         {r.spec && <span className="text-slate-500">規格 {r.spec}</span>}
                         {r.process_item && <span className="text-slate-500">加工 {r.process_item}</span>}
                         {r.quantity && <span className="text-slate-500">× {r.quantity}{r.unit}</span>}
+                        {r.remark && <span className="text-slate-400">註 {r.remark}</span>}
                       </li>
                     ))}
                   </ul>
@@ -520,7 +522,7 @@ function VisualOrderInner() {
       {/* 「+」建議下一個欄位的浮動選單(排除這排已有的欄位) */}
       {suggest && (() => {
         const used = fieldKindsInRow(suggest.id);
-        const avail = FIELD_KINDS.filter((f) => !used.has(f));
+        const avail = ADDABLE_KINDS.filter((f) => !used.has(f));
         return (
           <div
             className="fixed z-50 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"

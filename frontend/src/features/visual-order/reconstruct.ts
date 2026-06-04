@@ -86,6 +86,7 @@ export function reconstruct(nodes: Node[], edges: Edge[]): Reconstructed {
       process_item: "",
       quantity: "",
       unit: "",
+      remark: "",
     };
     for (const n of fieldNodes) {
       const d = n.data as FieldNodeData;
@@ -96,6 +97,7 @@ export function reconstruct(nodes: Node[], edges: Edge[]): Reconstructed {
       else if (d.field === "加工" && !row.process_item) row.process_item = v;
       else if (d.field === "數量" && !row.quantity) row.quantity = v;
       else if (d.field === "單位" && !row.unit) row.unit = v;
+      else if (d.field === "備註" && !row.remark) row.remark = v;
     }
     // 一排至少要有品名才算數
     if (row.product_name) rows.push(row);

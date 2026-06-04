@@ -279,7 +279,7 @@ export default function OrderFormPage() {
                   <Input type="number" inputMode="decimal" step="0.01" value={r.quantity} onChange={(e) => updateRow(idx, { quantity: e.target.value })} />
                 </Field>
                 <Field label="單位">
-                  <Input value={r.unit} onChange={(e) => updateRow(idx, { unit: e.target.value })} placeholder="K / 件" />
+                  <Input list="unit-options" value={r.unit} onChange={(e) => updateRow(idx, { unit: e.target.value })} placeholder="K / 件" />
                 </Field>
                 <Field label="單價">
                   <Input type="number" inputMode="decimal" step="0.01" value={r.unit_price} onChange={(e) => updateRow(idx, { unit_price: e.target.value })} />
@@ -307,6 +307,11 @@ export default function OrderFormPage() {
         <datalist id="spec-options">
           {specs.map((s) => (
             <option key={s.id} value={s.name} />
+          ))}
+        </datalist>
+        <datalist id="unit-options">
+          {["K", "KG", "件", "支", "箱"].map((u) => (
+            <option key={u} value={u} />
           ))}
         </datalist>
 

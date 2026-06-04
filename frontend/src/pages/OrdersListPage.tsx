@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, type OrderFilters } from "../api/resources";
-import { Button, Card, ErrorBar, Select, Spinner, StatusBadge } from "../components/ui";
+import { Button, Card, ErrorBar, Select, Spinner } from "../components/ui";
 import { useAuth } from "../lib/AuthContext";
 import { money } from "../lib/format";
 import type { Company, Order, Paginated } from "../lib/types";
@@ -65,7 +65,7 @@ export default function OrdersListPage() {
 
       {/* 篩選列:手機單欄、平板以上多欄 */}
       <Card>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <input
             type="date"
             className="min-h-[48px] rounded-xl border border-slate-300 px-3"
@@ -88,16 +88,6 @@ export default function OrdersListPage() {
             {companies.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </Select>
-          <Select
-            value={filters.status ?? ""}
-            onChange={(e) => setFilter({ status: e.target.value || undefined })}
-          >
-            <option value="">全部狀態</option>
-            <option value="draft">草稿</option>
-            <option value="confirmed">已確認</option>
-            <option value="printed">已列印</option>
-            <option value="void">作廢</option>
           </Select>
           <input
             type="search"
@@ -127,7 +117,6 @@ export default function OrdersListPage() {
                   <th className="py-2 pr-3">單號</th>
                   <th className="py-2 pr-3">日期</th>
                   <th className="py-2 pr-3">廠商</th>
-                  <th className="py-2 pr-3">狀態</th>
                   <th className="py-2 pr-3 text-right">金額</th>
                   <th className="py-2 text-right">操作</th>
                 </tr>
@@ -138,7 +127,6 @@ export default function OrdersListPage() {
                     <td className="py-3 pr-3 font-medium">{o.order_no}</td>
                     <td className="py-3 pr-3">{o.order_date}</td>
                     <td className="py-3 pr-3">{o.vendor_name ?? "-"}</td>
-                    <td className="py-3 pr-3"><StatusBadge status={o.status} /></td>
                     <td className="py-3 pr-3 text-right font-semibold">{money(o.total_amount)}</td>
                     <td className="py-3 text-right">
                       <RowActions order={o} isAdmin={user?.role === "admin"} onDelete={onDelete} navigate={navigate} />
@@ -153,12 +141,9 @@ export default function OrdersListPage() {
           <div className="space-y-3 lg:hidden">
             {data.items.map((o) => (
               <Card key={o.id} className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-bold">{o.order_no}</p>
-                    <p className="text-sm text-slate-500">{o.order_date} · {o.vendor_name ?? "-"}</p>
-                  </div>
-                  <StatusBadge status={o.status} />
+                <div>
+                  <p className="font-bold">{o.order_no}</p>
+                  <p className="text-sm text-slate-500">{o.order_date} · {o.vendor_name ?? "-"}</p>
                 </div>
                 <p className="text-lg font-semibold text-brand">{money(o.total_amount)}</p>
                 <RowActions order={o} isAdmin={user?.role === "admin"} onDelete={onDelete} navigate={navigate} />

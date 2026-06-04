@@ -5,7 +5,7 @@
 // - 最近使用組合:整排五欄一次拖出
 import { useState } from "react";
 import type { Company, ProcessItem, Product, Spec } from "../../lib/types";
-import type { DragPayload } from "./context";
+import { COMMON_UNITS, type DragPayload } from "./context";
 import type { Combo } from "./recentCombos";
 
 interface Props {
@@ -18,8 +18,6 @@ interface Props {
   startDrag: (payload: DragPayload) => (e: React.DragEvent) => void;
   onCollapse: () => void;
 }
-
-const COMMON_UNITS = ["K", "KG", "件", "支", "箱"];
 
 // 可拖曳的小晶片
 function Chip({
@@ -124,7 +122,7 @@ export default function Palette({
           {specs.map((s) => (
             <Chip key={s.id} label={s.name} onDragStart={startDrag({ kind: "field", field: "規格", value: s.name })} />
           ))}
-          <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "field", field: "規格" })} accent />
+          <Chip label="＋ 自訂(打字)" onDragStart={startDrag({ kind: "field", field: "規格", custom: true })} accent />
         </Section>
 
         <Section title="數量">
@@ -135,7 +133,11 @@ export default function Palette({
           {COMMON_UNITS.map((u) => (
             <Chip key={u} label={u} onDragStart={startDrag({ kind: "field", field: "單位", value: u })} />
           ))}
-          <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "field", field: "單位" })} accent />
+          <Chip label="＋ 自訂(打字)" onDragStart={startDrag({ kind: "field", field: "單位", custom: true })} accent />
+        </Section>
+
+        <Section title="備註">
+          <Chip label="＋ 備註(選填)" onDragStart={startDrag({ kind: "field", field: "備註", custom: true })} accent />
         </Section>
 
         <Section title="整排" defaultOpen>
