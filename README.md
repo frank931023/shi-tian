@@ -31,10 +31,9 @@
 - [x] **Phase 5** — 觸控建單最佳化(品項上下移、規格主檔快選、送出前預覽確認)
 - [x] **Phase 6** — 報表(DB 端 SQL 聚合)+ Bento 版面 + Recharts(數字卡/圓餅/長條)
 - [x] **Phase 7** — 點陣套表列印(ReportLab 座標套表 + 座標設定檔 + 校正頁 + dotmatrix 佇列)
-- [ ] Phase 5 — 觸控建單最佳化
-- [ ] Phase 6 — 報表 + 圖表
-- [ ] Phase 7 — 點陣套表列印(進階)
-- [ ] Phase 8 — 上線硬化(部署 / 資安)
+- [x] **Phase 8** — 上線硬化(ProxyFix、正式 compose、Caddy TLS、VPN 規劃、pg_dump 備份/還原、檢查表)
+
+🎉 **Phase 0–8 全部完成**。部署與維運見 [docs/部署與維運.md](docs/部署與維運.md)。
 
 ---
 

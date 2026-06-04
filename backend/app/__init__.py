@@ -16,6 +16,12 @@ def create_app(config_object: type = Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_object)
 
+    # 後端在 Caddy 之後:信任 X-Forwarded-* 以取得真實 client IP(rate limit / audit 用)
+    if app.config.get("TRUST_PROXY"):
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
     # --- 初始化擴充套件 ---
     db.init_app(app)
     migrate.init_app(app, db)

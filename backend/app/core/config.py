@@ -18,6 +18,10 @@ class Config:
     # 前端來源,給 CORS 用(本機開發時前端跑在 5173)。
     FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:5173")
 
+    # 是否信任反向代理(Caddy)轉發的 X-Forwarded-* 標頭。
+    # 正式環境後端只在內網、前面有 Caddy → true(才能取得真實 client IP 做 rate limit/audit)。
+    TRUST_PROXY = os.environ.get("TRUST_PROXY", "true").lower() == "true"
+
     # session cookie 安全屬性(CLAUDE.md §5)。
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
@@ -32,6 +36,10 @@ class Config:
 
     # 點陣套表的座標設定檔(可微調 offset/欄位座標而不改程式;Phase 7)
     DOTMATRIX_LAYOUT = os.environ.get("DOTMATRIX_LAYOUT", "config/dotmatrix_layout.json")
+
+    # rate limit 儲存:開發用記憶體;正式多 worker 應用 Redis(redis://redis:6379)
+    # Flask-Limiter 會自動讀這個 config key。
+    RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
 
     # 單據抬頭(公司資訊),可由環境覆蓋
     COMPANY_NAME_1 = os.environ.get("COMPANY_NAME_1", "旭田興有限公司")
