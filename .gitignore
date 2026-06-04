@@ -24,9 +24,12 @@ pgdata/
 *.sqlite3
 
 # ---- generated artifacts ----
-archive/          # PDF 封存(執行期產生,不進 git)
+# (.gitignore 不支援行內註解,註解需自成一行)
+# PDF 封存(執行期產生)
+archive/
 backups/
-backend/config/   # 點陣套表座標設定(執行期產生/使用者微調)
+# 點陣套表座標設定(執行期產生/使用者微調)
+backend/config/
 
 # ---- editor / OS ----
 .vscode/
