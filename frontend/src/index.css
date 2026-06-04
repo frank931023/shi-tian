@@ -10,7 +10,7 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-slate-50 text-slate-900 antialiased;
     font-family: system-ui, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
   }
 }

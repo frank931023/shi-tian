@@ -1,7 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  // 深色模式用 class 策略:在 <html> 加 .dark 即切換(由 ThemeContext 控制)。
-  darkMode: "class",
   // content:告訴 Tailwind 去哪些檔案掃描 class 名稱,只產生用到的樣式。
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {

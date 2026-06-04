@@ -612,7 +612,7 @@ function VisualOrderInner() {
           </>
         }
       >
-        <p className="text-slate-600 dark:text-slate-300">訂單已建立,要現在產生三聯單 PDF 列印嗎?</p>
+        <p className="text-slate-600">訂單已建立,要現在產生三聯單 PDF 列印嗎?</p>
       </Modal>
 
       <datalist id="vo-product-options">

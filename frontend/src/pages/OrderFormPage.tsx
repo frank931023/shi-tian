@@ -388,7 +388,7 @@ export default function OrderFormPage() {
           </>
         }
       >
-        <p className="text-slate-600 dark:text-slate-300">
+        <p className="text-slate-600">
           訂單已儲存。要現在產生三聯單 PDF 列印嗎?(會開新分頁顯示 PDF,可直接列印;
           正式環境也可由伺服器送印到印表機)
         </p>

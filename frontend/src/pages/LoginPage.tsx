@@ -30,8 +30,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <p className="text-sm font-medium text-brand">旭田</p>
-          <h1 className="text-2xl font-bold">移轉單系統登入</h1>
+          <p className="text-lg font-bold text-brand">旭田興有限公司</p>
+          <h1 className="mt-1 text-xl font-bold">移轉單系統登入</h1>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <ErrorBar message={error} />

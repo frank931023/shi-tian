@@ -8,7 +8,6 @@ import OrdersListPage from "./pages/OrdersListPage";
 import OrderFormPage from "./pages/OrderFormPage";
 import BuildChooserPage from "./pages/BuildChooserPage";
 import MastersPage from "./pages/MastersPage";
-import SettingsPage from "./pages/SettingsPage";
 
 // 懶載入含重型套件的頁面,減少首次載入體積
 const VisualOrderPage = lazy(() => import("./pages/VisualOrderPage")); // React Flow
@@ -34,7 +33,6 @@ export default function App() {
         <Route path="/orders/:id/edit" element={<OrderFormPage />} />
         <Route path="/reports" element={<Suspense fallback={<Spinner />}><ReportsPage /></Suspense>} />
         <Route path="/masters" element={<MastersPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       {/* 預設導向訂單清單 */}
