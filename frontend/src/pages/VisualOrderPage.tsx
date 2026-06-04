@@ -24,7 +24,7 @@ import "@xyflow/react/dist/style.css";
 
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
-import { Button, Card, ErrorBar } from "../components/ui";
+import { Button, Card, ErrorBar, Modal } from "../components/ui";
 import { today } from "../lib/format";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 import CompanyNode from "../features/visual-order/CompanyNode";
@@ -96,6 +96,7 @@ function VisualOrderInner() {
   const [mode, setMode] = useState<Mode>("pan");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [menu, setMenu] = useState<MenuState | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const init = useMemo(initialGraph, []);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(init.nodes);
@@ -153,6 +154,36 @@ function VisualOrderInner() {
     setSelectedIds(p.nodes.filter((n) => n.id !== ORDER_ID).map((n) => n.id));
   }, []);
 
+  // 連線合理性檢查:拖線當下就擋掉不合理的連法
+  const isValidConnection = useCallback(
+    (c: Connection | Edge) => {
+      if (!c.source || !c.target || c.source === c.target) return false;
+      const byId = (id: string) => nodes.find((n) => n.id === id);
+      const src = byId(c.source);
+      const tgt = byId(c.target);
+      if (!src || !tgt) return false;
+      // 不可重複同一條邊
+      if (edges.some((e) => e.source === c.source && e.target === c.target)) return false;
+
+      // 公司:只能連到訂單;同類(廠商/接收)只能有一個
+      if (src.type === "company") {
+        if (tgt.id !== ORDER_ID) return false;
+        const role = (src.data as { role: string }).role;
+        const dup = edges.some((e) => {
+          const s = byId(e.source);
+          return s?.type === "company" && (s.data as { role: string }).role === role && e.target === ORDER_ID;
+        });
+        return !dup;
+      }
+      // 訂單右側 items → 欄位
+      if (src.id === ORDER_ID) return tgt.type === "field";
+      // 欄位 → 欄位(串接);欄位不可直接連訂單(由訂單連向品名 head)
+      if (src.type === "field") return tgt.type === "field";
+      return false;
+    },
+    [nodes, edges],
+  );
+
   const spawn = useCallback(
     (payload: DragPayload, pos: { x: number; y: number }) => {
       const newNodes: Node[] = [];
@@ -162,7 +193,14 @@ function VisualOrderInner() {
       if (payload.kind === "company") {
         const id = nid();
         newNodes.push({ id, type: "company", position: pos, data: { role: payload.role, companyId: payload.companyId ?? "" } });
-        newEdges.push({ id: `e-${id}-header`, source: id, target: ORDER_ID, targetHandle: "header" });
+        // 同類(廠商/接收)只能一個:先移除舊的同類→訂單連線(替換語意),再連新的
+        setEdges((es) => {
+          const filtered = es.filter((e) => {
+            const s = nodes.find((n) => n.id === e.source);
+            return !(s?.type === "company" && (s.data as { role: string }).role === payload.role && e.target === ORDER_ID);
+          });
+          return [...filtered, { id: `e-${id}-header`, source: id, target: ORDER_ID, targetHandle: "header" }];
+        });
       } else if (payload.kind === "field") {
         newNodes.push({ id: nid(), type: "field", position: pos, data: { field: payload.field, value: payload.value ?? "" } });
       } else if (payload.kind === "row" || payload.kind === "combo") {
@@ -190,7 +228,7 @@ function VisualOrderInner() {
       setNodes((ns) => [...ns, ...newNodes]);
       if (newEdges.length) setEdges((es) => [...es, ...newEdges]);
     },
-    [setNodes, setEdges],
+    [setNodes, setEdges, nodes],
   );
 
   const onDrop = useCallback(
@@ -213,12 +251,18 @@ function VisualOrderInner() {
     setMenu({ x: e.clientX, y: e.clientY, id: node.id });
   }, []);
 
-  const submit = useCallback(async () => {
+  // 按「產生訂單」:先做基本檢查,再開確認 Modal(讓使用者核對)
+  const openConfirm = useCallback(() => {
     setError(null);
     if (recon.rows.length === 0) {
       setError("沒有偵測到任何「有品名且連到訂單」的排");
       return;
     }
+    setConfirmOpen(true);
+  }, [recon.rows.length]);
+
+  // Modal 按「確認送出」才真正建立
+  const doSubmit = useCallback(async () => {
     const body = {
       vendor_id: recon.vendorId ? Number(recon.vendorId) : null,
       receiver_id: recon.receiverId ? Number(recon.receiverId) : null,
@@ -236,6 +280,7 @@ function VisualOrderInner() {
       }))));
       navigate("/orders");
     } catch (err) {
+      setConfirmOpen(false);
       setError(err instanceof ApiError ? err.message : "建立失敗");
     } finally {
       setBusy(false);
@@ -246,8 +291,11 @@ function VisualOrderInner() {
     products, processItems, vendors, receivers,
     rows: recon.rows, totalQty, updateNode,
     removeNode: (id) => removeNodes([id]),
-    submit, busy,
+    submit: openConfirm, busy,
   };
+
+  const vendorName = vendors.find((v) => String(v.id) === recon.vendorId)?.name ?? "—";
+  const receiverName = receivers.find((r) => String(r.id) === recon.receiverId)?.name ?? "—";
 
   const startDrag = (payload: DragPayload) => (e: React.DragEvent) => {
     e.dataTransfer.setData("application/vo", JSON.stringify(payload));
@@ -269,7 +317,7 @@ function VisualOrderInner() {
 
       <div className={`grid grid-cols-1 gap-3 ${paletteOpen ? "lg:grid-cols-[220px_1fr]" : "lg:grid-cols-[40px_1fr]"}`}>
         {paletteOpen ? (
-          <Card className="h-[60vh] !p-3">
+          <Card className="h-[72vh] !p-3">
             <Palette
               vendors={vendors} receivers={receivers} products={products}
               processItems={processItems} specs={specs} recent={recent}
@@ -280,7 +328,7 @@ function VisualOrderInner() {
           <button
             onClick={() => setPaletteOpen(true)}
             title="展開側欄"
-            className="hidden h-[60vh] items-start justify-center rounded-2xl border border-slate-200 bg-white pt-3 text-slate-500 hover:bg-slate-50 lg:flex"
+            className="hidden h-[72vh] items-start justify-center rounded-2xl border border-slate-200 bg-white pt-3 text-slate-500 hover:bg-slate-50 lg:flex"
           >
             ⟩
           </button>
@@ -288,13 +336,15 @@ function VisualOrderInner() {
 
         <div className="space-y-3">
           <VisualOrderProvider value={ctx}>
-            <div className="h-[60vh] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50" onDrop={onDrop} onDragOver={onDragOver}>
+            <div className="h-[72vh] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50" onDrop={onDrop} onDragOver={onDragOver}>
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                isValidConnection={isValidConnection}
+                connectionRadius={45}
                 onSelectionChange={onSelectionChange}
                 onNodeContextMenu={onNodeContextMenu}
                 onPaneContextMenu={(e) => { e.preventDefault(); setMenu(null); }}
@@ -342,8 +392,7 @@ function VisualOrderInner() {
             {previewOpen && (
               <div className="mt-2">
                 <p className="mb-2 text-sm text-slate-500">
-                  廠商:{vendors.find((v) => String(v.id) === recon.vendorId)?.name ?? "—"}
-                  　接收:{receivers.find((r) => String(r.id) === recon.receiverId)?.name ?? "—"}
+                  廠商:{vendorName}　接收:{receiverName}
                 </p>
                 {recon.rows.length === 0 ? (
                   <p className="py-4 text-center text-slate-400">尚未偵測到完整的排(每排至少要有品名,且連到訂單節點)</p>
@@ -374,6 +423,53 @@ function VisualOrderInner() {
           onClose={() => setMenu(null)}
         />
       )}
+
+      {/* 產生訂單前的確認 Modal:讓使用者核對選的內容 */}
+      <Modal
+        open={confirmOpen}
+        title="確認訂單內容"
+        onClose={() => !busy && setConfirmOpen(false)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmOpen(false)} disabled={busy}>
+              返回修改
+            </Button>
+            <Button onClick={doSubmit} disabled={busy}>
+              {busy ? "送出中…" : "確認送出"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="rounded-lg bg-slate-50 p-2">
+              <span className="text-slate-400">廠商單位</span>
+              <p className="font-medium">{vendorName}</p>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2">
+              <span className="text-slate-400">接收單位</span>
+              <p className="font-medium">{receiverName}</p>
+            </div>
+          </div>
+          <div>
+            <p className="mb-1 text-sm text-slate-500">品項({recon.rows.length} 排,合計數量 {totalQty})</p>
+            <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+              {recon.rows.map((r, i) => (
+                <li key={i} className="flex flex-wrap items-center gap-x-3 px-3 py-2 text-sm">
+                  <span className="font-medium text-slate-400">{i + 1}</span>
+                  <span className="font-medium">{r.product_name}</span>
+                  {r.spec && <span className="text-slate-500">規格 {r.spec}</span>}
+                  {r.process_item && <span className="text-slate-500">加工 {r.process_item}</span>}
+                  {r.quantity && <span className="text-slate-500">數量 {r.quantity} {r.unit}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+          {(vendorName === "—" || receiverName === "—") && (
+            <p className="text-sm text-amber-600">提醒:廠商或接收單位尚未選擇,確認後仍可送出(可日後補)。</p>
+          )}
+        </div>
+      </Modal>
 
       <datalist id="vo-product-options">
         {products.map((p) => (

@@ -2,6 +2,7 @@
 // - 手機(預設):頂部精簡列 + 底部固定導覽(大圖示好點)。
 // - 筆電(lg+):左側固定側邊欄導覽,內容區在右。
 // 中間(平板)介於兩者:用底部導覽 + 較寬內容。
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
 
@@ -23,12 +24,13 @@ const NAV: NavItem[] = [
 export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
   const items = NAV.filter((n) => !n.adminOnly || user?.role === "admin");
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition ${
-      isActive ? "bg-brand text-white" : "text-slate-700 hover:bg-slate-100"
-    }`;
+      collapsed ? "justify-center !px-0" : ""
+    } ${isActive ? "bg-brand text-white" : "text-slate-700 hover:bg-slate-100"}`;
 
   // 底部導覽用的樣式(手機/平板)
   const bottomClass = ({ isActive }: { isActive: boolean }) =>
@@ -38,29 +40,43 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen lg:flex">
-      {/* 側邊欄(筆電) */}
-      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white p-4 lg:flex lg:flex-col">
-        <div className="px-2 py-3">
-          <p className="text-sm font-medium text-brand">旭田</p>
-          <p className="text-lg font-bold">移轉單系統</p>
+      {/* 側邊欄(筆電,可收合成窄條) */}
+      <aside className={`hidden shrink-0 border-r border-slate-200 bg-white p-3 lg:flex lg:flex-col ${collapsed ? "w-16" : "w-60"}`}>
+        <div className="flex items-center justify-between px-1 py-2">
+          {!collapsed && (
+            <div>
+              <p className="text-sm font-medium text-brand">旭田</p>
+              <p className="text-lg font-bold">移轉單系統</p>
+            </div>
+          )}
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            title={collapsed ? "展開側欄" : "收合側欄"}
+            className="rounded-lg px-2 py-1 text-slate-400 hover:bg-slate-100"
+          >
+            {collapsed ? "»" : "«"}
+          </button>
         </div>
         <nav className="mt-2 flex flex-col gap-1">
           {items.map((n) => (
-            <NavLink key={n.to} to={n.to} className={linkClass}>
+            <NavLink key={n.to} to={n.to} className={linkClass} title={n.label}>
               <span className="text-xl">{n.icon}</span>
-              {n.label}
+              {!collapsed && n.label}
             </NavLink>
           ))}
         </nav>
         <div className="mt-auto border-t border-slate-100 pt-3">
-          <p className="px-2 text-sm text-slate-500">
-            {user?.display_name}({user?.role === "admin" ? "管理員" : "操作員"})
-          </p>
+          {!collapsed && (
+            <p className="px-2 text-sm text-slate-500">
+              {user?.display_name}({user?.role === "admin" ? "管理員" : "操作員"})
+            </p>
+          )}
           <button
             onClick={() => logout().then(() => navigate("/login"))}
-            className="mt-2 w-full rounded-xl px-4 py-2 text-left text-base text-slate-600 hover:bg-slate-100"
+            title="登出"
+            className={`mt-2 w-full rounded-xl px-4 py-2 text-base text-slate-600 hover:bg-slate-100 ${collapsed ? "text-center !px-0" : "text-left"}`}
           >
-            登出
+            {collapsed ? "⎋" : "登出"}
           </button>
         </div>
       </aside>

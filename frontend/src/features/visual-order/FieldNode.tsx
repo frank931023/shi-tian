@@ -54,8 +54,8 @@ export default function FieldNode({ id, data }: NodeProps) {
         />
       )}
 
-      <Handle type="target" position={Position.Left} className="!h-2.5 !w-2.5 !bg-slate-400" />
-      <Handle type="source" position={Position.Right} className="!h-2.5 !w-2.5 !bg-brand" />
+      <Handle type="target" position={Position.Left} className="!h-4 !w-4 !border-2 !border-white !bg-slate-400" />
+      <Handle type="source" position={Position.Right} className="!h-4 !w-4 !border-2 !border-white !bg-brand" />
     </div>
   );
 }

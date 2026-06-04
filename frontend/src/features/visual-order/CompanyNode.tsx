@@ -30,7 +30,7 @@ export default function CompanyNode({ id, data }: NodeProps) {
           <option key={c.id} value={c.id}>{c.name}</option>
         ))}
       </select>
-      <Handle type="source" position={Position.Right} className="!h-3 !w-3 !bg-brand" />
+      <Handle type="source" position={Position.Right} className="!h-4 !w-4 !border-2 !border-white !bg-brand" />
     </div>
   );
 }
