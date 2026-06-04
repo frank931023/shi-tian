@@ -5,10 +5,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ApiError } from "../api/client";
-import { companiesApi, ordersApi, processItemsApi, productsApi } from "../api/resources";
-import { Button, Card, ErrorBar, Field, Input, Select, Spinner, Textarea } from "../components/ui";
+import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
+import { Button, Card, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
 import { lineAmount, money, today } from "../lib/format";
-import type { Company, ProcessItem, Product } from "../lib/types";
+import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 
 // 表單內部用:數值欄位以字串保存,方便輸入(送出時再轉)
 interface RowState {
@@ -44,6 +44,8 @@ export default function OrderFormPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [processItems, setProcessItems] = useState<ProcessItem[]>([]);
+  const [specs, setSpecs] = useState<Spec[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // 表單欄位
   const [vendorId, setVendorId] = useState("");
@@ -61,15 +63,17 @@ export default function OrderFormPage() {
     let alive = true;
     async function load() {
       try {
-        const [cs, ps, pis] = await Promise.all([
+        const [cs, ps, pis, ss] = await Promise.all([
           companiesApi.list(),
           productsApi.list(),
           processItemsApi.list(),
+          specsApi.list(),
         ]);
         if (!alive) return;
         setCompanies(cs);
         setProducts(ps);
         setProcessItems(pis);
+        setSpecs(ss);
 
         const sourceId = editingId ?? (copyId ? Number(copyId) : null);
         if (sourceId) {
@@ -122,17 +126,30 @@ export default function OrderFormPage() {
   function removeRow(idx: number) {
     setRows((rs) => (rs.length === 1 ? rs : rs.filter((_, i) => i !== idx)));
   }
+  // 品項上下移(觸控友善的排序方式;比拖曳對長輩更穩)
+  function moveRow(idx: number, dir: -1 | 1) {
+    setRows((rs) => {
+      const j = idx + dir;
+      if (j < 0 || j >= rs.length) return rs;
+      const next = [...rs];
+      [next[idx], next[j]] = [next[j], next[idx]];
+      return next;
+    });
+  }
 
-  async function onSubmit(e: React.FormEvent) {
+  // 按「建立/儲存」:先檢查再開預覽確認
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    const validRows = rows.filter((r) => r.product_name.trim());
-    if (validRows.length === 0) {
+    if (rows.filter((r) => r.product_name.trim()).length === 0) {
       setError("至少要有一行品項(品名必填)");
       return;
     }
+    setConfirmOpen(true);
+  }
 
+  async function doSubmit() {
+    const validRows = rows.filter((r) => r.product_name.trim());
     const body = {
       vendor_id: vendorId ? Number(vendorId) : null,
       receiver_id: receiverId ? Number(receiverId) : null,
@@ -159,11 +176,16 @@ export default function OrderFormPage() {
       }
       navigate("/orders");
     } catch (err) {
+      setConfirmOpen(false);
       setError(err instanceof ApiError ? err.message : "儲存失敗");
     } finally {
       setBusy(false);
     }
   }
+
+  const vendorName = vendors.find((v) => String(v.id) === vendorId)?.name ?? "—";
+  const receiverName = receivers.find((r) => String(r.id) === receiverId)?.name ?? "—";
+  const previewRows = rows.filter((r) => r.product_name.trim());
 
   if (loading) return <Spinner />;
 
@@ -221,14 +243,14 @@ export default function OrderFormPage() {
             <div key={idx} className="rounded-xl border border-slate-200 p-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-500">第 {idx + 1} 行</span>
-                <button
-                  type="button"
-                  onClick={() => removeRow(idx)}
-                  className="text-sm text-red-500 hover:underline disabled:opacity-40"
-                  disabled={rows.length === 1}
-                >
-                  移除
-                </button>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => moveRow(idx, -1)} disabled={idx === 0}
+                    className="min-h-[40px] min-w-[40px] rounded-lg text-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30" title="上移">↑</button>
+                  <button type="button" onClick={() => moveRow(idx, 1)} disabled={idx === rows.length - 1}
+                    className="min-h-[40px] min-w-[40px] rounded-lg text-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30" title="下移">↓</button>
+                  <button type="button" onClick={() => removeRow(idx)} disabled={rows.length === 1}
+                    className="min-h-[40px] rounded-lg px-2 text-sm text-red-500 hover:bg-red-50 disabled:opacity-30">移除</button>
+                </div>
               </div>
               {/* 手機單欄、平板兩欄、筆電多欄 */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -241,7 +263,7 @@ export default function OrderFormPage() {
                   />
                 </Field>
                 <Field label="規格">
-                  <Input value={r.spec} onChange={(e) => updateRow(idx, { spec: e.target.value })} placeholder="例:1/2-H17" />
+                  <Input list="spec-options" value={r.spec} onChange={(e) => updateRow(idx, { spec: e.target.value })} placeholder="例:1/2-H17" />
                 </Field>
                 <Field label="加工項目">
                   <Select value={r.process_item} onChange={(e) => updateRow(idx, { process_item: e.target.value })}>
@@ -283,6 +305,11 @@ export default function OrderFormPage() {
             <option key={p.id} value={p.name} />
           ))}
         </datalist>
+        <datalist id="spec-options">
+          {specs.map((s) => (
+            <option key={s.id} value={s.name} />
+          ))}
+        </datalist>
 
         <Button type="button" variant="secondary" onClick={addRow}>
           + 新增品項
@@ -303,11 +330,44 @@ export default function OrderFormPage() {
               取消
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "儲存中…" : editingId ? "儲存變更" : "建立訂單"}
+              {editingId ? "儲存變更" : "建立訂單"}
             </Button>
           </div>
         </div>
       </Card>
+
+      {/* 送出前預覽確認(長輩可先核對) */}
+      <Modal
+        open={confirmOpen}
+        title={editingId ? "確認儲存變更" : "確認建立訂單"}
+        onClose={() => !busy && setConfirmOpen(false)}
+        footer={
+          <>
+            <Button type="button" variant="secondary" onClick={() => setConfirmOpen(false)} disabled={busy}>返回修改</Button>
+            <Button type="button" onClick={doSubmit} disabled={busy}>{busy ? "儲存中…" : "確認"}</Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="rounded-lg bg-slate-50 p-2"><span className="text-slate-400">廠商</span><p className="font-medium">{vendorName}</p></div>
+            <div className="rounded-lg bg-slate-50 p-2"><span className="text-slate-400">接收</span><p className="font-medium">{receiverName}</p></div>
+          </div>
+          <p className="text-sm text-slate-500">日期 {orderDate} · {previewRows.length} 項 · 總金額 {money(total)}</p>
+          <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+            {previewRows.map((r, i) => (
+              <li key={i} className="flex flex-wrap items-center gap-x-3 px-3 py-2 text-sm">
+                <span className="font-medium text-slate-400">{i + 1}</span>
+                <span className="font-medium">{r.product_name}</span>
+                {r.spec && <span className="text-slate-500">{r.spec}</span>}
+                {r.process_item && <span className="text-slate-500">{r.process_item}</span>}
+                {r.quantity && <span className="text-slate-500">× {r.quantity}{r.unit}</span>}
+                {r.unit_price && <span className="text-slate-500">@{r.unit_price}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Modal>
     </form>
   );
 }
