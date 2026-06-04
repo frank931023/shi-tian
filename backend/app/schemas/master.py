@@ -29,3 +29,7 @@ class ProductIn(BaseModel):
 
 class ProcessItemIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
+
+
+class SpecIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)

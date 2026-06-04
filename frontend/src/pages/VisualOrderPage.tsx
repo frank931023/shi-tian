@@ -21,10 +21,10 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { ApiError } from "../api/client";
-import { companiesApi, ordersApi, processItemsApi, productsApi } from "../api/resources";
+import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
 import { Button, Card, ErrorBar } from "../components/ui";
 import { today } from "../lib/format";
-import type { Company, ProcessItem, Product } from "../lib/types";
+import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 import CompanyNode from "../features/visual-order/CompanyNode";
 import FieldNode from "../features/visual-order/FieldNode";
 import OrderNode from "../features/visual-order/OrderNode";
@@ -53,22 +53,25 @@ function useIsDesktop() {
   return desktop;
 }
 
+// 佈局:訂單在中間;廠商/接收在「訂單左側」;品項排在「訂單右側」往右展開。
 function initialGraph(): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [
-    { id: ORDER_ID, type: "order", position: { x: 760, y: 180 }, data: {}, deletable: false },
-    { id: "vendor-1", type: "company", position: { x: 40, y: 20 }, data: { role: "vendor", companyId: "" } },
-    { id: "receiver-1", type: "company", position: { x: 40, y: 140 }, data: { role: "receiver", companyId: "" } },
+    { id: ORDER_ID, type: "order", position: { x: 380, y: 120 }, data: {}, deletable: false },
+    { id: "vendor-1", type: "company", position: { x: 20, y: 40 }, data: { role: "vendor", companyId: "" } },
+    { id: "receiver-1", type: "company", position: { x: 20, y: 180 }, data: { role: "receiver", companyId: "" } },
   ];
   const edges: Edge[] = [
-    { id: "ev", source: "vendor-1", target: ORDER_ID },
-    { id: "er", source: "receiver-1", target: ORDER_ID },
+    // 單頭 → 訂單左側 header
+    { id: "ev", source: "vendor-1", target: ORDER_ID, targetHandle: "header" },
+    { id: "er", source: "receiver-1", target: ORDER_ID, targetHandle: "header" },
   ];
+  // 一排空白:訂單右側 items → 品名(head),再往右串接
   FIELD_KINDS.forEach((field, i) => {
     const id = `field-init-${i}`;
-    nodes.push({ id, type: "field", position: { x: 40 + i * 150, y: 300 }, data: { field, value: "" } });
+    nodes.push({ id, type: "field", position: { x: 660 + i * 150, y: 120 }, data: { field, value: "" } });
     if (i > 0) edges.push({ id: `ef-init-${i}`, source: `field-init-${i - 1}`, target: id });
   });
-  edges.push({ id: "ef-init-order", source: `field-init-${FIELD_KINDS.length - 1}`, target: ORDER_ID });
+  edges.push({ id: "ef-init-order", source: ORDER_ID, sourceHandle: "items", target: "field-init-0" });
   return { nodes, edges };
 }
 
@@ -84,6 +87,7 @@ function VisualOrderInner() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [processItems, setProcessItems] = useState<ProcessItem[]>([]);
+  const [specs, setSpecs] = useState<Spec[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [recent, setRecent] = useState<Combo[]>(() => loadRecent());
   const [error, setError] = useState<string | null>(null);
@@ -97,10 +101,11 @@ function VisualOrderInner() {
   const seq = useRef(100);
 
   useEffect(() => {
-    Promise.all([productsApi.list(), processItemsApi.list(), companiesApi.list()])
-      .then(([ps, pis, cs]) => {
+    Promise.all([productsApi.list(), processItemsApi.list(), specsApi.list(), companiesApi.list()])
+      .then(([ps, pis, ss, cs]) => {
         setProducts(ps);
         setProcessItems(pis);
+        setSpecs(ss);
         setCompanies(cs);
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : "載入主檔失敗"));
@@ -150,10 +155,13 @@ function VisualOrderInner() {
       const nid = () => `n-${++seq.current}`;
 
       if (payload.kind === "company") {
+        const id = nid();
         newNodes.push({
-          id: nid(), type: "company", position: pos,
+          id, type: "company", position: pos,
           data: { role: payload.role, companyId: payload.companyId ?? "" },
         });
+        // 自動接到訂單左側 header
+        newEdges.push({ id: `e-${id}-header`, source: id, target: ORDER_ID, targetHandle: "header" });
       } else if (payload.kind === "field") {
         newNodes.push({
           id: nid(), type: "field", position: pos,
@@ -170,13 +178,16 @@ function VisualOrderInner() {
           return combo.unit;
         };
         let prev: string | null = null;
+        let head: string | null = null;
         FIELD_KINDS.forEach((field, i) => {
           const id = nid();
+          if (i === 0) head = id;
           newNodes.push({ id, type: "field", position: { x: pos.x + i * 150, y: pos.y }, data: { field, value: valueOf(field) } });
           if (prev) newEdges.push({ id: `e-${prev}-${id}`, source: prev, target: id });
           prev = id;
         });
-        if (prev) newEdges.push({ id: `e-${prev}-order`, source: prev, target: ORDER_ID });
+        // 訂單右側 items → 排的 head(品名)
+        if (head) newEdges.push({ id: `e-order-${head}`, source: ORDER_ID, sourceHandle: "items", target: head });
       }
 
       setNodes((ns) => [...ns, ...newNodes]);
@@ -271,6 +282,7 @@ function VisualOrderInner() {
               receivers={receivers}
               products={products}
               processItems={processItems}
+              specs={specs}
               recent={recent}
               startDrag={startDrag}
               onCollapse={() => setPaletteOpen(false)}

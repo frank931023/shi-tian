@@ -7,8 +7,8 @@ from app.core.db import db
 from app.core.responses import ok
 from app.core.security import admin_required
 from app.core.validation import validate_body
-from app.models import ProcessItem, Product
-from app.schemas.master import ProcessItemIn, ProductIn
+from app.models import ProcessItem, Product, Spec
+from app.schemas.master import ProcessItemIn, ProductIn, SpecIn
 from app.services import audit_service
 
 products_bp = Blueprint("products", __name__)
@@ -58,3 +58,26 @@ def create_process_item(payload: ProcessItemIn):
     audit_service.record("create_process_item", "process_item", item.id)
     db.session.commit()
     return ok(item.to_dict(), 201)
+
+
+# ---- 規格 ----
+@products_bp.get("/specs")
+@login_required
+def list_specs():
+    specs = db.session.scalars(
+        db.select(Spec).where(Spec.is_active.is_(True)).order_by(Spec.name)
+    ).all()
+    return ok([s.to_dict() for s in specs])
+
+
+@products_bp.post("/specs")
+@login_required
+@admin_required
+@validate_body(SpecIn)
+def create_spec(payload: SpecIn):
+    spec = Spec(**payload.model_dump())
+    db.session.add(spec)
+    db.session.flush()
+    audit_service.record("create_spec", "spec", spec.id)
+    db.session.commit()
+    return ok(spec.to_dict(), 201)

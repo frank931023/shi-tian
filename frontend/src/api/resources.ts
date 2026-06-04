@@ -7,6 +7,7 @@ import type {
   Paginated,
   ProcessItem,
   Product,
+  Spec,
   User,
 } from "../lib/types";
 
@@ -39,6 +40,11 @@ export const processItemsApi = {
   list: () => api<ProcessItem[]>("/process-items"),
   create: (body: { name: string }) =>
     api<ProcessItem>("/process-items", { method: "POST", body }),
+};
+
+export const specsApi = {
+  list: () => api<Spec[]>("/specs"),
+  create: (body: { name: string }) => api<Spec>("/specs", { method: "POST", body }),
 };
 
 // ---- 訂單 ----

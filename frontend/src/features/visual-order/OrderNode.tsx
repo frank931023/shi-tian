@@ -7,8 +7,15 @@ export default function OrderNode() {
 
   return (
     <div className="w-56 rounded-2xl border-2 border-brand bg-white p-4 shadow-lg">
-      <Handle type="target" position={Position.Left} className="!h-3.5 !w-3.5 !bg-brand" />
+      {/* 左側:接 廠商/接收 單頭 */}
+      <Handle id="header" type="target" position={Position.Left} className="!h-3.5 !w-3.5 !bg-amber-500" />
+      {/* 右側:接 多排品項 */}
+      <Handle id="items" type="source" position={Position.Right} className="!h-3.5 !w-3.5 !bg-blue-500" />
       <p className="text-center text-base font-bold text-brand">訂單</p>
+      <div className="flex justify-between px-1 text-[10px] text-slate-400">
+        <span>← 單頭</span>
+        <span>品項 →</span>
+      </div>
       <div className="mt-3 rounded-xl bg-slate-50 p-3 text-center">
         <p className="text-2xl font-bold text-brand">{rows.length} 排</p>
         <p className="text-xs text-slate-500">合計數量 {totalQty}</p>

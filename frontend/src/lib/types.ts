@@ -34,6 +34,12 @@ export interface ProcessItem {
   is_active: boolean;
 }
 
+export interface Spec {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
 export interface OrderItem {
   id?: number;
   sort_order?: number;

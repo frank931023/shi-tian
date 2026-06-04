@@ -4,7 +4,7 @@
 // - 規格/數量/單位:沒有主檔 → 提供常用值與「自訂」空白節點
 // - 最近使用組合:整排五欄一次拖出
 import { useState } from "react";
-import type { Company, ProcessItem, Product } from "../../lib/types";
+import type { Company, ProcessItem, Product, Spec } from "../../lib/types";
 import type { DragPayload } from "./context";
 import type { Combo } from "./recentCombos";
 
@@ -13,6 +13,7 @@ interface Props {
   receivers: Company[];
   products: Product[];
   processItems: ProcessItem[];
+  specs: Spec[];
   recent: Combo[];
   startDrag: (payload: DragPayload) => (e: React.DragEvent) => void;
   onCollapse: () => void;
@@ -75,7 +76,7 @@ function Section({
 }
 
 export default function Palette({
-  vendors, receivers, products, processItems, recent, startDrag, onCollapse,
+  vendors, receivers, products, processItems, specs, recent, startDrag, onCollapse,
 }: Props) {
   return (
     <div className="flex h-full flex-col">
@@ -119,8 +120,11 @@ export default function Palette({
           <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "field", field: "加工" })} accent />
         </Section>
 
-        <Section title="規格">
-          <Chip label="＋ 規格(自填)" onDragStart={startDrag({ kind: "field", field: "規格" })} accent />
+        <Section title="規格" count={specs.length}>
+          {specs.map((s) => (
+            <Chip key={s.id} label={s.name} onDragStart={startDrag({ kind: "field", field: "規格", value: s.name })} />
+          ))}
+          <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "field", field: "規格" })} accent />
         </Section>
 
         <Section title="數量 / 單位">
