@@ -29,7 +29,7 @@ function getCookie(name: string): string | null {
 }
 
 interface RequestOptions {
-  method?: "GET" | "POST" | "PUT" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   // 查詢字串參數
   params?: Record<string, string | number | undefined | null>;

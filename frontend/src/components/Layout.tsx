@@ -19,7 +19,8 @@ const NAV: NavItem[] = [
   { to: "/orders/build", label: "建單", icon: "➕" },
   { to: "/orders", label: "訂單", icon: "📋" },
   { to: "/reports", label: "報表", icon: "📊" },
-  { to: "/masters", label: "主檔", icon: "🗂️", adminOnly: true },
+  { to: "/masters", label: "主檔", icon: "🗂️" },
+  { to: "/settings", label: "設定", icon: "⚙️" },
 ];
 
 export default function Layout() {

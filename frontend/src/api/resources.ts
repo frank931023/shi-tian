@@ -104,6 +104,21 @@ export const ordersApi = {
     }),
 };
 
+// ---- 使用者管理(admin)----
+export interface UserUpdate {
+  display_name?: string;
+  role?: "admin" | "operator";
+  is_active?: boolean;
+  password?: string;
+}
+export const usersApi = {
+  list: () => api<User[]>("/users"),
+  create: (body: { username: string; display_name?: string; role: "admin" | "operator"; password: string }) =>
+    api<User>("/users", { method: "POST", body }),
+  update: (id: number, body: UserUpdate) =>
+    api<User>(`/users/${id}`, { method: "PATCH", body }),
+};
+
 // ---- 點陣套表校正(Phase 7)----
 export const printingApi = {
   calibrationUrl: () => "/api/print/calibration",
