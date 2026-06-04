@@ -8,9 +8,11 @@
 from datetime import date, datetime
 
 from flask import Blueprint, request
+from flask_login import current_user, login_required
 
 from app.core.db import db
 from app.core.responses import err, ok
+from app.core.security import admin_required
 from app.core.validation import validate_body
 from app.models import Order, OrderItem
 from app.schemas.order import OrderIn
@@ -29,6 +31,7 @@ def _parse_date(value: str | None) -> date | None:
 
 
 @orders_bp.get("/orders")
+@login_required
 def list_orders():
     args = request.args
 
@@ -91,6 +94,7 @@ def list_orders():
 
 
 @orders_bp.get("/orders/<int:order_id>")
+@login_required
 def get_order(order_id: int):
     order = db.session.get(Order, order_id)
     if not order:
@@ -99,9 +103,11 @@ def get_order(order_id: int):
 
 
 @orders_bp.post("/orders")
+@login_required
 @validate_body(OrderIn)
 def create_order(payload: OrderIn):
     order = order_service.create_order(payload)
+    order.created_by = current_user.id  # 記錄建單者(權限與稽核用)
     db.session.flush()
     audit_service.record("create_order", "order", order.id, {"order_no": order.order_no})
     db.session.commit()
@@ -109,11 +115,15 @@ def create_order(payload: OrderIn):
 
 
 @orders_bp.put("/orders/<int:order_id>")
+@login_required
 @validate_body(OrderIn)
 def update_order(order_id: int, payload: OrderIn):
     order = db.session.get(Order, order_id)
     if not order:
         return err("not_found", "找不到該訂單", 404)
+    # 授權:operator 只能改自己建的單;admin 不限
+    if current_user.role != "admin" and order.created_by != current_user.id:
+        return err("forbidden", "你只能修改自己建立的單", 403)
     order_service.update_order(order, payload)
     audit_service.record("update_order", "order", order.id, {"order_no": order.order_no})
     db.session.commit()
@@ -121,8 +131,10 @@ def update_order(order_id: int, payload: OrderIn):
 
 
 @orders_bp.delete("/orders/<int:order_id>")
+@login_required
+@admin_required
 def delete_order(order_id: int):
-    # Phase 2 會把刪除限制為 admin;這裡先做掉功能。
+    # 刪除限 admin(operator 不可刪資料,CLAUDE.md §5)
     order = db.session.get(Order, order_id)
     if not order:
         return err("not_found", "找不到該訂單", 404)

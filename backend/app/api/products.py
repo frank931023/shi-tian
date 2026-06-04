@@ -1,9 +1,11 @@
 """品名 + 加工項目主檔 API。"""
 
 from flask import Blueprint
+from flask_login import login_required
 
 from app.core.db import db
 from app.core.responses import ok
+from app.core.security import admin_required
 from app.core.validation import validate_body
 from app.models import ProcessItem, Product
 from app.schemas.master import ProcessItemIn, ProductIn
@@ -14,6 +16,7 @@ products_bp = Blueprint("products", __name__)
 
 # ---- 品名 ----
 @products_bp.get("/products")
+@login_required
 def list_products():
     products = db.session.scalars(
         db.select(Product).where(Product.is_active.is_(True)).order_by(Product.name)
@@ -22,6 +25,8 @@ def list_products():
 
 
 @products_bp.post("/products")
+@login_required
+@admin_required
 @validate_body(ProductIn)
 def create_product(payload: ProductIn):
     product = Product(**payload.model_dump())
@@ -34,6 +39,7 @@ def create_product(payload: ProductIn):
 
 # ---- 加工項目 ----
 @products_bp.get("/process-items")
+@login_required
 def list_process_items():
     items = db.session.scalars(
         db.select(ProcessItem).where(ProcessItem.is_active.is_(True)).order_by(ProcessItem.name)
@@ -42,6 +48,8 @@ def list_process_items():
 
 
 @products_bp.post("/process-items")
+@login_required
+@admin_required
 @validate_body(ProcessItemIn)
 def create_process_item(payload: ProcessItemIn):
     item = ProcessItem(**payload.model_dump())

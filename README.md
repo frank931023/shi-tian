@@ -24,7 +24,7 @@
 
 - [x] **Phase 0** — 專案骨架(可運行的空骨架、health API、反向代理串接)
 - [x] **Phase 1** — 資料模型 + CRUD API(7 張表、Alembic migration、訂單/主檔 CRUD、後端重算金額、pydantic 驗證)
-- [ ] Phase 2 — 登入與權限
+- [x] **Phase 2** — 登入與權限(bcrypt、session、admin/operator 分權、CSRF、login rate limit、audit_log)
 - [ ] Phase 3 — 表單模式 + 資料管理介面
 - [ ] Phase 4 — PDF + 一般印表機列印
 - [ ] Phase 5 — 觸控建單最佳化
@@ -134,6 +134,33 @@ curl localhost:8000/api/orders
 
 驗收重點:建單金額由後端重算(前端塞假 `amount` 無效)、改品名主檔不影響舊單(快照)、
 list 可依日期/廠商/品名篩選分頁、migration 可重跑可回滾。
+
+---
+
+## Phase 2 — 登入與權限
+
+### 建立第一個 admin
+
+```bash
+cd backend && . .venv/Scripts/activate
+$env:FLASK_APP="wsgi.py"; $env:DATABASE_URL="postgresql+psycopg://shitian_app:devpassword@localhost:5433/shitian"
+flask create-admin --username admin --display-name 管理員
+# 會互動詢問密碼;密碼以 bcrypt 雜湊儲存
+```
+
+### 認證/授權設計
+
+- **認證**:Flask-Login session cookie(`HttpOnly`/`SameSite=Lax`/正式環境 `Secure`)。
+- **授權**:`admin` 可改主檔、刪資料、看全部;`operator` 只能建單、改自己建的單。
+- **CSRF**:登入後前端取得 `csrf`(回應 body 與 `csrf_token` cookie 各一份),
+  之後 `POST/PUT/DELETE` 需在 `X-CSRF-Token` header 帶上,後端用同步器 token 比對。
+- **rate limit**:login 端點 10 次/分(開發用記憶體儲存;正式環境改 Redis,見 Phase 8)。
+
+### 驗證 Phase 2
+
+```bash
+DATABASE_URL="sqlite:///smoke2.db" SECRET_KEY=test SESSION_COOKIE_SECURE=false PYTHONPATH=. python tests/smoke_phase2.py
+```
 
 ---
 

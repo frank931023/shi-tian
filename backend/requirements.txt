@@ -14,5 +14,7 @@ psycopg[binary]==3.2.3        # PostgreSQL 驅動(v3)
 # --- 驗證(Phase 1) ---
 pydantic==2.9.2
 
-# 註:Phase 2 會再加入
-#   passlib[bcrypt](密碼雜湊) / Flask-Login(session 認證) / Flask-Limiter(rate limit)
+# --- 認證 / 授權(Phase 2) ---
+bcrypt==4.2.0                 # 密碼雜湊(直接使用,避開 passlib 相容性問題)
+Flask-Login==0.6.3            # session 認證
+Flask-Limiter==3.8.0          # rate limit(至少對 login)

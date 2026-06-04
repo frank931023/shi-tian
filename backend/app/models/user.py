@@ -1,9 +1,11 @@
-"""使用者(Phase 2 才接認證,Phase 1 先把表建好,orders.created_by 會關聯到這)。"""
+"""使用者。UserMixin 提供 Flask-Login 需要的 is_authenticated / get_id 等屬性。"""
+
+from flask_login import UserMixin
 
 from app.core.db import db
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)

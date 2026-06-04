@@ -4,9 +4,11 @@ Phase 1 先不做權限;Phase 2 會把「新增/修改主檔」限制為 admin�
 """
 
 from flask import Blueprint, request
+from flask_login import login_required
 
 from app.core.db import db
 from app.core.responses import err, ok
+from app.core.security import admin_required
 from app.core.validation import validate_body
 from app.models import Company
 from app.schemas.master import CompanyIn
@@ -16,6 +18,7 @@ companies_bp = Blueprint("companies", __name__)
 
 
 @companies_bp.get("/companies")
+@login_required
 def list_companies():
     # ?role=vendor|receiver → 回傳該用途(含 both)的公司
     role = request.args.get("role")
@@ -28,6 +31,7 @@ def list_companies():
 
 
 @companies_bp.get("/companies/<int:company_id>")
+@login_required
 def get_company(company_id: int):
     company = db.session.get(Company, company_id)
     if not company:
@@ -36,6 +40,8 @@ def get_company(company_id: int):
 
 
 @companies_bp.post("/companies")
+@login_required
+@admin_required
 @validate_body(CompanyIn)
 def create_company(payload: CompanyIn):
     company = Company(**payload.model_dump())
