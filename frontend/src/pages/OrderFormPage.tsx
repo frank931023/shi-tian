@@ -3,7 +3,7 @@
 // - /orders/new?copy=ID    以某張單為範本複製成新單
 // - /orders/:id/edit       編輯既有單
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi } from "../api/resources";
 import { Button, Card, ErrorBar, Field, Input, Select, Spinner, Textarea } from "../components/ui";
@@ -173,6 +173,12 @@ export default function OrderFormPage() {
         <h1 className="text-xl font-bold sm:text-2xl">
           {editingId ? "編輯訂單" : copyId ? "複製成新單" : "建立新訂單"}
         </h1>
+        {/* 僅新建單時、且桌機才提供視覺化建單入口 */}
+        {!editingId && (
+          <Link to="/orders/visual" className="hidden lg:block">
+            <Button type="button" variant="secondary">🧩 視覺化建單</Button>
+          </Link>
+        )}
       </div>
 
       <ErrorBar message={error} />

@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import OrdersListPage from "./pages/OrdersListPage";
 import OrderFormPage from "./pages/OrderFormPage";
+import VisualOrderPage from "./pages/VisualOrderPage";
 import MastersPage from "./pages/MastersPage";
 import ReportsPage from "./pages/ReportsPage";
 
@@ -22,6 +23,7 @@ export default function App() {
       >
         <Route path="/orders" element={<OrdersListPage />} />
         <Route path="/orders/new" element={<OrderFormPage />} />
+        <Route path="/orders/visual" element={<VisualOrderPage />} />
         <Route path="/orders/:id/edit" element={<OrderFormPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/masters" element={<MastersPage />} />
