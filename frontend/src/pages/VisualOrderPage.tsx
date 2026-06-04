@@ -156,15 +156,23 @@ function VisualOrderInner() {
     },
     [setNodes],
   );
-  // 連線:同一個輸出點 / 輸入點只允許一條線 → 接新的會自動斷舊的(防止不合理分叉)
+  // 連線規則:
+  // - 欄位節點:每個輸出/輸入點只允許一條線(接新的自動斷舊的,防止分叉)。
+  // - 訂單節點:header(廠商+接收)與 items(多排)本來就該「一對多」,不做自動斷線。
   const onConnect = useCallback(
     (c: Connection) =>
       setEdges((es) => {
-        const cleaned = es.filter(
-          (e) =>
-            !(e.source === c.source && (e.sourceHandle ?? null) === (c.sourceHandle ?? null)) &&
-            !(e.target === c.target && (e.targetHandle ?? null) === (c.targetHandle ?? null)),
-        );
+        const cleaned = es.filter((e) => {
+          const sameOut =
+            c.source !== ORDER_ID &&
+            e.source === c.source &&
+            (e.sourceHandle ?? null) === (c.sourceHandle ?? null);
+          const sameIn =
+            c.target !== ORDER_ID &&
+            e.target === c.target &&
+            (e.targetHandle ?? null) === (c.targetHandle ?? null);
+          return !sameOut && !sameIn;
+        });
         return addEdge({ ...c, type: E }, cleaned);
       }),
     [setEdges],
@@ -177,6 +185,38 @@ function VisualOrderInner() {
   const onSelectionChange = useCallback((p: OnSelectionChangeParams) => {
     setSelectedIds(p.nodes.filter((n) => n.id !== ORDER_ID).map((n) => n.id));
   }, []);
+
+  // 算某欄位節點所在「這一排」已經有哪些欄位種類(沿 欄位↔欄位 連線走訪)
+  const fieldKindsInRow = useCallback(
+    (nodeId: string): Set<string> => {
+      const adj = new Map<string, string[]>();
+      const push = (a: string, b: string) => {
+        if (!adj.has(a)) adj.set(a, []);
+        adj.get(a)!.push(b);
+      };
+      for (const e of edges) {
+        const s = nodes.find((n) => n.id === e.source);
+        const t = nodes.find((n) => n.id === e.target);
+        if (s?.type === "field" && t?.type === "field") {
+          push(e.source, e.target);
+          push(e.target, e.source);
+        }
+      }
+      const seen = new Set<string>();
+      const stack = [nodeId];
+      const kinds = new Set<string>();
+      while (stack.length) {
+        const id = stack.pop()!;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const n = nodes.find((x) => x.id === id);
+        if (n?.type === "field") kinds.add((n.data as { field: string }).field);
+        for (const nb of adj.get(id) ?? []) if (!seen.has(nb)) stack.push(nb);
+      }
+      return kinds;
+    },
+    [nodes, edges],
+  );
 
   // 點欄位節點的「+」→ 開建議選單
   const suggestNext = useCallback((id: string, x: number, y: number) => setSuggest({ id, x, y }), []);
@@ -359,27 +399,32 @@ function VisualOrderInner() {
       <ErrorBar message={error} />
 
       <div className={`grid grid-cols-1 gap-3 ${paletteOpen ? "lg:grid-cols-[220px_1fr]" : "lg:grid-cols-[40px_1fr]"}`}>
-        {paletteOpen ? (
-          <Card className="h-full !p-3">
-            <Palette
-              vendors={vendors} receivers={receivers} products={products}
-              processItems={processItems} specs={specs} recent={recent}
-              startDrag={startDrag} onCollapse={() => setPaletteOpen(false)}
-            />
-          </Card>
-        ) : (
-          <button
-            onClick={() => setPaletteOpen(true)}
-            title="展開側欄"
-            className="hidden h-full items-start justify-center rounded-2xl border border-slate-200 bg-white pt-3 text-slate-500 hover:bg-slate-50 lg:flex"
-          >
-            ⟩
-          </button>
-        )}
+        {/* relative 外框 + absolute 內容:讓側欄高度由右側(畫布+預覽)決定,底部對齊預覽 */}
+        <div className="relative min-h-[300px]">
+          {paletteOpen ? (
+            <div className="lg:absolute lg:inset-0">
+              <Card className="flex h-full flex-col !p-3">
+                <Palette
+                  vendors={vendors} receivers={receivers} products={products}
+                  processItems={processItems} specs={specs} recent={recent}
+                  startDrag={startDrag} onCollapse={() => setPaletteOpen(false)}
+                />
+              </Card>
+            </div>
+          ) : (
+            <button
+              onClick={() => setPaletteOpen(true)}
+              title="展開側欄"
+              className="hidden h-full w-full items-start justify-center rounded-2xl border border-slate-200 bg-white pt-3 text-slate-500 hover:bg-slate-50 lg:absolute lg:inset-0 lg:flex"
+            >
+              ⟩
+            </button>
+          )}
+        </div>
 
         <div className="space-y-3">
           <VisualOrderProvider value={ctx}>
-            <div className="h-[72vh] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50" onDrop={onDrop} onDragOver={onDragOver}>
+            <div className="h-[60vh] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50" onDrop={onDrop} onDragOver={onDragOver}>
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -470,25 +515,33 @@ function VisualOrderInner() {
         />
       )}
 
-      {/* 「+」建議下一個欄位的浮動選單 */}
-      {suggest && (
-        <div
-          className="fixed z-50 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
-          style={{ left: suggest.x, top: suggest.y }}
-          onMouseLeave={() => setSuggest(null)}
-        >
-          <p className="px-3 py-1 text-xs text-slate-400">新增下一個欄位</p>
-          {FIELD_KINDS.map((f) => (
-            <button
-              key={f}
-              className="block w-full rounded-lg px-4 py-1.5 text-left text-sm hover:bg-slate-100"
-              onClick={() => createNext(f)}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* 「+」建議下一個欄位的浮動選單(排除這排已有的欄位) */}
+      {suggest && (() => {
+        const used = fieldKindsInRow(suggest.id);
+        const avail = FIELD_KINDS.filter((f) => !used.has(f));
+        return (
+          <div
+            className="fixed z-50 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+            style={{ left: suggest.x, top: suggest.y }}
+            onMouseLeave={() => setSuggest(null)}
+          >
+            <p className="px-3 py-1 text-xs text-slate-400">新增下一個欄位</p>
+            {avail.length === 0 ? (
+              <p className="px-4 py-1.5 text-sm text-slate-400">這排欄位已齊全</p>
+            ) : (
+              avail.map((f) => (
+                <button
+                  key={f}
+                  className="block w-full rounded-lg px-4 py-1.5 text-left text-sm hover:bg-slate-100"
+                  onClick={() => createNext(f)}
+                >
+                  {f}
+                </button>
+              ))
+            )}
+          </div>
+        );
+      })()}
 
       {/* 產生訂單前的確認 Modal:讓使用者核對選的內容 */}
       <Modal
