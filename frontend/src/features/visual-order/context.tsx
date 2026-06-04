@@ -1,48 +1,46 @@
-// 視覺化建單的共享狀態 context。
-// 讓畫布上的自訂節點(品項節點、訂單節點)能存取主檔下拉、更新自己的欄位、
-// 讀取總額、送出訂單 —— 不必把一堆 callback 塞進每個節點的 data。
+// 視覺化建單(欄位節點版)的共享狀態 context。
 import { createContext, useContext } from "react";
 import type { Company, ProcessItem, Product } from "../../lib/types";
 
-// 品項節點自身的欄位(存在 node.data)
-export interface ItemNodeData {
+// 欄位節點的種類
+export type FieldKind = "品名" | "規格" | "加工" | "數量" | "單位";
+export const FIELD_KINDS: FieldKind[] = ["品名", "規格", "加工", "數量", "單位"];
+
+// 各節點 data 形狀
+export interface FieldNodeData {
+  field: FieldKind;
+  value: string;
+  [k: string]: unknown;
+}
+export interface CompanyNodeData {
+  role: "vendor" | "receiver";
+  companyId: string;
+  [k: string]: unknown;
+}
+
+// 還原後的一排(給預覽/送出用)
+export interface ReconstructedRow {
   product_name: string;
   spec: string;
   process_item: string;
   quantity: string;
   unit: string;
-  unit_price: string;
-  [key: string]: unknown; // React Flow 的 data 需可索引
 }
-
-export const emptyItemData = (): ItemNodeData => ({
-  product_name: "",
-  spec: "",
-  process_item: "",
-  quantity: "",
-  unit: "",
-  unit_price: "",
-});
 
 export interface VisualOrderCtx {
   products: Product[];
   processItems: ProcessItem[];
   vendors: Company[];
   receivers: Company[];
-  vendorId: string;
-  receiverId: string;
-  setVendorId: (v: string) => void;
-  setReceiverId: (v: string) => void;
-  total: number;
-  connectedCount: number;
-  updateItem: (id: string, patch: Partial<ItemNodeData>) => void;
-  removeItem: (id: string) => void;
+  rows: ReconstructedRow[]; // 即時還原的排
+  totalQty: number;         // 合計數量(視覺建單不含單價)
+  updateNode: (id: string, patch: Record<string, unknown>) => void;
+  removeNode: (id: string) => void;
   submit: () => void;
   busy: boolean;
 }
 
 const Ctx = createContext<VisualOrderCtx | null>(null);
-
 export const VisualOrderProvider = Ctx.Provider;
 
 export function useVisualOrder(): VisualOrderCtx {
