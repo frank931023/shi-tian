@@ -18,3 +18,9 @@ pydantic==2.9.2
 bcrypt==4.2.0                 # 密碼雜湊(直接使用,避開 passlib 相容性問題)
 Flask-Login==0.6.3            # session 認證
 Flask-Limiter==3.8.0          # rate limit(至少對 login)
+
+# --- PDF(Phase 4) ---
+# WeasyPrint 需要系統庫(pango/cairo),見 Dockerfile;Windows 本機 venv 可略過。
+# pydyf 需固定,否則新版會與 weasyprint 62.3 不相容(super().transform 錯誤)。
+weasyprint==62.3
+pydyf==0.10.0

@@ -22,3 +22,17 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "true").lower() == "true"
+
+    # PDF 封存資料夾(正式環境掛 NAS 路徑;開發預設專案內 archive/)
+    ARCHIVE_DIR = os.environ.get("ARCHIVE_DIR", "archive")
+
+    # CUPS 佇列名稱(列印走伺服器端)
+    CUPS_NORMAL_QUEUE = os.environ.get("CUPS_NORMAL_QUEUE", "normal")
+    CUPS_DOTMATRIX_QUEUE = os.environ.get("CUPS_DOTMATRIX_QUEUE", "dotmatrix")
+
+    # 單據抬頭(公司資訊),可由環境覆蓋
+    COMPANY_NAME_1 = os.environ.get("COMPANY_NAME_1", "旭田興有限公司")
+    COMPANY_NAME_2 = os.environ.get("COMPANY_NAME_2", "旭田工業社")
+    COMPANY_ADDRESS = os.environ.get("COMPANY_ADDRESS", "台中市大里區仁義路112號")
+    COMPANY_TEL = os.environ.get("COMPANY_TEL", "04-2491-4552")
+    COMPANY_FAX = os.environ.get("COMPANY_FAX", "04-2491-1453")

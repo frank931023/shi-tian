@@ -6,8 +6,9 @@
 """
 
 from datetime import date, datetime
+from io import BytesIO
 
-from flask import Blueprint, request
+from flask import Blueprint, current_app, request, send_file
 from flask_login import current_user, login_required
 
 from app.core.db import db
@@ -16,7 +17,7 @@ from app.core.security import admin_required
 from app.core.validation import validate_body
 from app.models import Order, OrderItem
 from app.schemas.order import OrderIn
-from app.services import audit_service, order_service
+from app.services import audit_service, order_service, pdf_service, print_service
 
 orders_bp = Blueprint("orders", __name__)
 
@@ -128,6 +129,68 @@ def update_order(order_id: int, payload: OrderIn):
     audit_service.record("update_order", "order", order.id, {"order_no": order.order_no})
     db.session.commit()
     return ok(order.to_dict())
+
+
+@orders_bp.get("/orders/<int:order_id>/pdf")
+@login_required
+def preview_pdf(order_id: int):
+    """產生並回傳 PDF 供預覽/下載(不一定封存)。"""
+    order = db.session.get(Order, order_id)
+    if not order:
+        return err("not_found", "找不到該訂單", 404)
+    try:
+        pdf = pdf_service.order_to_pdf_bytes(order)
+    except pdf_service.PdfUnavailable as e:
+        return err("pdf_unavailable", str(e), 503)
+    return send_file(
+        BytesIO(pdf), mimetype="application/pdf",
+        as_attachment=False, download_name=f"{order.order_no}.pdf",
+    )
+
+
+@orders_bp.post("/orders/<int:order_id>/pdf")
+@login_required
+def generate_pdf(order_id: int):
+    """產生 PDF 並封存到 NAS 資料夾。"""
+    order = db.session.get(Order, order_id)
+    if not order:
+        return err("not_found", "找不到該訂單", 404)
+    try:
+        path = pdf_service.generate_and_archive(order)
+    except pdf_service.PdfUnavailable as e:
+        return err("pdf_unavailable", str(e), 503)
+    audit_service.record("generate_pdf", "order", order.id, {"path": str(path)})
+    db.session.commit()
+    return ok({"archived": str(path)})
+
+
+@orders_bp.post("/orders/<int:order_id>/print")
+@login_required
+def print_order(order_id: int):
+    """送印到 CUPS 佇列。body: {"target": "normal"|"dotmatrix"}(預設 normal)。"""
+    order = db.session.get(Order, order_id)
+    if not order:
+        return err("not_found", "找不到該訂單", 404)
+    target = (request.get_json(silent=True) or {}).get("target", "normal")
+    queue = (
+        current_app.config["CUPS_DOTMATRIX_QUEUE"]
+        if target == "dotmatrix"
+        else current_app.config["CUPS_NORMAL_QUEUE"]
+    )
+    # 先確保 PDF 已封存(順便當列印來源)
+    try:
+        path = pdf_service.generate_and_archive(order)
+    except pdf_service.PdfUnavailable as e:
+        return err("pdf_unavailable", str(e), 503)
+    try:
+        job = print_service.print_pdf(path, queue)
+    except print_service.PrintError as e:
+        return err(e.code, str(e), 503)
+    # 標記為已列印
+    order.status = "printed"
+    audit_service.record("print_order", "order", order.id, {"queue": queue, "job": job})
+    db.session.commit()
+    return ok({"queue": queue, "job": job, "status": order.status})
 
 
 @orders_bp.delete("/orders/<int:order_id>")

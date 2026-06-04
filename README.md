@@ -26,7 +26,9 @@
 - [x] **Phase 1** — 資料模型 + CRUD API(7 張表、Alembic migration、訂單/主檔 CRUD、後端重算金額、pydantic 驗證)
 - [x] **Phase 2** — 登入與權限(bcrypt、session、admin/operator 分權、CSRF、login rate limit、audit_log)
 - [x] **Phase 3** — 前端表單模式 + 資料管理(登入、建單/改單/複製、清單篩選分頁、主檔管理,RWD 手機/平板/筆電)
-- [ ] Phase 4 — PDF + 一般印表機列印
+- [x] **視覺化建單**(額外功能)— React Flow 節點畫布拖曳組單,共用同一支建單 API
+- [x] **Phase 4** — PDF 產生(WeasyPrint,中文字型)+ 一般印表機(CUPS)列印 + 封存
+- [ ] Phase 5 — 觸控建單最佳化
 - [ ] Phase 5 — 觸控建單最佳化
 - [ ] Phase 6 — 報表 + 圖表
 - [ ] Phase 7 — 點陣套表列印(進階)
@@ -200,6 +202,29 @@ cd frontend && npm run dev   # http://localhost:5173(/api 自動 proxy 到 8000)
 - **平板**:雙/三欄表單、底部導覽。
 - **筆電(lg+)**:左側邊欄導覽、訂單用完整表格。
 - 全站基準字級 18px、主要按鈕/輸入框高度 ≥ 48px(長輩友善、觸控好點)。
+
+---
+
+## Phase 4 — PDF + 列印
+
+- `GET  /api/orders/{id}/pdf`:即時產生 PDF 預覽/下載(瀏覽器直接開)。
+- `POST /api/orders/{id}/pdf`:產生並封存到 `ARCHIVE_DIR/<YYYY-MM>/<單號>.pdf`。
+- `POST /api/orders/{id}/print` body `{"target":"normal"|"dotmatrix"}`:送到 CUPS 佇列。
+
+> **為什麼列印走伺服器端**:前端只發「印這張」指令,由 NAS 上的 CUPS 送印 →
+> 平板/手機免裝驅動、不依賴特定裝置,最穩定。
+>
+> **環境注意**:WeasyPrint 需要系統庫(pango/cairo)+ 中文字型、CUPS 是 Linux 專屬,
+> 都已包進**後端 Docker 映像**。Windows 本機 venv 沒有這些 → `/pdf` 會回 503 `pdf_unavailable`,
+> 屬正常。**要測 PDF 請用 Docker 跑後端**(見下方),或部署到 NAS。
+
+驗證(在後端容器內,中文 PDF 已實測可產生):
+```bash
+docker compose build backend
+docker compose run --rm --no-deps -v "${PWD}/backend/tests:/app/tests" \
+  -e SECRET_KEY=test -e DATABASE_URL=sqlite:// -e PYTHONPATH=/app \
+  backend python tests/smoke_pdf.py
+```
 
 ---
 

@@ -8,6 +8,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# 系統相依:
+# - WeasyPrint 需要 pango / cairo / gdk-pixbuf(PDF 排版)
+# - fonts-noto-cjk:中文字型(否則 PDF 中文會變方框)
+# - cups-client:提供 lp 指令(送印到 CUPS;Phase 4/7)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf-2.0-0 \
+    libcairo2 libffi8 fonts-noto-cjk \
+    cups-client \
+    && rm -rf /var/lib/apt/lists/*
+
 # 先只複製 requirements,安裝相依 —— 之後改程式碼不會重裝套件
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

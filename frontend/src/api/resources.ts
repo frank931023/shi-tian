@@ -76,4 +76,11 @@ export const ordersApi = {
   update: (id: number, body: OrderInput) =>
     api<Order>(`/orders/${id}`, { method: "PUT", body }),
   remove: (id: number) => api<{ deleted: number }>(`/orders/${id}`, { method: "DELETE" }),
+  // PDF 預覽走瀏覽器直接開(GET 帶 cookie),這裡只提供 URL
+  pdfUrl: (id: number) => `/api/orders/${id}/pdf`,
+  print: (id: number, target: "normal" | "dotmatrix" = "normal") =>
+    api<{ queue: string; job: string; status: string }>(`/orders/${id}/print`, {
+      method: "POST",
+      body: { target },
+    }),
 };

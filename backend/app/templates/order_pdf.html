@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<style>
+  @page { size: A4 portrait; margin: 12mm 10mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans CJK TC", "Noto Sans TC", sans-serif; color: #111; font-size: 12px; }
+
+  .head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .company { line-height: 1.3; }
+  .company .c1 { font-size: 20px; font-weight: 700; }
+  .company .c2 { font-size: 20px; font-weight: 700; }
+  .title { text-align: center; }
+  .title .t { font-size: 26px; font-weight: 700; letter-spacing: 8px; }
+  .meta { text-align: right; font-size: 11px; line-height: 1.5; }
+  .meta .no { color: #c00; font-weight: 700; font-size: 14px; }
+
+  .parties { display: flex; gap: 30px; margin: 8px 0; }
+  .parties .field { font-size: 14px; }
+  .parties .label { color: #333; }
+  .parties .value { font-weight: 700; border-bottom: 1px solid #333; padding: 0 12px; min-width: 120px; display: inline-block; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { border: 1px solid #333; padding: 5px 4px; text-align: center; }
+  th { background: #f2f2f2; font-weight: 700; }
+  td.left { text-align: left; }
+  td.num { text-align: right; }
+  tfoot td { font-weight: 700; }
+
+  .foot { display: flex; justify-content: space-between; margin-top: 16px; font-size: 12px; }
+  .foot .sign { width: 30%; }
+  .foot .line { border-bottom: 1px solid #333; height: 28px; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="company">
+      <div class="c1">{{ company.name1 }}</div>
+      <div class="c2">{{ company.name2 }}</div>
+    </div>
+    <div class="title">
+      <div class="t">移　轉　單</div>
+    </div>
+    <div class="meta">
+      <div>NO. <span class="no">{{ order.order_no }}</span></div>
+      <div>{{ company.address }}</div>
+      <div>TEL：{{ company.tel }}</div>
+      <div>FAX：{{ company.fax }}</div>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div class="field"><span class="label">廠商單位：</span><span class="value">{{ order.vendor_name or '' }}</span></div>
+    <div class="field"><span class="label">接收單位：</span><span class="value">{{ order.receiver_name or '' }}</span></div>
+    <div class="field"><span class="label">日期：</span><span class="value">{{ order.order_date }}</span></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:5%">#</th>
+        <th style="width:16%">品名</th>
+        <th style="width:14%">規格</th>
+        <th style="width:18%">加工項目</th>
+        <th style="width:9%">淨重(KG)</th>
+        <th style="width:8%">數量</th>
+        <th style="width:6%">單位</th>
+        <th style="width:9%">單價</th>
+        <th style="width:9%">金額</th>
+        <th style="width:6%">備註</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for it in items %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td class="left">{{ it.product_name }}</td>
+        <td>{{ it.spec or '' }}</td>
+        <td class="left">{{ it.process_item or '' }}</td>
+        <td class="num">{{ '%.2f'|format(it.net_weight_kg) if it.net_weight_kg is not none else '' }}</td>
+        <td class="num">{{ '%g'|format(it.quantity) if it.quantity is not none else '' }}</td>
+        <td>{{ it.unit or '' }}</td>
+        <td class="num">{{ '%g'|format(it.unit_price) if it.unit_price is not none else '' }}</td>
+        <td class="num">{{ '%.2f'|format(it.amount) if it.amount is not none else '' }}</td>
+        <td>{{ it.remark or '' }}</td>
+      </tr>
+      {% endfor %}
+      {# 補滿空白列讓表格高度穩定 #}
+      {% for _ in range(blank_rows) %}
+      <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="8" style="text-align:right">總金額</td>
+        <td class="num">{{ '%.2f'|format(order.total_amount) }}</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  {% if order.note %}<p style="margin-top:8px">備註：{{ order.note }}</p>{% endif %}
+
+  <div class="foot">
+    <div class="sign">移出單位<div class="line"></div></div>
+    <div class="sign">接收單位<div class="line"></div></div>
+    <div class="sign">備註<div class="line"></div></div>
+  </div>
+</body>
+</html>
