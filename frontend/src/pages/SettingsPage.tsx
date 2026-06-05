@@ -19,7 +19,7 @@ export default function SettingsPage() {
       <Card className="space-y-1">
         <h2 className="font-bold">我的帳號</h2>
         <p className="text-sm text-slate-500">
-          帳號 {user?.username} · {user?.role === "admin" ? "管理員" : "操作員"}
+          帳號 {user?.username}{user?.role === "admin" && " · 管理員"}
         </p>
       </Card>
 
