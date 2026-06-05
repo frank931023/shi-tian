@@ -1,10 +1,14 @@
 # ============================================================
-# Phase 0 骨架:把四個服務串起來
+# 基底 compose(dev / prod 共用)
 #   proxy(Caddy)→ frontend(nginx+React)/ backend(Flask+gunicorn)
-#   backend → db(PostgreSQL)  ※ Phase 0 後端還沒真的連 db,但服務先備好
+#   backend → db(PostgreSQL) + redis(rate limit 儲存)
 #
-# 對外只有 proxy 開埠;frontend / backend / db 都只在內部網路,
-# 不直接對公網曝露(CLAUDE.md §5)。
+# 對外只有 proxy 開埠;frontend / backend / db / redis 都只在內部網路。
+#
+# 用法:
+#   開發(容器):  docker compose up -d                       # 自動套 override(dev)
+#   正式:        docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   (或用 scripts/dev-up.sh、scripts/prod-up.sh)
 # ============================================================
 
 services:
@@ -15,7 +19,6 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      # Caddyfile 裡用 {$SITE_ADDRESS} 取這個值(本機用 localhost)
       SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
@@ -28,7 +31,6 @@ services:
   frontend:
     build: ./frontend
     restart: unless-stopped
-    # 不對外開埠,只讓 proxy 在內部網路存取
     expose:
       - "80"
 
@@ -40,7 +42,7 @@ services:
       - "8000"
     depends_on:
       - db
-    # 容器自我健康檢查:打 /api/health
+      - redis
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s
@@ -56,12 +58,18 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      # 本機開發掛在專案內的 pgdata/(已被 .gitignore 排除)
-      # 正式部署在 NAS 時改成 NAS 實體路徑(見 Phase 8)
+      # 開發掛專案內 ./pgdata;正式在 prod compose 改成 NAS 實體路徑
       - ./pgdata:/var/lib/postgresql/data
-    # db 不對外開埠,只在內部網路供 backend 連線
     expose:
       - "5432"
+
+  redis:
+    # 用途:Flask-Limiter 的 rate limit 計數共用儲存(多 worker 才精準);
+    # 未來也可拿來做快取 / session 共享。資料可揮發,不需備份。
+    image: redis:7-alpine
+    restart: unless-stopped
+    expose:
+      - "6379"
 
 volumes:
   caddy_data:

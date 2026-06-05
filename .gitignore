@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+!.env.dev.example
+!.env.prod.example
 
 # ---- python / backend ----
 __pycache__/
@@ -36,3 +38,6 @@ backend/config/
 .idea/
 .DS_Store
 Thumbs.db
+
+
+claude_dev/

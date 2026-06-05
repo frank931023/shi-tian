@@ -1,18 +1,18 @@
 # ============================================================
-# 本機開發用的覆蓋設定(docker compose 會自動合併這個檔)。
+# 開發覆蓋設定(docker compose 會自動合併;dev 用)。
+# 把 db / backend 對本機開埠,方便開發時直連測試。
 #
-# 用途:把 db 的 5432 埠對應到本機,方便你「db 跑在 docker、
-# 前後端用 venv / npm 在本機跑」的開發模式(熱重載最快)。
-#
-# ⚠ 正式部署到 NAS 時不要用這個檔(見 Phase 8 的正式 compose),
-#    正式環境 db 不該對外開埠。可用:
-#       docker compose -f docker-compose.yml up
-#    來忽略本覆蓋檔。
+# ⚠ 正式環境不要套用本檔(用 prod compose):
+#    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 # ============================================================
 
 services:
   db:
-    # 本機 5432 常被其他 Postgres 佔用,改用 5433 對外;容器內仍是 5432。
-    # 本機 venv 連線字串用:postgresql+psycopg://...@localhost:5433/shitian
+    # 本機 5432 常被佔用,對外用 5433(容器內仍 5432)
     ports:
       - "5433:5432"
+
+  backend:
+    # 開發時直接打 http://localhost:8000/api/...(免經 Caddy)
+    ports:
+      - "8000:8000"

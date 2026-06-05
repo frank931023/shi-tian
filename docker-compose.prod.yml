@@ -1,0 +1,23 @@
+# ============================================================
+# 正式環境覆蓋設定(明確指定才會套用):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# 與基底的差異:
+# - 強制安全旗標(不依賴 .env 有沒有設對)
+# - rate limit 用 Redis(多 worker 精準)
+# - db 資料改掛 NAS 實體路徑(請改成你的)
+# ============================================================
+
+services:
+  backend:
+    environment:
+      # 正式一律走 HTTPS + Caddy 之後
+      SESSION_COOKIE_SECURE: "true"
+      TRUST_PROXY: "true"
+      # 多 worker 共用限流計數
+      RATELIMIT_STORAGE_URI: "redis://redis:6379"
+
+  db:
+    volumes:
+      # 改成你的 NAS 實體路徑(納入 NAS 快照/備份)
+      - /volume1/docker/shitian/pgdata:/var/lib/postgresql/data
