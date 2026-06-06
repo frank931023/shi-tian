@@ -1,0 +1,24 @@
+# ============================================================
+# 部署端用:把 backend / frontend 改成「拉 GHCR 現成映像」而非在本機 build。
+# 配合 CD(.github/workflows/cd.yml)推上去的標籤,用 IMAGE_TAG 切 dev / prod。
+#
+# 正式 NAS:
+#   IMAGE_TAG=prod docker compose \
+#     -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml \
+#     pull
+#   IMAGE_TAG=prod docker compose \
+#     -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.images.yml \
+#     up -d
+#
+# dev 機器:把上面的 docker-compose.prod.yml 拿掉、IMAGE_TAG=dev 即可。
+#
+# 注意:GHCR 套件預設為 private,部署機器要先登入才能 pull:
+#   echo <PAT_有_read:packages> | docker login ghcr.io -u frank931023 --password-stdin
+# (或把這兩個套件在 GitHub 上設為 public,就不必登入)
+# ============================================================
+
+services:
+  backend:
+    image: ghcr.io/frank931023/shitian-backend:${IMAGE_TAG:-prod}
+  frontend:
+    image: ghcr.io/frank931023/shitian-frontend:${IMAGE_TAG:-prod}
