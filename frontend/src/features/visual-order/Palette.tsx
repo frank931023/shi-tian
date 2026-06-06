@@ -120,9 +120,10 @@ export default function Palette({
 
         <Section title="規格" count={specs.length}>
           {specs.map((s) => (
-            <Chip key={s.id} label={s.name} onDragStart={startDrag({ kind: "field", field: "規格", value: s.name })} />
+            <Chip key={s.id} label={s.name} onDragStart={startDrag({ kind: "field", field: "規格1", value: s.name })} />
           ))}
-          <Chip label="＋ 自訂(打字)" onDragStart={startDrag({ kind: "field", field: "規格", custom: true })} accent />
+          <Chip label="＋ 規格1(打字)" onDragStart={startDrag({ kind: "field", field: "規格1", custom: true })} accent />
+          <Chip label="＋ 規格2(打字)" onDragStart={startDrag({ kind: "field", field: "規格2", custom: true })} accent />
         </Section>
 
         <Section title="數量">

@@ -1,0 +1,1807 @@
+[
+    {
+        "id": 100001,
+        "company": "筌振實業股份有限公司",
+        "address": "41343台中市霧峰區民生路198巷23弄8號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計-鍾's#44",
+                "company_fax": "04-2339-0412",
+                "company_phone": "04-2339-6189",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "甘's#57",
+                "company_fax": "04-2339-5258",
+                "company_phone": "04-2339-3163",
+                "mobile": ""
+            },
+            {
+                "id": 3,
+                "name": "溫S#55小宇#53 吳S#52",
+                "company_fax": "04-2339-5560",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 4,
+                "name": "黃武毅",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0937-794516"
+            },
+            {
+                "id": 5,
+                "name": "阿興",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0935-020787"
+            },
+            {
+                "id": 6,
+                "name": "阿得",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0928-305272"
+            }
+        ]
+    },
+    {
+        "id": 100002,
+        "company": "銓旺工具股份有限公司",
+        "address": "413台中市霧峰區民生路198巷23弄3號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林's #111",
+                "company_fax": "04-2332-5266",
+                "company_phone": "04-2332-5698",
+                "mobile": "0953-615153"
+            },
+            {
+                "id": 2,
+                "name": "凱凱#102",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0919-035887"
+            },
+            {
+                "id": 3,
+                "name": "林聖賢#105  小山#112",
+                "company_fax": "林函臻#108",
+                "company_phone": "會計 林'S#103",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100003,
+        "company": "金納利股份有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計 洪'S#117",
+                "company_fax": "04-2332-5266",
+                "company_phone": "04-2332-5698",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100004,
+        "company": "六宏工業股份有限公司",
+        "address": "40755台中市工業區工業10路10號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "謝'R#33",
+                "company_fax": "04-2359-1817",
+                "company_phone": "04-2359-3800",
+                "mobile": "0935-354562"
+            },
+            {
+                "id": 2,
+                "name": "會計廖's #13",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100005,
+        "company": "泰宇工業社",
+        "address": "41148台中市太平市光興路1266巷109之1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "朱'R",
+                "company_fax": "04-2273-7274",
+                "company_phone": "04-2277-3171",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "會計 大鐘's",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100006,
+        "company": "偉順股份有限公司",
+        "address": "42865台中市大雅區神林路一段36巷2號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "張's 會計/張'S",
+                "company_fax": "04-2569-1769",
+                "company_phone": "04-2569-0036",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100007,
+        "company": "具佳工業股份有限公司",
+        "address": "41280台中市大里區大里工業區12路31號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "HBS 盧's/金's(一廠)",
+                "company_fax": "04-2491-4366",
+                "company_phone": "04-2491-4399",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "老闆孟's",
+                "company_fax": "04-2491-4388",
+                "company_phone": "04-2491-7288",
+                "mobile": ""
+            },
+            {
+                "id": 3,
+                "name": "會計/陳's",
+                "company_fax": "",
+                "company_phone": "品管/劉'S 鐵桶",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100008,
+        "company": "涪鑫企業有限公司",
+        "address": "41161 台中市太平區永義路272號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "劉's 會計/陳'S",
+                "company_fax": "04-2277-9314",
+                "company_phone": "04-2278-0570",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "小高",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0911-128839"
+            },
+            {
+                "id": 3,
+                "name": "林'R",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0953-328908"
+            }
+        ]
+    },
+    {
+        "id": 100009,
+        "company": "鈺鑫金屬有限公司",
+        "address": "41148台中市太平區光興路1152巷17號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "陳's  鉦鑫/會計 劉's",
+                "company_fax": "04-2278-3826",
+                "company_phone": "04-2278-4540",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "田'R/朱'S",
+                "company_fax": "",
+                "company_phone": "04-2278-5771",
+                "mobile": "0923-614717"
+            },
+            {
+                "id": 3,
+                "name": "劉老闆",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0988-032999"
+            },
+            {
+                "id": 4,
+                "name": "小洪",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0988-195879"
+            },
+            {
+                "id": 5,
+                "name": "鈺鑫-老闆娘/詹'S",
+                "company_fax": "04-2276-2297",
+                "company_phone": "04-2279-9195",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100010,
+        "company": "傑揚工具股份有限公司",
+        "address": "41351台中市霧峰區草湖路135巷1弄31號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "李建穎#606",
+                "company_fax": "04-2339-1927",
+                "company_phone": "04-2339-2559",
+                "mobile": "0985-057782"
+            },
+            {
+                "id": 2,
+                "name": "隨'S#603",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0912-066985"
+            },
+            {
+                "id": 3,
+                "name": "姵雯#209",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 4,
+                "name": "會計-林's #301",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100011,
+        "company": "總淼企業股份有限公司",
+        "address": "41154台中市太平區大里工業區15路3號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "喆安/會計 張's",
+                "company_fax": "04-2271-4748",
+                "company_phone": "04-2271-1511",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "總淼/會計 許'S",
+                "company_fax": "04-2271-4702",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 3,
+                "name": "黃雅君",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0938-680666"
+            },
+            {
+                "id": 4,
+                "name": "朱'R",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100012,
+        "company": "原利興工業有限公司",
+        "address": "41258台中市大里區文心南路1316巷69號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "陳佳益(大)",
+                "company_fax": "04-2407-9805",
+                "company_phone": "04-2407-9809",
+                "mobile": "0937-113505"
+            },
+            {
+                "id": 2,
+                "name": "陳輝謙(小)",
+                "company_fax": "林's#18接頭",
+                "company_phone": "廖's 桿頭",
+                "mobile": "0937-113507"
+            },
+            {
+                "id": 3,
+                "name": "會計 張's",
+                "company_fax": "陳's HBS",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 4,
+                "name": "",
+                "company_fax": "李'S Bit套筒",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100013,
+        "company": "冠興達實業有限公司",
+        "address": "41148台中市太平區德利路180號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計林's  出貨/魏'S",
+                "company_fax": "04-2271-2471",
+                "company_phone": "04-2271-2656",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "陳文彥",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0985-199466"
+            }
+        ]
+    },
+    {
+        "id": 100014,
+        "company": "金泰豐工具有限公司",
+        "address": "41263台中市大里區大峰路473巷96號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "吳顯華",
+                "company_fax": "04-2496-7460",
+                "company_phone": "04-2496-8531",
+                "mobile": "0939-035769"
+            },
+            {
+                "id": 2,
+                "name": "東東",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0919-669697"
+            }
+        ]
+    },
+    {
+        "id": 100015,
+        "company": "諭成有限公司",
+        "address": "41263台中市大里區西湖路187巷92弄20號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林杰成#700",
+                "company_fax": "04-2492-6000",
+                "company_phone": "04-2491-2222",
+                "mobile": "0919-570328"
+            }
+        ]
+    },
+    {
+        "id": 100016,
+        "company": "廠務 鈺婷S#318(鐵桶)",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "蘇's#706(破壞)",
+                "company_fax": "黃'S#721",
+                "company_phone": "會計/鄭S#207",
+                "mobile": "0923-271677"
+            },
+            {
+                "id": 2,
+                "name": "吳'S#711(HBS)",
+                "company_fax": "邱's#703 家凰#702",
+                "company_phone": "資訊/陳'S#501",
+                "mobile": ""
+            },
+            {
+                "id": 3,
+                "name": "林'S#705(半品)",
+                "company_fax": "鄭'S#703 梁'S#720",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 4,
+                "name": "李姵潔#707",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100017,
+        "company": "昇揚金屬股份有限公司",
+        "address": "41275 台中市大里區塗城路852巷121號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "張孟慈(花花)  楊'S",
+                "company_fax": "04-2492-7149",
+                "company_phone": "04-2495-3142",
+                "mobile": "0931-299889"
+            },
+            {
+                "id": 2,
+                "name": "會計/林'S",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 3,
+                "name": "張奕凡",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0917-595568"
+            }
+        ]
+    },
+    {
+        "id": 100018,
+        "company": "龍熙企業股份有限公司",
+        "address": "412008 台中市大里區新仁路4街11號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "周'R#121",
+                "company_fax": "04-2278-2774",
+                "company_phone": "04-2278-2538",
+                "mobile": "0973-919589"
+            }
+        ]
+    },
+    {
+        "id": 100019,
+        "company": "展銘工具有限公司",
+        "address": "412037台中市大里區仁化路146號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林鴻文",
+                "company_fax": "04-2277-3437",
+                "company_phone": "04-2277-9668",
+                "mobile": "0935-368127"
+            }
+        ]
+    },
+    {
+        "id": 100020,
+        "company": "厚嘉工業有限公司",
+        "address": "41141台中市太平市新平路1段朱厝巷18之1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "厚嘉-蘇's",
+                "company_fax": "04-2276-9034",
+                "company_phone": "04-2273-2310",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "老闆 張召容",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100021,
+        "company": "祐增企業有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "祐增-張'S",
+                "company_fax": "04-2276-9034",
+                "company_phone": "04-2277-4668",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100022,
+        "company": "晟鋒科技工業有限公司",
+        "address": "414台中市烏日區溪壩里溪南路一段296號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "老闆-陳'R  會計/簡'S",
+                "company_fax": "04-2335-6710",
+                "company_phone": "04-2335-3587",
+                "mobile": "0923-136819"
+            }
+        ]
+    },
+    {
+        "id": 100023,
+        "company": "洺洋工具限公司",
+        "address": "412台中市大里區仁化路221巷21號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "洪'R",
+                "company_fax": "04-2493-6841",
+                "company_phone": "04-2493-6837",
+                "mobile": "0931-556195"
+            },
+            {
+                "id": 2,
+                "name": "會計/洪'S",
+                "company_fax": "",
+                "company_phone": "劉'S",
+                "mobile": "0982-029132"
+            }
+        ]
+    },
+    {
+        "id": 100024,
+        "company": "可埕有限公司",
+        "address": "411台中市太平區正光街75巷6號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "劉'S 會計/林'S",
+                "company_fax": "04-2271-1089",
+                "company_phone": "04-2271-0275",
+                "mobile": "0927-555793"
+            }
+        ]
+    },
+    {
+        "id": 100025,
+        "company": "寰球企業有限公司",
+        "address": "41252台中市大里區東昇路188-25號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "趙邱慶",
+                "company_fax": "04-2486-1202",
+                "company_phone": "04-2486-1201",
+                "mobile": "0926-855883"
+            },
+            {
+                "id": 2,
+                "name": "小楊",
+                "company_fax": "會計/林'S",
+                "company_phone": "",
+                "mobile": "0989-544580"
+            }
+        ]
+    },
+    {
+        "id": 100026,
+        "company": "仁廷企業有限公司",
+        "address": "41146台中市太平區精美路20號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "生管:曾'S#120   會計:劉'S",
+                "company_fax": "04-2275-7195",
+                "company_phone": "04-2275-7193",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "小王's",
+                "company_fax": "",
+                "company_phone": "萬象公/陳'S#121",
+                "mobile": "0922-868082"
+            },
+            {
+                "id": 3,
+                "name": "蕭'S",
+                "company_fax": "04-2271-6955",
+                "company_phone": "04-2271-6555",
+                "mobile": "0955-843922"
+            }
+        ]
+    },
+    {
+        "id": 100027,
+        "company": "雍昌工業有限公司",
+        "address": "412台中市大里區塗城路64號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "謝宜峰/林'S 會計/林's",
+                "company_fax": "04-2493-9735",
+                "company_phone": "04-2495-3458",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100028,
+        "company": "詮田有限公司",
+        "address": "411033台中市太平區興隆路一段76巷37弄36號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "蘇'S#27",
+                "company_fax": "04-2276-4417",
+                "company_phone": "04-2278-8451",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100029,
+        "company": "順豐企業社",
+        "address": "41263台中市大里區西湖路259號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "黃'R",
+                "company_fax": "04-2496-4443",
+                "company_phone": "04-2492-1529",
+                "mobile": "0933-531453"
+            }
+        ]
+    },
+    {
+        "id": 100030,
+        "company": "亞日亞企業股份有限公司",
+        "address": "407020台中市西屯區工業38路280號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "端'S#207",
+                "company_fax": "04-2350-2239",
+                "company_phone": "04-2350-2707",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100031,
+        "company": "帛勝工業有限公司",
+        "address": "41278台中市大里區光正路60巷33號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "楊'R/楊's",
+                "company_fax": "04-2492-7384",
+                "company_phone": "04-2492-4157",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100032,
+        "company": "龍崴股份有限公司",
+        "address": "40644台中市北屯區軍福18路137號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "黃春曉",
+                "company_fax": "04-2239-7229",
+                "company_phone": "04-2239-7228",
+                "mobile": "0963-232858"
+            }
+        ]
+    },
+    {
+        "id": 100033,
+        "company": "台品軒科技有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "張'S",
+                "company_fax": "",
+                "company_phone": "會計/周'S",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100034,
+        "company": "鐘佳企業股份有限公司",
+        "address": "41263台中市大里區草溪東路87號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "魏昭宗",
+                "company_fax": "04-2492-9769",
+                "company_phone": "04-2492-8769",
+                "mobile": "0911-622257"
+            },
+            {
+                "id": 2,
+                "name": "廠長/張'R 生管/黃'R  會計/顏'S",
+                "company_fax": "04-2492-8865",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100035,
+        "company": "嶸鎰企業有限公司",
+        "address": "43246 台中市大肚區王福街1020號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "湯'S#47 會計/邱'S",
+                "company_fax": "04-2693-5305",
+                "company_phone": "04-2693-5275",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "",
+                "company_fax": "",
+                "company_phone": "04-2693-1177(一廠)",
+                "mobile": "0936-492434"
+            }
+        ]
+    },
+    {
+        "id": 100036,
+        "company": "嘉軍有限公司",
+        "address": "50852彰化縣和美鎮新庄里彰新路二段243巷161號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "石'r",
+                "company_fax": "047-369-597",
+                "company_phone": "047-369-697",
+                "mobile": "0937-459596"
+            },
+            {
+                "id": 2,
+                "name": "會計/梁's",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100037,
+        "company": "吾達工業股份有限公司",
+        "address": "42877台中市大雅區振興路242-7號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "楊慶聰",
+                "company_fax": "04-2569-0598",
+                "company_phone": "04-2569-0336",
+                "mobile": "0928-311290"
+            },
+            {
+                "id": 2,
+                "name": "廖志欽",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0921-233577"
+            }
+        ]
+    },
+    {
+        "id": 100038,
+        "company": "安謚工業股份有限公司",
+        "address": "台中市烏日區環中路八段501巷57號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "謝先生",
+                "company_fax": "04-2335-1901",
+                "company_phone": "04-2335-8319",
+                "mobile": "0935-308086"
+            },
+            {
+                "id": 2,
+                "name": "蔡's",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100039,
+        "company": "鉅同有限公司",
+        "address": "41154台中市太平區大里工業區17路37號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "陳'r",
+                "company_fax": "04-2271-1987",
+                "company_phone": "04-2271-0548~9",
+                "mobile": "0988-567921"
+            },
+            {
+                "id": 2,
+                "name": "會計/徐'S",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100040,
+        "company": "宏鈺工業股份有限公司",
+        "address": "50091彰化市彰馬路160巷63弄20號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "楊明豐",
+                "company_fax": "047-689572",
+                "company_phone": "047-686420",
+                "mobile": "0936-295389"
+            }
+        ]
+    },
+    {
+        "id": 100041,
+        "company": "歐貿實業股份有限公司",
+        "address": "50082彰化市彰南路三段606號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "劉勇仁",
+                "company_fax": "047-321652",
+                "company_phone": "047-321651",
+                "mobile": "0935-373592"
+            },
+            {
+                "id": 2,
+                "name": "會計:林'S",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100042,
+        "company": "銳泰精密工具股份有限公司",
+        "address": "41151台中市太平區中山路一段162巷51之1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計#107林'S",
+                "company_fax": "04-2278-8415",
+                "company_phone": "04-2270-9006",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "柳's#201 陳經理#209",
+                "company_fax": "郭'S#207 胡'S#206",
+                "company_phone": "品管:潘'S#508",
+                "mobile": "0963-105502"
+            },
+            {
+                "id": 3,
+                "name": "楊龍泉",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0937-582580"
+            }
+        ]
+    },
+    {
+        "id": 100043,
+        "company": "磯慶實業股份有限公司",
+        "address": "41359台中市霧峰區中正路557巷21-1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "顧日文",
+                "company_fax": "04-2332-7915",
+                "company_phone": "04-2332-7908",
+                "mobile": "0980-308189"
+            },
+            {
+                "id": 2,
+                "name": "李'r",
+                "company_fax": "楊's#554",
+                "company_phone": "",
+                "mobile": "0958-355661"
+            },
+            {
+                "id": 3,
+                "name": "",
+                "company_fax": "鐵桶 黃'S#555",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100044,
+        "company": "鴻運手工具股份有限公司",
+        "address": "411台台中市太平區園區路98號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "徐'S",
+                "company_fax": "04-2491-3196",
+                "company_phone": "04-2491-3122",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100045,
+        "company": "協奕企業社",
+        "address": "41147台中市太平區光德路390巷109弄60號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "張秋恭",
+                "company_fax": "04-2270-5305",
+                "company_phone": "04-2275-1543",
+                "mobile": "0936-137625"
+            }
+        ]
+    },
+    {
+        "id": 100046,
+        "company": "潮洋工業社",
+        "address": "41260台中市大里區國中路十股巷186號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "",
+                "company_fax": "",
+                "company_phone": "04-2407-2829",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100047,
+        "company": "杰毅有限公司",
+        "address": "41147台中市太平區德明路320巷7號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計 楊's/蘇先生",
+                "company_fax": "04-2271-0526",
+                "company_phone": "04-2271-0528",
+                "mobile": "0932-535212"
+            }
+        ]
+    },
+    {
+        "id": 100048,
+        "company": "庭固有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "洪'R",
+                "company_fax": "",
+                "company_phone": "04-2492-8958",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100049,
+        "company": "宏宥五金工具有限公司",
+        "address": "54255南投市草屯鎮碧興路2段1408號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "曾'R",
+                "company_fax": "",
+                "company_phone": "049-2330717",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "陳'S",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100050,
+        "company": "力偕實業股份有限公司",
+        "address": "411008台中市太平區德明路215號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "黃銘冠",
+                "company_fax": "04-2271-4840",
+                "company_phone": "04-2271-2835",
+                "mobile": "0915-545950"
+            }
+        ]
+    },
+    {
+        "id": 100051,
+        "company": "中邑金屬股份有限公司",
+        "address": "41146台中市太平區鵬儀路246號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "謝'S#16 陳'S#32 劉's#25 會計:賴'S#46",
+                "company_fax": "04-2273-0808",
+                "company_phone": "04-2270-0838",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "秀華#27(鐵桶)",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100052,
+        "company": "鉦鑫實業有限公司",
+        "address": "41148台中市太平區光興路901巷17號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "大洪 0918-762251",
+                "company_fax": "04-2278-3826",
+                "company_phone": "04-2278-4540",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "小洪 0988-195879",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100053,
+        "company": "益川車業股份有限公司",
+        "address": "50084彰化市彰泰三街56號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "王先生",
+                "company_fax": "",
+                "company_phone": "047-369225",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100054,
+        "company": "彰陽工業有限公司",
+        "address": "41165台中市太平區永成路77號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "老闆:李'R 林'R 會計:張's",
+                "company_fax": "04-2275-8460",
+                "company_phone": "04-2275-8292",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100055,
+        "company": "力偕實業股份有限公司",
+        "address": "41108台中市太平區德明路215號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "黃明冠",
+                "company_fax": "04-2271-4840",
+                "company_phone": "04-2271-2835",
+                "mobile": "0915-545950"
+            }
+        ]
+    },
+    {
+        "id": 100056,
+        "company": "盈邦實業股份有限公司",
+        "address": "40145台中市東區東福路59號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "楊'R/陳'S",
+                "company_fax": "04-2281-0158",
+                "company_phone": "04-2281-0160",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100057,
+        "company": "宥騰實業有限公司",
+        "address": "41148台中市太平區光興路1463巷33弄55號-5",
+        "contact": [
+            {
+                "id": 1,
+                "name": "劉彥成  會計/蘇'S",
+                "company_fax": "04-2279-9722",
+                "company_phone": "04-2279-9720",
+                "mobile": "0923-163556"
+            }
+        ]
+    },
+    {
+        "id": 100058,
+        "company": "金橋陽工業股份有限公司",
+        "address": "50646彰化縣福興鄉福寶村新生路14之2號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "陳's/小陳'r",
+                "company_fax": "047-708448",
+                "company_phone": "047-708000",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100059,
+        "company": "聯內實業股份有限公司",
+        "address": "40764台中市西屯區福雅路213巷26號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "周'R#50 /陳'R",
+                "company_fax": "04-2461-9539",
+                "company_phone": "04-2461-8959",
+                "mobile": "0916-304966"
+            },
+            {
+                "id": 2,
+                "name": "會計/陳'S#60",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 3,
+                "name": "助理 廖's#11",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100060,
+        "company": "伍億貿易有限公司",
+        "address": "41143台中市太平區永豐路235-1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林金煌",
+                "company_fax": "04-2275-3928",
+                "company_phone": "04-2276-7265",
+                "mobile": "0928-998463"
+            }
+        ]
+    },
+    {
+        "id": 100061,
+        "company": "金震企業有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "周'R",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100062,
+        "company": "振宏金屬有限公司(喬達)",
+        "address": "40650台中市北屯區柳陽西街9號4F",
+        "contact": [
+            {
+                "id": 1,
+                "name": "茶壺",
+                "company_fax": "04-2279-9522",
+                "company_phone": "04-2279-8122",
+                "mobile": "0981-861636"
+            },
+            {
+                "id": 2,
+                "name": "楊's",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100063,
+        "company": "銳陽工業有限公司",
+        "address": "41263台中市大里區西湖路255號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "老闆-薛's#12",
+                "company_fax": "04-2492-7366",
+                "company_phone": "04-2492-8366",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "陳昭裕",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0916-116797"
+            },
+            {
+                "id": 3,
+                "name": "阿德",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0963-010550"
+            },
+            {
+                "id": 4,
+                "name": "會計 陳's#18",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100064,
+        "company": "雷歐國際有限公司",
+        "address": "41348台中市霧峰區民生路八德巷1-2號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "蔡經理",
+                "company_fax": "04-2332-7588",
+                "company_phone": "04-2332-7566",
+                "mobile": "0920-819911"
+            },
+            {
+                "id": 2,
+                "name": "顏課長",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 3,
+                "name": "林經理",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0911-988292"
+            },
+            {
+                "id": 4,
+                "name": "李'S#116",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            },
+            {
+                "id": 5,
+                "name": "會計-彭's#175",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100065,
+        "company": "聯源貿易股份有限公司",
+        "address": "40245台中市復興路2段樹義一巷13之4號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "王's",
+                "company_fax": "04-2262-2937",
+                "company_phone": "04-2262-2995",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100066,
+        "company": "祥雲工具股份有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "莊'S#323",
+                "company_fax": "",
+                "company_phone": "04-2563-1268",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100067,
+        "company": "唐振工業有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林志強",
+                "company_fax": "04-2271-4274",
+                "company_phone": "04-2271-5559",
+                "mobile": "0911-773523"
+            }
+        ]
+    },
+    {
+        "id": 100068,
+        "company": "景祥凱工業有限公司",
+        "address": "台中市西屯區東大路2段161號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "謝淑媛",
+                "company_fax": "04-2265-2128",
+                "company_phone": "04-2465-2208",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100069,
+        "company": "鑫灥國際有限公司(鑫疆)",
+        "address": "41141台中市太平市永義路9巷16號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計/吳's",
+                "company_fax": "04-2278-7695",
+                "company_phone": "04-2278-7862",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100070,
+        "company": "琪弘",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "許's",
+                "company_fax": "",
+                "company_phone": "04-2330-6130",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100071,
+        "company": "科宏",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "洪課長",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0931-635805"
+            }
+        ]
+    },
+    {
+        "id": 100072,
+        "company": "永晟企業社",
+        "address": "408005台中市南屯區文心南五路一段417號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "吳昇庭",
+                "company_fax": "04-2380-9229",
+                "company_phone": "04-2380-9119",
+                "mobile": "0932-985597"
+            }
+        ]
+    },
+    {
+        "id": 100073,
+        "company": "永晟禾股份有限公司",
+        "address": "41147台中市太平區光德路458巷17號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "陳'S",
+                "company_fax": "04-2277-3980",
+                "company_phone": "04-2277-0306~7",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100074,
+        "company": "利益得",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "宋課長#183",
+                "company_fax": "",
+                "company_phone": "04-2386-1688",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100075,
+        "company": "金和慶",
+        "address": "41143台中市太平市新仁路1段44巷8弄42-1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "",
+                "company_fax": "04-2276-0202",
+                "company_phone": "04-2276-0099",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100076,
+        "company": "山琪有限公司",
+        "address": "高雄市梓官區中崙路51號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林春助",
+                "company_fax": "07-610-9093",
+                "company_phone": "07-610-9083",
+                "mobile": "0919-187803"
+            }
+        ]
+    },
+    {
+        "id": 100077,
+        "company": "前貴工業社",
+        "address": "41743台中市潭子區豐興路一段1巷6-1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "王's",
+                "company_fax": "",
+                "company_phone": "04-2539-3924",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100078,
+        "company": "豪憶",
+        "address": "40145台中市東區東門路54巷25號",
+        "contact": []
+    },
+    {
+        "id": 100079,
+        "company": "星聯鋒股份有限公司",
+        "address": "42854台中市大雅區雅潭路236號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "",
+                "company_fax": "04-2565-3566",
+                "company_phone": "04-2568-8158",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100080,
+        "company": "弘達實業社",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "煥庭",
+                "company_fax": "04-2395-9261",
+                "company_phone": "04-2395-8749",
+                "mobile": "0921-594189"
+            }
+        ]
+    },
+    {
+        "id": 100081,
+        "company": "永力實業社",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計 游's",
+                "company_fax": "",
+                "company_phone": "04-2491-5739",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100082,
+        "company": "平宇工具股份有限公司",
+        "address": "41141台中市大里市新仁路一段97號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "胡協理#29",
+                "company_fax": "04-2270-9200",
+                "company_phone": "04-2279-2166",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100083,
+        "company": "千方順有限公司(昌潤)",
+        "address": "50353彰化縣花壇鄉北口村彰花路958巷17弄16號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "施'r/會計 梁's",
+                "company_fax": "047-622978",
+                "company_phone": "047-620127",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100084,
+        "company": "昱鋒實業有限公司",
+        "address": "411台中市太平區長龍路一段220號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "內銷黃's/吳'R  會計/吳's",
+                "company_fax": "",
+                "company_phone": "04-2270-0407",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100085,
+        "company": "防震力興業股份有限公司",
+        "address": "41278台中市大里區光正路80號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林's",
+                "company_fax": "04-2491-7777",
+                "company_phone": "04-2491-5555",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100086,
+        "company": "建智五金有限公司",
+        "address": "41250台中市大里區立仁路57巷27號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "蔡's",
+                "company_fax": "04-2273-4460",
+                "company_phone": "04-2273-5076",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100087,
+        "company": "禾鑫事業有限公司",
+        "address": "40768台中市工業區37路30之1號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "張啟明",
+                "company_fax": "04-2359-8561",
+                "company_phone": "04-2359-7536",
+                "mobile": "0928-931055"
+            },
+            {
+                "id": 2,
+                "name": "國火",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0937-497487"
+            },
+            {
+                "id": 3,
+                "name": "會計/馬's",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100088,
+        "company": "新振港五金企業有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "",
+                "company_fax": "04-2277-4403",
+                "company_phone": "04-2277-7889",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100089,
+        "company": "昱盛工業股份有限公司",
+        "address": "41272台中市大里區瑞和街135巷12號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "黃'S#24",
+                "company_fax": "04-2492-9333",
+                "company_phone": "04-2493-2826",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "郭'R",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0987-292270"
+            }
+        ]
+    },
+    {
+        "id": 100090,
+        "company": "協益勝企業有限公司",
+        "address": "41143台中市太平市新仁路1段22巷71號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "會計林's  賴'S",
+                "company_fax": "04-2276-0650",
+                "company_phone": "04-2276-0069",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100091,
+        "company": "昇揚",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "歐's",
+                "company_fax": "04-2492-7149",
+                "company_phone": "04-2495-3142",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100092,
+        "company": "陸同五金機械有限公司",
+        "address": "",
+        "contact": [
+            {
+                "id": 1,
+                "name": "張祈雄",
+                "company_fax": "04-2271-1917",
+                "company_phone": "04-2271-2216",
+                "mobile": "0910-418644"
+            }
+        ]
+    },
+    {
+        "id": 100093,
+        "company": "昇勝工業有限公司",
+        "address": "41147台中市太平區光德路375巷9號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "林冠正",
+                "company_fax": "04-2277-2186",
+                "company_phone": "04-2279-4771",
+                "mobile": "0921-828957"
+            }
+        ]
+    },
+    {
+        "id": 100094,
+        "company": "金利昶五金興業社",
+        "address": "41148台中市太平區光興路1345號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "邱媽媽",
+                "company_fax": "04-2275-4218",
+                "company_phone": "04-2277-8186",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "阿德",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0919-032086"
+            }
+        ]
+    },
+    {
+        "id": 100095,
+        "company": "晁欣有限公司",
+        "address": "41263台中市大里區西湖路187巷116號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "",
+                "company_fax": "04-2491-3723",
+                "company_phone": "04-2491-3008",
+                "mobile": ""
+            }
+        ]
+    },
+    {
+        "id": 100096,
+        "company": "丞德機械精業有限公司",
+        "address": "41261台中市大里區愛心路159巷8號",
+        "contact": [
+            {
+                "id": 1,
+                "name": "謝總/溫's",
+                "company_fax": "04-2406-2641",
+                "company_phone": "04-2406-0961",
+                "mobile": ""
+            },
+            {
+                "id": 2,
+                "name": "宋旻豪",
+                "company_fax": "",
+                "company_phone": "",
+                "mobile": "0935-869102"
+            }
+        ]
+    }
+]

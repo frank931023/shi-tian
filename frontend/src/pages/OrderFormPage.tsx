@@ -8,12 +8,15 @@ import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
 import { Button, Card, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
 import { today } from "../lib/format";
+import { combineSpec, splitSpec } from "../lib/spec";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 
 // 表單內部用:數值欄位以字串保存,方便輸入(送出時再轉)
+// 規格分成 spec1 / spec2 兩欄輸入,送出時合併成單一 spec(「規格1 x 規格2」)
 interface RowState {
   product_name: string;
-  spec: string;
+  spec1: string;
+  spec2: string;
   process_item: string;
   net_weight_kg: string;
   quantity: string;
@@ -23,7 +26,8 @@ interface RowState {
 
 const emptyRow = (): RowState => ({
   product_name: "",
-  spec: "",
+  spec1: "",
+  spec2: "",
   process_item: "",
   net_weight_kg: "",
   quantity: "",
@@ -84,15 +88,19 @@ export default function OrderFormPage() {
           // 複製成新單時,日期改今天;編輯則沿用原日期
           setOrderDate(editingId ? o.order_date : today());
           setRows(
-            (o.items ?? []).map((it) => ({
+            (o.items ?? []).map((it) => {
+              const [spec1, spec2] = splitSpec(it.spec);
+              return {
               product_name: it.product_name,
-              spec: it.spec ?? "",
+              spec1,
+              spec2,
               process_item: it.process_item ?? "",
               net_weight_kg: it.net_weight_kg != null ? String(it.net_weight_kg) : "",
               quantity: String(it.quantity ?? ""),
               unit: it.unit ?? "",
               remark: it.remark ?? "",
-            })),
+              };
+            }),
           );
         }
       } catch (err) {
@@ -156,7 +164,7 @@ export default function OrderFormPage() {
       note: note || null,
       items: validRows.map((r) => ({
         product_name: r.product_name.trim(),
-        spec: r.spec || null,
+        spec: combineSpec(r.spec1, r.spec2) || null,
         process_item: r.process_item || null,
         net_weight_kg: r.net_weight_kg ? Number(r.net_weight_kg) : null,
         quantity: r.quantity ? Number(r.quantity) : 0,
@@ -257,8 +265,11 @@ export default function OrderFormPage() {
                     placeholder="例:HBS"
                   />
                 </Field>
-                <Field label="規格">
-                  <Input list="spec-options" value={r.spec} onChange={(e) => updateRow(idx, { spec: e.target.value })} placeholder="例:1/2-H17" />
+                <Field label="規格1">
+                  <Input list="spec-options" value={r.spec1} onChange={(e) => updateRow(idx, { spec1: e.target.value })} placeholder="例:1/2" />
+                </Field>
+                <Field label="規格2">
+                  <Input list="spec-options" value={r.spec2} onChange={(e) => updateRow(idx, { spec2: e.target.value })} placeholder="例:H17" />
                 </Field>
                 <Field label="加工項目">
                   <Select value={r.process_item} onChange={(e) => updateRow(idx, { process_item: e.target.value })}>
@@ -350,7 +361,7 @@ export default function OrderFormPage() {
               <li key={i} className="flex flex-wrap items-center gap-x-3 px-3 py-2 text-sm">
                 <span className="font-medium text-slate-400">{i + 1}</span>
                 <span className="font-medium">{r.product_name}</span>
-                {r.spec && <span className="text-slate-500">{r.spec}</span>}
+                {combineSpec(r.spec1, r.spec2) && <span className="text-slate-500">{combineSpec(r.spec1, r.spec2)}</span>}
                 {r.process_item && <span className="text-slate-500">{r.process_item}</span>}
                 {r.quantity && <span className="text-slate-500">× {r.quantity}{r.unit}</span>}
                 {r.remark && <span className="text-slate-400">註 {r.remark}</span>}

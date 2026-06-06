@@ -7,6 +7,7 @@
 // 3. 有效群裡:有欄位節點 → 還原成一排(同欄位多個取第一個);
 //    有廠商/接收節點 → 取其選的公司當單頭。
 import type { Edge, Node } from "@xyflow/react";
+import { combineSpec } from "../../lib/spec";
 import type { CompanyNodeData, FieldNodeData, ReconstructedRow } from "./context";
 
 export const ORDER_ID = "order";
@@ -88,17 +89,22 @@ export function reconstruct(nodes: Node[], edges: Edge[]): Reconstructed {
       unit: "",
       remark: "",
     };
+    let spec1 = "";
+    let spec2 = "";
     for (const n of fieldNodes) {
       const d = n.data as FieldNodeData;
       const v = (d.value ?? "").trim();
       if (!v) continue;
       if (d.field === "品名" && !row.product_name) row.product_name = v;
-      else if (d.field === "規格" && !row.spec) row.spec = v;
+      else if (d.field === "規格1" && !spec1) spec1 = v;
+      else if (d.field === "規格2" && !spec2) spec2 = v;
       else if (d.field === "加工" && !row.process_item) row.process_item = v;
       else if (d.field === "數量" && !row.quantity) row.quantity = v;
       else if (d.field === "單位" && !row.unit) row.unit = v;
       else if (d.field === "備註" && !row.remark) row.remark = v;
     }
+    // 規格1/規格2 合併成單一規格(「規格1 x 規格2」)
+    row.spec = combineSpec(spec1, spec2);
     // 一排至少要有品名才算數
     if (row.product_name) rows.push(row);
   }

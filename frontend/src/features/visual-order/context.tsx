@@ -3,12 +3,12 @@ import { createContext, useContext } from "react";
 import type { Company, ProcessItem, Product, Spec } from "../../lib/types";
 import type { Combo } from "./recentCombos";
 
-// 欄位節點的種類
-export type FieldKind = "品名" | "規格" | "加工" | "數量" | "單位" | "備註";
-// 一「排」預設的五個欄位(備註是選配,不在預設排內)
-export const FIELD_KINDS: FieldKind[] = ["品名", "規格", "加工", "數量", "單位"];
+// 欄位節點的種類(規格分成規格1/規格2 兩欄輸入,送出時合併成單一 spec)
+export type FieldKind = "品名" | "規格1" | "規格2" | "加工" | "數量" | "單位" | "備註";
+// 一「排」預設的欄位(備註是選配,不在預設排內)
+export const FIELD_KINDS: FieldKind[] = ["品名", "規格1", "規格2", "加工", "數量", "單位"];
 // 可從「+」新增的欄位(含選配的備註)
-export const ADDABLE_KINDS: FieldKind[] = ["品名", "規格", "加工", "數量", "單位", "備註"];
+export const ADDABLE_KINDS: FieldKind[] = ["品名", "規格1", "規格2", "加工", "數量", "單位", "備註"];
 // 常用單位(下拉用)
 export const COMMON_UNITS = ["K", "KG", "件", "支", "箱"];
 

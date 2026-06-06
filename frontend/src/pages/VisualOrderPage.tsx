@@ -27,6 +27,7 @@ import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
 import { Button, Card, ErrorBar, Modal } from "../components/ui";
 import { today } from "../lib/format";
+import { splitSpec } from "../lib/spec";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 import CompanyNode from "../features/visual-order/CompanyNode";
 import FieldNode from "../features/visual-order/FieldNode";
@@ -290,10 +291,12 @@ function VisualOrderInner() {
         newNodes.push({ id: nid(), type: "field", position: pos, data: { field: payload.field, value: payload.value ?? "", custom: payload.custom } });
       } else if (payload.kind === "row" || payload.kind === "combo") {
         const combo = payload.kind === "combo" ? payload.combo : null;
+        const [comboSpec1, comboSpec2] = splitSpec(combo?.spec);
         const valueOf = (f: FieldKind): string => {
           if (!combo) return "";
           if (f === "品名") return combo.product_name;
-          if (f === "規格") return combo.spec;
+          if (f === "規格1") return comboSpec1;
+          if (f === "規格2") return comboSpec2;
           if (f === "加工") return combo.process_item;
           if (f === "數量") return combo.quantity;
           return combo.unit;

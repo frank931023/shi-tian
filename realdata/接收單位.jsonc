@@ -1,0 +1,1072 @@
+[
+    {
+        "id": 200001,
+        "proccessMethod": "鍛造",
+        "factory": "觀宏",
+        "phone": "07-7870381",
+        "fax": "07-7872069",
+        "name": "黃清文/蘇'S#13",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200002,
+        "proccessMethod": "鍛造",
+        "factory": "潮松",
+        "phone": "047-688677",
+        "fax": "047-689168",
+        "name": "陳振松",
+        "mobile": "0912-361177",
+        "address": ""
+    },
+    {
+        "id": 200003,
+        "proccessMethod": "鍛造",
+        "factory": "立錦",
+        "phone": "04-2493-2995",
+        "fax": "04-2491-1327",
+        "name": "陶文立",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200004,
+        "proccessMethod": "鍛造",
+        "factory": "潮洋",
+        "phone": "04-2407-2829",
+        "fax": "",
+        "name": "楊'S/吳's",
+        "mobile": "",
+        "address": "412大里區國中路十股巷186號"
+    },
+    {
+        "id": 200005,
+        "proccessMethod": "鍛造",
+        "factory": "忠健",
+        "phone": "04-2491-4933",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200006,
+        "proccessMethod": "鍛造",
+        "factory": "陽澄",
+        "phone": "04-2273-1126",
+        "fax": "",
+        "name": "江's",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200007,
+        "proccessMethod": "鍛造",
+        "factory": "興信",
+        "phone": "07-6223527",
+        "fax": "07-6210298",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200008,
+        "proccessMethod": "鍛造",
+        "factory": "三仕/王'S#322",
+        "phone": "07-621-8188~9",
+        "fax": "07-621-1964",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200009,
+        "proccessMethod": "鍛造",
+        "factory": "祐田/吳'S",
+        "phone": "07-699-4936",
+        "fax": "07-699-5590",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200010,
+        "proccessMethod": "鍛造",
+        "factory": "昇達鑫",
+        "phone": "07-6283026",
+        "fax": "07-6281701",
+        "name": "李's#17 顏'S#18",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200011,
+        "proccessMethod": "鍛造",
+        "factory": "世鉅",
+        "phone": "047-7832878",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200012,
+        "proccessMethod": "鍛造",
+        "factory": "新煜發科技有限公司",
+        "phone": "047-611005",
+        "fax": "047-523485",
+        "name": "張炳章",
+        "mobile": "0937-738679",
+        "address": "50091彰化市彰馬路520巷196號"
+    },
+    {
+        "id": 200013,
+        "proccessMethod": "車工",
+        "factory": "吉笙",
+        "phone": "04-2271-4186",
+        "fax": "04-2271-4187",
+        "name": "施傳森",
+        "mobile": "0916-009988",
+        "address": ""
+    },
+    {
+        "id": 200014,
+        "proccessMethod": "車工",
+        "factory": "協益",
+        "phone": "04-2275-1543",
+        "fax": "04-2270-5305",
+        "name": "張秋恭",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200015,
+        "proccessMethod": "車工",
+        "factory": "長遠",
+        "phone": "04-2491-8625",
+        "fax": "",
+        "name": "洪水生",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200016,
+        "proccessMethod": "車工",
+        "factory": "隆華",
+        "phone": "04-2532-6215",
+        "fax": "04-2535-2551",
+        "name": "彭盈豪",
+        "mobile": "0932-567667",
+        "address": ""
+    },
+    {
+        "id": 200017,
+        "proccessMethod": "車工",
+        "factory": "順豐企業社",
+        "phone": "04-2492-1529",
+        "fax": "04-2496-4443",
+        "name": "黃'R",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200018,
+        "proccessMethod": "車工",
+        "factory": "龍營工業社",
+        "phone": "04-2271-2837",
+        "fax": "04-2271-4083",
+        "name": "士傑",
+        "mobile": "0931-761103",
+        "address": ""
+    },
+    {
+        "id": 200019,
+        "proccessMethod": "車工",
+        "factory": "旭田工業有限公司",
+        "phone": "04-2496-2271",
+        "fax": "",
+        "name": "魏瑋志",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200020,
+        "proccessMethod": "車工",
+        "factory": "逢威工業有限公司",
+        "phone": "04-2496-0212",
+        "fax": "04-2496-0226",
+        "name": "魏新芳",
+        "mobile": "0936-244529",
+        "address": "412大里區四育街18號"
+    },
+    {
+        "id": 200021,
+        "proccessMethod": "铣角(筌振)",
+        "factory": "順發",
+        "phone": "04-2277-8836",
+        "fax": "04-2273-9436",
+        "name": "陳順發",
+        "mobile": "0936-298836",
+        "address": ""
+    },
+    {
+        "id": 200022,
+        "proccessMethod": "铣角",
+        "factory": "億德",
+        "phone": "04-2496-8296",
+        "fax": "04-2496-0020",
+        "name": "張昆意",
+        "mobile": "0932-633176",
+        "address": ""
+    },
+    {
+        "id": 200023,
+        "proccessMethod": "铣角",
+        "factory": "金永貿",
+        "phone": "04-2270-8061",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": "41143 台中市太平區永豐路45巷17-3號"
+    },
+    {
+        "id": 200024,
+        "proccessMethod": "铣角",
+        "factory": "來友",
+        "phone": "04-2407-4276",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200025,
+        "proccessMethod": "铣角",
+        "factory": "春億",
+        "phone": "04-2425-5228",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200026,
+        "proccessMethod": "铣角",
+        "factory": "全宏",
+        "phone": "04-2338-8059",
+        "fax": "04-2338-8661",
+        "name": "林先生",
+        "mobile": "",
+        "address": "414台中市烏日區光明里五光路復光三巷39號"
+    },
+    {
+        "id": 200027,
+        "proccessMethod": "鑽孔(原利興)",
+        "factory": "元星",
+        "phone": "049-2322207",
+        "fax": "049-2365333",
+        "name": "",
+        "mobile": "",
+        "address": "54252 南投縣草屯鎮新豐里稻香路39之22號"
+    },
+    {
+        "id": 200028,
+        "proccessMethod": "鑽孔",
+        "factory": "璉寰(甲乙)",
+        "phone": "04-2273-1697",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200029,
+        "proccessMethod": "鑽孔",
+        "factory": "仕峰",
+        "phone": "04-2338-0818",
+        "fax": "",
+        "name": "張先生",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200030,
+        "proccessMethod": "鑽孔",
+        "factory": "金利",
+        "phone": "04-2279-7376",
+        "fax": "04-2279-4067",
+        "name": "林金來",
+        "mobile": "0917-587987",
+        "address": ""
+    },
+    {
+        "id": 200031,
+        "proccessMethod": "鑽孔",
+        "factory": "禾勝",
+        "phone": "04-2493-2963",
+        "fax": "04-2493-3799",
+        "name": "陳志斌",
+        "mobile": "0923-625608",
+        "address": ""
+    },
+    {
+        "id": 200032,
+        "proccessMethod": "鑽孔",
+        "factory": "宏茂",
+        "phone": "04-2566-6095",
+        "fax": "0939-981777",
+        "name": "小古",
+        "mobile": "0939-981777",
+        "address": ""
+    },
+    {
+        "id": 200033,
+        "proccessMethod": "鑽孔",
+        "factory": "立富",
+        "phone": "04-2492-3236",
+        "fax": "04-2492-3237",
+        "name": "許宥融",
+        "mobile": "0921-772648",
+        "address": ""
+    },
+    {
+        "id": 200034,
+        "proccessMethod": "鑽孔",
+        "factory": "順豐(GZEU)",
+        "phone": "04-2491-5450",
+        "fax": "",
+        "name": "陳雲龍",
+        "mobile": "0919-716712",
+        "address": ""
+    },
+    {
+        "id": 200035,
+        "proccessMethod": "鑽孔/滾牙",
+        "factory": "玄豐",
+        "phone": "04-2491-9655",
+        "fax": "04-2491-5227",
+        "name": "林世華",
+        "mobile": "0935-105976",
+        "address": ""
+    },
+    {
+        "id": 200036,
+        "proccessMethod": "鑽孔/滾牙",
+        "factory": "泰益",
+        "phone": "04-2275-0138",
+        "fax": "04-2275-0156",
+        "name": "許新旺",
+        "mobile": "0920-213666",
+        "address": ""
+    },
+    {
+        "id": 200037,
+        "proccessMethod": "鑽孔",
+        "factory": "三本",
+        "phone": "04-2491-1631",
+        "fax": "",
+        "name": "戴榮蒞",
+        "mobile": "0972-050067",
+        "address": ""
+    },
+    {
+        "id": 200038,
+        "proccessMethod": "鑽孔",
+        "factory": "翰儀/精展",
+        "phone": "04-2493-6678",
+        "fax": "04-2496-4132",
+        "name": "古今權",
+        "mobile": "0920-297933",
+        "address": ""
+    },
+    {
+        "id": 200039,
+        "proccessMethod": "鑽孔",
+        "factory": "侑泰(俊棋)",
+        "phone": "04-2493-6678",
+        "fax": "",
+        "name": "",
+        "mobile": "0920-297933",
+        "address": ""
+    },
+    {
+        "id": 200040,
+        "proccessMethod": "鑽孔",
+        "factory": "信昌",
+        "phone": "04-2422-5158",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200041,
+        "proccessMethod": "鑽孔",
+        "factory": "弘達實業社",
+        "phone": "04-2395-8749",
+        "fax": "04-2395-9261",
+        "name": "",
+        "mobile": "",
+        "address": "41157太平區新光路63之2號"
+    },
+    {
+        "id": 200042,
+        "proccessMethod": "鑽孔(雷歐)",
+        "factory": "惠美",
+        "phone": "04-2271-6548",
+        "fax": "",
+        "name": "黃'R",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200043,
+        "proccessMethod": "鑽孔(六宏)",
+        "factory": "程加",
+        "phone": "04-2273-5983",
+        "fax": "04-2279-4876",
+        "name": "楊'R",
+        "mobile": "0931-888443",
+        "address": "411台中市太平區合利街11號"
+    },
+    {
+        "id": 200044,
+        "proccessMethod": "鑽孔",
+        "factory": "上鎧(宏元) CMF",
+        "phone": "04-2273-4646",
+        "fax": "04-2273-4380",
+        "name": "李速地",
+        "mobile": "",
+        "address": "411太平區鵬儀路214巷3弄9號"
+    },
+    {
+        "id": 200045,
+        "proccessMethod": "鑽孔",
+        "factory": "國茂",
+        "phone": "04-2275-5468",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": "411太平區鵬儀路296巷6弄58號"
+    },
+    {
+        "id": 200046,
+        "proccessMethod": "鑽孔",
+        "factory": "宥晟(宥鋒)",
+        "phone": "04-2277-9357",
+        "fax": "04-2277-4130",
+        "name": "廖添進",
+        "mobile": "0933-582324",
+        "address": "411太平區光興路597巷85之1號"
+    },
+    {
+        "id": 200047,
+        "proccessMethod": "鑽孔",
+        "factory": "鴻輝",
+        "phone": "04-2277-1619",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200048,
+        "proccessMethod": "鑽孔",
+        "factory": "豐陽/杜'S",
+        "phone": "04-2491-1050",
+        "fax": "04-2491-1051",
+        "name": "張豫豐",
+        "mobile": "0989-325133",
+        "address": ""
+    },
+    {
+        "id": 200049,
+        "proccessMethod": "鑽孔",
+        "factory": "鉦盟",
+        "phone": "04-2492-9779",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": "台中市大里區健東路71-2號"
+    },
+    {
+        "id": 200050,
+        "proccessMethod": "鑽孔",
+        "factory": "朝焜",
+        "phone": "04-2331-5838",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200051,
+        "proccessMethod": "鑽孔",
+        "factory": "佑興(宗慶)",
+        "phone": "",
+        "fax": "",
+        "name": "",
+        "mobile": "0923-863280",
+        "address": ""
+    },
+    {
+        "id": 200052,
+        "proccessMethod": "鑽孔",
+        "factory": "煒勝",
+        "phone": "04-2496-6347",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200053,
+        "proccessMethod": "鑽孔(MM)",
+        "factory": "晨豐(杰紳)",
+        "phone": "04-2566-8697",
+        "fax": "",
+        "name": "阿杰",
+        "mobile": "0989-080090",
+        "address": ""
+    },
+    {
+        "id": 200054,
+        "proccessMethod": "鑽孔",
+        "factory": "冠祺(光輝)",
+        "phone": "04-2273-9638",
+        "fax": "04-2273-9165",
+        "name": "黃'R",
+        "mobile": "0985-788116",
+        "address": "台中市太平區東平路243號"
+    },
+    {
+        "id": 200055,
+        "proccessMethod": "鑽孔",
+        "factory": "柏昇",
+        "phone": "04-2339-3127",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": "台中市霧峰區霧工七路10號"
+    },
+    {
+        "id": 200056,
+        "proccessMethod": "CNC",
+        "factory": "炅達/友誠",
+        "phone": "04-2407-3982",
+        "fax": "0923-384815",
+        "name": "張'R",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200057,
+        "proccessMethod": "CNC",
+        "factory": "富群",
+        "phone": "04-2483-6805",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200058,
+        "proccessMethod": "CNC",
+        "factory": "仲冠",
+        "phone": "04-2271-6215",
+        "fax": "",
+        "name": "何'S",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200059,
+        "proccessMethod": "CNC",
+        "factory": "益鋐昌(UCT)",
+        "phone": "04-2275-6388",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200060,
+        "proccessMethod": "CNC",
+        "factory": "富禾",
+        "phone": "04-2520-4668",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200061,
+        "proccessMethod": "研磨/刻字",
+        "factory": "唐振",
+        "phone": "04-2273-0827",
+        "fax": "",
+        "name": "丁's",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200062,
+        "proccessMethod": "研磨/刻字",
+        "factory": "尚林",
+        "phone": "04-2279-1766",
+        "fax": "2279-2766",
+        "name": "賴'S",
+        "mobile": "",
+        "address": "台中市太平區永成路117-20-1號"
+    },
+    {
+        "id": 200063,
+        "proccessMethod": "研磨/刻字",
+        "factory": "祐琦",
+        "phone": "04-2277-8999",
+        "fax": "04-2276-4999",
+        "name": "陳'R",
+        "mobile": "0921-330655",
+        "address": ""
+    },
+    {
+        "id": 200064,
+        "proccessMethod": "研磨/刻字",
+        "factory": "杰霖",
+        "phone": "04-2496-2072 / 04-2496-2071",
+        "fax": "04-2496-2061",
+        "name": "Peggy/秋霖/永慶",
+        "mobile": "",
+        "address": "412大里區四育街20號"
+    },
+    {
+        "id": 200065,
+        "proccessMethod": "研磨",
+        "factory": "得利",
+        "phone": "04-2491-2921",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200066,
+        "proccessMethod": "研磨/刻字",
+        "factory": "宗興",
+        "phone": "04-2278-8287",
+        "fax": "04-2277-0408",
+        "name": "吳星明",
+        "mobile": "0955-917707",
+        "address": ""
+    },
+    {
+        "id": 200067,
+        "proccessMethod": "研磨/刻字",
+        "factory": "珍源",
+        "phone": "04-2277-2909",
+        "fax": "04-2277-0662",
+        "name": "曾士智",
+        "mobile": "0932-515562",
+        "address": ""
+    },
+    {
+        "id": 200068,
+        "proccessMethod": "研磨/刻字",
+        "factory": "全建",
+        "phone": "04-2421-3859",
+        "fax": "04-2421-1879",
+        "name": "劉建廷",
+        "mobile": "0911-859219",
+        "address": ""
+    },
+    {
+        "id": 200069,
+        "proccessMethod": "研磨/刻字",
+        "factory": "順龍",
+        "phone": "04-2278-7820",
+        "fax": "04-2275-0514",
+        "name": "",
+        "mobile": "",
+        "address": "411太平區鵬儀路417巷14號"
+    },
+    {
+        "id": 200070,
+        "proccessMethod": "研磨",
+        "factory": "峰鈺",
+        "phone": "04-2277-6324",
+        "fax": "04-2277-1701",
+        "name": "林'R",
+        "mobile": "0937-701951",
+        "address": ""
+    },
+    {
+        "id": 200071,
+        "proccessMethod": "研磨",
+        "factory": "謚銘",
+        "phone": "04-2276-2362",
+        "fax": "04-2276-2363",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200072,
+        "proccessMethod": "研磨",
+        "factory": "靖原",
+        "phone": "04-2271-3907",
+        "fax": "04-2271-2879",
+        "name": "小廖",
+        "mobile": "0920-297976",
+        "address": ""
+    },
+    {
+        "id": 200073,
+        "proccessMethod": "研磨",
+        "factory": "鋐興",
+        "phone": "04-2275-0461",
+        "fax": "04-2275-0395",
+        "name": "",
+        "mobile": "",
+        "address": "台中市太平區永成路2巷13號"
+    },
+    {
+        "id": 200074,
+        "proccessMethod": "研磨",
+        "factory": "成吉(君成)",
+        "phone": "04-2562-6889",
+        "fax": "04-2562-6887",
+        "name": "林'r",
+        "mobile": "0925-132008",
+        "address": ""
+    },
+    {
+        "id": 200075,
+        "proccessMethod": "研磨",
+        "factory": "東鋌",
+        "phone": "04-2566-7035",
+        "fax": "04-2566-4002",
+        "name": "林'r",
+        "mobile": "0982-550777",
+        "address": ""
+    },
+    {
+        "id": 200076,
+        "proccessMethod": "研磨",
+        "factory": "聯勝(長竑)",
+        "phone": "04-2271-6263",
+        "fax": "04-2271-0195",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200077,
+        "proccessMethod": "研磨",
+        "factory": "成恩",
+        "phone": "04-2496-4307",
+        "fax": "04-2496-8563",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200078,
+        "proccessMethod": "研磨(雷歐)",
+        "factory": "瑞成",
+        "phone": "04-2271-2867",
+        "fax": "",
+        "name": "蘇'S",
+        "mobile": "",
+        "address": "411 太平市興隆路一段70巷65-1號"
+    },
+    {
+        "id": 200079,
+        "proccessMethod": "研磨",
+        "factory": "昌輝",
+        "phone": "04-2277-3331",
+        "fax": "",
+        "name": "",
+        "mobile": "0933-465977",
+        "address": ""
+    },
+    {
+        "id": 200080,
+        "proccessMethod": "研磨",
+        "factory": "永富",
+        "phone": "04-2271-6227",
+        "fax": "04-2271-2953",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200081,
+        "proccessMethod": "研磨",
+        "factory": "得利",
+        "phone": "04-2491-2921",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200082,
+        "proccessMethod": "研磨",
+        "factory": "邦彥",
+        "phone": "04-2495-4353",
+        "fax": "04-2495-4205",
+        "name": "歐太太",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200083,
+        "proccessMethod": "研磨",
+        "factory": "杰毅",
+        "phone": "04-2271-2428",
+        "fax": "04-2271-5884",
+        "name": "蘇'r",
+        "mobile": "0932-535212",
+        "address": ""
+    },
+    {
+        "id": 200084,
+        "proccessMethod": "研磨",
+        "factory": "銓成",
+        "phone": "04-2439-2460",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": "411太平市永成路2巷9號"
+    },
+    {
+        "id": 200085,
+        "proccessMethod": "研磨/滾花",
+        "factory": "富揚",
+        "phone": "04-2279-9725",
+        "fax": "",
+        "name": "李安國",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200086,
+        "proccessMethod": "研磨",
+        "factory": "良展(筌振3分英寸)",
+        "phone": "04-2278-4389",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200087,
+        "proccessMethod": "研磨",
+        "factory": "元慶",
+        "phone": "04-2278-7371",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200088,
+        "proccessMethod": "研磨",
+        "factory": "百辰",
+        "phone": "04-2493-5155",
+        "fax": "",
+        "name": "彭'S",
+        "mobile": "",
+        "address": "412大里區光正路60巷27號"
+    },
+    {
+        "id": 200089,
+        "proccessMethod": "研磨",
+        "factory": "鼎茂",
+        "phone": "04-2279-9988",
+        "fax": "04-2278-7777",
+        "name": "林禾宥",
+        "mobile": "0988-822566",
+        "address": ""
+    },
+    {
+        "id": 200090,
+        "proccessMethod": "熱處理",
+        "factory": "鍾冶(里祥)",
+        "phone": "04-2491-0088",
+        "fax": "",
+        "name": "楊's",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200091,
+        "proccessMethod": "熱處理",
+        "factory": "合勝",
+        "phone": "04-2270-6981",
+        "fax": "鐵桶-江'S#308",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200092,
+        "proccessMethod": "熱處理",
+        "factory": "佑祥",
+        "phone": "04-2492-9023",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200093,
+        "proccessMethod": "熱處理",
+        "factory": "德光",
+        "phone": "04-2270-2139",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200094,
+        "proccessMethod": "熱處理",
+        "factory": "明光",
+        "phone": "04-2278-9258",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200095,
+        "proccessMethod": "熱處理",
+        "factory": "雙合鑫/邱'S",
+        "phone": "04-2271-4567",
+        "fax": "04-2271-1232",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200096,
+        "proccessMethod": "熱處理",
+        "factory": "星南",
+        "phone": "04-2335-8759",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200097,
+        "proccessMethod": "熱處理",
+        "factory": "聯勝",
+        "phone": "04-2271-6263",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200098,
+        "proccessMethod": "熱處理",
+        "factory": "金長",
+        "phone": "04-2278-1331",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": "41147台中市太平區德明路35巷18號"
+    },
+    {
+        "id": 200099,
+        "proccessMethod": "熱處理",
+        "factory": "恆裕  蔡's",
+        "phone": "04-2278-3655 / 04-2278-3393",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": "太平區溪州路77巷7號"
+    },
+    {
+        "id": 200100,
+        "proccessMethod": "熱處理",
+        "factory": "振裕",
+        "phone": "04-2271-2428",
+        "fax": "04-2271-5884",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200101,
+        "proccessMethod": "熱處理",
+        "factory": "錦鐵",
+        "phone": "04-2276-3869",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200102,
+        "proccessMethod": "噴砂",
+        "factory": "泯碩",
+        "phone": "04-2271-6608",
+        "fax": "",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200103,
+        "proccessMethod": "噴砂",
+        "factory": "銳福",
+        "phone": "04-2491-1167",
+        "fax": "",
+        "name": "楊'S",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200104,
+        "proccessMethod": "噴砂",
+        "factory": "錦億",
+        "phone": "04-2493-4488",
+        "fax": "",
+        "name": "余'S 固定星期1、五",
+        "mobile": "",
+        "address": ""
+    },
+    {
+        "id": 200105,
+        "proccessMethod": "電鍍",
+        "factory": "彬源",
+        "phone": "04-2277-7889",
+        "fax": "04-2278-0101",
+        "name": "老三/黃櫻眉",
+        "mobile": "",
+        "address": "41282大里區仁美路159巷15弄38號"
+    },
+    {
+        "id": 200106,
+        "proccessMethod": "電鍍",
+        "factory": "亮新",
+        "phone": "04-2492-6018",
+        "fax": "侯'S",
+        "name": "陳's",
+        "mobile": "",
+        "address": "411太平區長龍路一段169巷1號"
+    },
+    {
+        "id": 200107,
+        "proccessMethod": "電鍍",
+        "factory": "亮新(二廠)",
+        "phone": "04-2279-3499",
+        "fax": "04-2279-3476",
+        "name": "",
+        "mobile": "",
+        "address": ""
+    }
+]

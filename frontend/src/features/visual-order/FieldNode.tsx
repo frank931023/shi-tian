@@ -6,7 +6,8 @@ import { COMMON_UNITS, useVisualOrder, type FieldNodeData } from "./context";
 
 const STYLE: Record<string, { color: string; placeholder: string }> = {
   品名: { color: "border-blue-400", placeholder: "品名,例:HBS" },
-  規格: { color: "border-violet-400", placeholder: "規格,例:1/2-H17" },
+  規格1: { color: "border-violet-400", placeholder: "規格1,例:1/2" },
+  規格2: { color: "border-violet-400", placeholder: "規格2,例:H17" },
   加工: { color: "border-pink-400", placeholder: "加工項目" },
   數量: { color: "border-teal-400", placeholder: "數量" },
   單位: { color: "border-slate-400", placeholder: "單位,例:K" },
@@ -49,7 +50,7 @@ export default function FieldNode({ id, data }: NodeProps) {
 
   let control;
   if (d.field === "加工") control = renderSelect(processItems.map((p) => p.name));
-  else if (d.field === "規格") control = d.custom ? renderInput() : renderSelect(specs.map((s2) => s2.name));
+  else if (d.field === "規格1" || d.field === "規格2") control = d.custom ? renderInput() : renderSelect(specs.map((s2) => s2.name));
   else if (d.field === "單位") control = d.custom ? renderInput() : renderSelect(COMMON_UNITS);
   else if (d.field === "數量") control = renderInput("number");
   else control = renderInput(); // 品名 / 備註
