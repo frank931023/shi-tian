@@ -1,8 +1,5 @@
-// 視覺化建單的側欄元件庫:分類 + 可展開,拖出「已填好值」的節點。
-// - 廠商/接收:列實際公司
-// - 品名/加工:列主檔實際值
-// - 規格/數量/單位:沒有主檔 → 提供常用值與「自訂」空白節點
-// - 最近使用組合:整排五欄一次拖出
+// 視覺化建單的側欄元件庫:分類 + 可展開。
+// 桌機可「拖曳」到畫布;平板/觸控請改「點一下」加入畫布中央(HTML5 拖放不支援觸控)。
 import { useState } from "react";
 import type { Company, ProcessItem, Product, Spec } from "../../lib/types";
 import { COMMON_UNITS, type DragPayload } from "./context";
@@ -16,25 +13,28 @@ interface Props {
   specs: Spec[];
   recent: Combo[];
   startDrag: (payload: DragPayload) => (e: React.DragEvent) => void;
+  onPick: (payload: DragPayload) => void; // 點擊加入(觸控用)
   onCollapse: () => void;
 }
 
-// 可拖曳的小晶片
+// 小晶片:可拖曳(桌機)或點擊(觸控)加入
 function Chip({
-  label,
-  onDragStart,
-  accent = false,
+  label, payload, startDrag, onPick, accent = false,
 }: {
   label: string;
-  onDragStart: (e: React.DragEvent) => void;
+  payload: DragPayload;
+  startDrag: (p: DragPayload) => (e: React.DragEvent) => void;
+  onPick: (p: DragPayload) => void;
   accent?: boolean;
 }) {
   return (
     <div
       draggable
-      onDragStart={onDragStart}
-      title="拖到畫布加入"
-      className={`cursor-grab select-none truncate rounded-lg border px-2.5 py-1.5 text-sm font-medium shadow-sm active:cursor-grabbing ${
+      onDragStart={startDrag(payload)}
+      onClick={() => onPick(payload)}
+      role="button"
+      title="拖曳或點擊加入"
+      className={`cursor-pointer select-none truncate rounded-lg border px-2.5 py-1.5 text-sm font-medium shadow-sm active:scale-95 ${
         accent ? "border-brand/40 bg-brand/5 text-brand" : "border-slate-300 bg-white hover:border-brand"
       }`}
     >
@@ -74,8 +74,13 @@ function Section({
 }
 
 export default function Palette({
-  vendors, receivers, products, processItems, specs, recent, startDrag, onCollapse,
+  vendors, receivers, products, processItems, specs, recent, startDrag, onPick, onCollapse,
 }: Props) {
+  // 統一產生晶片(closure 帶 startDrag / onPick,呼叫端只給 key/label/payload)
+  const item = (key: React.Key, label: string, payload: DragPayload, accent = false) => (
+    <Chip key={key} label={label} payload={payload} startDrag={startDrag} onPick={onPick} accent={accent} />
+  );
+
   return (
     <div className="flex h-full flex-col">
       <div className="mb-1 flex items-center justify-between">
@@ -88,74 +93,67 @@ export default function Palette({
           ⟨ 收合
         </button>
       </div>
+      <p className="mb-1 text-xs text-slate-400">桌機可拖曳;平板請「點一下」加入畫布</p>
 
       <div className="-mr-1 flex-1 overflow-y-auto pr-1">
-        <Section title="廠商單位" count={vendors.length} defaultOpen>
-          {vendors.map((c) => (
-            <Chip key={c.id} label={c.name} onDragStart={startDrag({ kind: "company", role: "vendor", companyId: String(c.id) })} />
-          ))}
-          <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "company", role: "vendor" })} accent />
+        <Section title="廠商單位" count={vendors.length}>
+          {vendors.map((c) => item(c.id, c.name, { kind: "company", role: "vendor", companyId: String(c.id) }))}
+          {item("v-custom", "＋ 自訂", { kind: "company", role: "vendor" }, true)}
         </Section>
 
         <Section title="接收單位" count={receivers.length}>
-          {receivers.map((c) => (
-            <Chip key={c.id} label={c.name} onDragStart={startDrag({ kind: "company", role: "receiver", companyId: String(c.id) })} />
-          ))}
-          <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "company", role: "receiver" })} accent />
+          {receivers.map((c) => item(c.id, c.name, { kind: "company", role: "receiver", companyId: String(c.id) }))}
+          {item("r-custom", "＋ 自訂", { kind: "company", role: "receiver" }, true)}
         </Section>
 
-        <Section title="品名" count={products.length} defaultOpen>
-          {products.map((p) => (
-            <Chip key={p.id} label={p.name} onDragStart={startDrag({ kind: "field", field: "品名", value: p.name })} />
-          ))}
-          <Chip label="＋ 自訂品名" onDragStart={startDrag({ kind: "field", field: "品名" })} accent />
+        <Section title="品名" count={products.length}>
+          {products.map((p) => item(p.id, p.name, { kind: "field", field: "品名", value: p.name }))}
+          {item("p-custom", "＋ 自訂品名", { kind: "field", field: "品名" }, true)}
         </Section>
 
         <Section title="加工項目" count={processItems.length}>
-          {processItems.map((p) => (
-            <Chip key={p.id} label={p.name} onDragStart={startDrag({ kind: "field", field: "加工", value: p.name })} />
-          ))}
-          <Chip label="＋ 自訂" onDragStart={startDrag({ kind: "field", field: "加工" })} accent />
+          {processItems.map((p) => item(p.id, p.name, { kind: "field", field: "加工", value: p.name }))}
+          {item("proc-custom", "＋ 自訂", { kind: "field", field: "加工" }, true)}
         </Section>
 
-        <Section title="規格" count={specs.length}>
-          {specs.map((s) => (
-            <Chip key={s.id} label={s.name} onDragStart={startDrag({ kind: "field", field: "規格1", value: s.name })} />
-          ))}
-          <Chip label="＋ 規格1(打字)" onDragStart={startDrag({ kind: "field", field: "規格1", custom: true })} accent />
-          <Chip label="＋ 規格2(打字)" onDragStart={startDrag({ kind: "field", field: "規格2", custom: true })} accent />
+        <Section title="規格1" count={specs.filter((s) => s.kind !== "規格2").length}>
+          {specs.filter((s) => s.kind !== "規格2").map((s) => item(s.id, s.name, { kind: "field", field: "規格1", value: s.name }))}
+          {item("s1-custom", "＋ 規格1(打字)", { kind: "field", field: "規格1", custom: true }, true)}
+        </Section>
+
+        <Section title="規格2" count={specs.filter((s) => s.kind !== "規格1").length}>
+          {specs.filter((s) => s.kind !== "規格1").map((s) => item(`s2-${s.id}`, s.name, { kind: "field", field: "規格2", value: s.name }))}
+          {item("s2-custom", "＋ 規格2(打字)", { kind: "field", field: "規格2", custom: true }, true)}
         </Section>
 
         <Section title="數量">
-          <Chip label="＋ 數量(可填數字)" onDragStart={startDrag({ kind: "field", field: "數量" })} accent />
+          {item("qty", "＋ 數量(可填數字)", { kind: "field", field: "數量" }, true)}
         </Section>
 
         <Section title="單位">
-          {COMMON_UNITS.map((u) => (
-            <Chip key={u} label={u} onDragStart={startDrag({ kind: "field", field: "單位", value: u })} />
-          ))}
-          <Chip label="＋ 自訂(打字)" onDragStart={startDrag({ kind: "field", field: "單位", custom: true })} accent />
+          {COMMON_UNITS.map((u) => item(u, u, { kind: "field", field: "單位", value: u }))}
+          {item("unit-custom", "＋ 自訂(打字)", { kind: "field", field: "單位", custom: true }, true)}
         </Section>
 
         <Section title="備註">
-          <Chip label="＋ 備註(選填)" onDragStart={startDrag({ kind: "field", field: "備註", custom: true })} accent />
+          {item("remark", "＋ 備註(選填)", { kind: "field", field: "備註", custom: true }, true)}
         </Section>
 
-        <Section title="整排" defaultOpen>
-          <Chip label="＋ 空白排(五欄)" onDragStart={startDrag({ kind: "row" })} accent />
+        <Section title="整排">
+          {item("row", "＋ 空白排(多欄)", { kind: "row" }, true)}
         </Section>
 
-        <Section title="最近使用組合" count={recent.length} defaultOpen>
+        <Section title="最近使用組合" count={recent.length}>
           {recent.length === 0 ? (
             <p className="text-xs text-slate-400">建單後會記住常用組合</p>
           ) : (
-            recent.map((c, i) => (
-              <Chip
-                key={i}
-                label={`${c.product_name}${c.spec ? "·" + c.spec : ""}${c.process_item ? "·" + c.process_item : ""}`}
-                onDragStart={startDrag({ kind: "combo", combo: c })}
-              />
-            ))
+            recent.map((c, i) =>
+              item(
+                `combo-${i}`,
+                `${c.product_name}${c.spec ? "·" + c.spec : ""}${c.process_item ? "·" + c.process_item : ""}`,
+                { kind: "combo", combo: c },
+              ),
+            )
           )}
         </Section>
       </div>

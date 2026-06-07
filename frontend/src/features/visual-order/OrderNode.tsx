@@ -3,7 +3,7 @@ import { Handle, Position } from "@xyflow/react";
 import { useVisualOrder } from "./context";
 
 export default function OrderNode() {
-  const { rows, totalQty, orderDate, setOrderDate, submit, busy } = useVisualOrder();
+  const { rows, totalQty, orderDate, setOrderDate, submit, canSubmit, busy } = useVisualOrder();
 
   return (
     <div className="w-56 rounded-2xl border-2 border-brand bg-white p-4 shadow-lg">
@@ -34,10 +34,14 @@ export default function OrderNode() {
       <button
         className="nodrag mt-3 w-full rounded-xl bg-brand px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-brand-dark active:scale-[0.98] disabled:opacity-50"
         onClick={submit}
-        disabled={busy || rows.length === 0}
+        disabled={busy || !canSubmit}
+        title={!canSubmit ? "需選擇廠商、接收,且每排都有品名與數量" : undefined}
       >
         {busy ? "建立中…" : "產生訂單"}
       </button>
+      {!canSubmit && (
+        <p className="mt-1 text-center text-[10px] text-slate-400">需選廠商/接收,每排要有品名與數量</p>
+      )}
     </div>
   );
 }

@@ -112,6 +112,7 @@ function VisualOrderInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(init.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(init.edges);
   const seq = useRef(100);
+  const flowWrapRef = useRef<HTMLDivElement>(null); // 觸控點擊加入時,算畫布中央位置
 
   useEffect(() => {
     Promise.all([productsApi.list(), processItemsApi.list(), specsApi.list(), companiesApi.list()])
@@ -121,8 +122,8 @@ function VisualOrderInner() {
       .catch((err) => setError(err instanceof ApiError ? err.message : "載入主檔失敗"));
   }, []);
 
-  const vendors = companies.filter((c) => c.role_type === "vendor" || c.role_type === "both");
-  const receivers = companies.filter((c) => c.role_type === "receiver" || c.role_type === "both");
+  const vendors = companies.filter((c) => c.role_type === "vendor");
+  const receivers = companies.filter((c) => c.role_type === "receiver");
 
   const recon = useMemo(() => reconstruct(nodes, edges), [nodes, edges]);
   const totalQty = useMemo(
@@ -333,6 +334,18 @@ function VisualOrderInner() {
     e.dataTransfer.dropEffect = "copy";
   }, []);
 
+  // 觸控/點擊加入:把節點放到畫布可視區中央(平板無法用 HTML5 拖放)
+  const addPayload = useCallback(
+    (payload: DragPayload) => {
+      const rect = flowWrapRef.current?.getBoundingClientRect();
+      const screen = rect
+        ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+        : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      spawn(payload, screenToFlowPosition(screen));
+    },
+    [spawn, screenToFlowPosition],
+  );
+
   const onNodeContextMenu = useCallback((e: React.MouseEvent, node: Node) => {
     e.preventDefault();
     if (node.id === ORDER_ID) return;
@@ -376,11 +389,16 @@ function VisualOrderInner() {
     }
   }, [recon, navigate, orderDate]);
 
+  // 防呆:廠商、接收都選了,且至少一排、每排都有品名與數量,才可送出
+  const canSubmit =
+    !!recon.vendorId && !!recon.receiverId && recon.rows.length > 0 &&
+    recon.rows.every((r) => r.product_name.trim() && String(r.quantity).trim());
+
   const ctx: VisualOrderCtx = {
     products, processItems, specs, vendors, receivers,
     rows: recon.rows, totalQty, orderDate, setOrderDate, updateNode,
     removeNode: (id) => removeNodes([id]),
-    suggestNext, submit: openConfirm, busy,
+    suggestNext, submit: openConfirm, canSubmit, busy,
   };
 
   const vendorName = vendors.find((v) => String(v.id) === recon.vendorId)?.name ?? "—";
@@ -413,7 +431,7 @@ function VisualOrderInner() {
                 <Palette
                   vendors={vendors} receivers={receivers} products={products}
                   processItems={processItems} specs={specs} recent={recent}
-                  startDrag={startDrag} onCollapse={() => setPaletteOpen(false)}
+                  startDrag={startDrag} onPick={addPayload} onCollapse={() => setPaletteOpen(false)}
                 />
               </Card>
             </div>
@@ -430,7 +448,7 @@ function VisualOrderInner() {
 
         <div className="space-y-3">
           <VisualOrderProvider value={ctx}>
-            <div className="h-[60vh] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50" onDrop={onDrop} onDragOver={onDragOver}>
+            <div ref={flowWrapRef} className="h-[60vh] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50" onDrop={onDrop} onDragOver={onDragOver}>
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -525,7 +543,8 @@ function VisualOrderInner() {
       {/* 「+」建議下一個欄位的浮動選單(排除這排已有的欄位) */}
       {suggest && (() => {
         const used = fieldKindsInRow(suggest.id);
-        const avail = ADDABLE_KINDS.filter((f) => !used.has(f));
+        // 單位可重複(一排可放兩個單位 → 合併成 2k+3b),故永遠保留在選單
+        const avail = ADDABLE_KINDS.filter((f) => f === "單位" || !used.has(f));
         return (
           <div
             className="fixed z-50 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"

@@ -91,6 +91,7 @@ export function reconstruct(nodes: Node[], edges: Edge[]): Reconstructed {
     };
     let spec1 = "";
     let spec2 = "";
+    const unitParts: { x: number; v: string }[] = []; // 可有多個單位節點,依左→右合併
     for (const n of fieldNodes) {
       const d = n.data as FieldNodeData;
       const v = (d.value ?? "").trim();
@@ -100,11 +101,13 @@ export function reconstruct(nodes: Node[], edges: Edge[]): Reconstructed {
       else if (d.field === "規格2" && !spec2) spec2 = v;
       else if (d.field === "加工" && !row.process_item) row.process_item = v;
       else if (d.field === "數量" && !row.quantity) row.quantity = v;
-      else if (d.field === "單位" && !row.unit) row.unit = v;
+      else if (d.field === "單位") unitParts.push({ x: n.position?.x ?? 0, v });
       else if (d.field === "備註" && !row.remark) row.remark = v;
     }
     // 規格1/規格2 合併成單一規格(「規格1 x 規格2」)
     row.spec = combineSpec(spec1, spec2);
+    // 多個單位節點依畫面左→右用 + 合併(例:2k+3b)
+    row.unit = unitParts.sort((a, b) => a.x - b.x).map((p) => p.v).join("+");
     // 一排至少要有品名才算數
     if (row.product_name) rows.push(row);
   }

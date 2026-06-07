@@ -28,6 +28,8 @@ export const companiesApi = {
     api<Company[]>("/companies", { params: { role } }),
   create: (body: Partial<Company>) =>
     api<Company>("/companies", { method: "POST", body }),
+  update: (id: number, body: Partial<Company>) =>
+    api<Company>(`/companies/${id}`, { method: "PATCH", body }),
 };
 
 export const productsApi = {
@@ -44,7 +46,8 @@ export const processItemsApi = {
 
 export const specsApi = {
   list: () => api<Spec[]>("/specs"),
-  create: (body: { name: string }) => api<Spec>("/specs", { method: "POST", body }),
+  create: (body: { name: string; kind?: "規格1" | "規格2" | null }) =>
+    api<Spec>("/specs", { method: "POST", body }),
 };
 
 // ---- 報表 ----

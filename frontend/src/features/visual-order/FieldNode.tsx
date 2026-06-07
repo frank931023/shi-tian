@@ -2,6 +2,7 @@
 // 左側 target、右側 source:可串成一排,也可連到訂單。
 // 規格/單位 預設用「下拉選單」(來自主檔/常用值);若是從側欄拖「自訂」出來則用文字輸入。
 import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { spec1Options, spec2Options } from "../../lib/spec";
 import { COMMON_UNITS, useVisualOrder, type FieldNodeData } from "./context";
 
 const STYLE: Record<string, { color: string; placeholder: string }> = {
@@ -50,7 +51,11 @@ export default function FieldNode({ id, data }: NodeProps) {
 
   let control;
   if (d.field === "加工") control = renderSelect(processItems.map((p) => p.name));
-  else if (d.field === "規格1" || d.field === "規格2") control = d.custom ? renderInput() : renderSelect(specs.map((s2) => s2.name));
+  else if (d.field === "規格1" || d.field === "規格2") {
+    // 依 kind 取建議值並按公制/英制排序(視覺化模式規格2 顯示全部,不做跨節點連動)
+    const opts = d.field === "規格1" ? spec1Options(specs) : spec2Options(specs, "");
+    control = d.custom ? renderInput() : renderSelect(opts);
+  }
   else if (d.field === "單位") control = d.custom ? renderInput() : renderSelect(COMMON_UNITS);
   else if (d.field === "數量") control = renderInput("number");
   else control = renderInput(); // 品名 / 備註

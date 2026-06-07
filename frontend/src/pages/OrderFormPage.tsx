@@ -6,9 +6,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
-import { Button, Card, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
+import { Button, Card, Combobox, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
 import { today } from "../lib/format";
-import { combineSpec, splitSpec } from "../lib/spec";
+import { combineSpec, spec1Options, spec2Options, splitSpec } from "../lib/spec";
+import { combineUnit, splitUnit, UNIT_OPTIONS } from "../lib/unit";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 
 // 表單內部用:數值欄位以字串保存,方便輸入(送出時再轉)
@@ -20,7 +21,8 @@ interface RowState {
   process_item: string;
   net_weight_kg: string;
   quantity: string;
-  unit: string;
+  unit1: string;
+  unit2: string;
   remark: string;
 }
 
@@ -31,7 +33,8 @@ const emptyRow = (): RowState => ({
   process_item: "",
   net_weight_kg: "",
   quantity: "",
-  unit: "",
+  unit1: "",
+  unit2: "",
   remark: "",
 });
 
@@ -97,7 +100,8 @@ export default function OrderFormPage() {
               process_item: it.process_item ?? "",
               net_weight_kg: it.net_weight_kg != null ? String(it.net_weight_kg) : "",
               quantity: String(it.quantity ?? ""),
-              unit: it.unit ?? "",
+              unit1: splitUnit(it.unit)[0],
+              unit2: splitUnit(it.unit)[1],
               remark: it.remark ?? "",
               };
             }),
@@ -115,8 +119,8 @@ export default function OrderFormPage() {
     };
   }, [editingId, copyId]);
 
-  const vendors = companies.filter((c) => c.role_type === "vendor" || c.role_type === "both");
-  const receivers = companies.filter((c) => c.role_type === "receiver" || c.role_type === "both");
+  const vendors = companies.filter((c) => c.role_type === "vendor");
+  const receivers = companies.filter((c) => c.role_type === "receiver");
 
   // 純移轉單:不算金額,改算合計數量
   const totalQty = useMemo(
@@ -148,6 +152,10 @@ export default function OrderFormPage() {
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!vendorId || !receiverId) {
+      setError("廠商單位與接收單位都必須選擇,才能送出");
+      return;
+    }
     if (rows.filter((r) => r.product_name.trim()).length === 0) {
       setError("至少要有一行品項(品名必填)");
       return;
@@ -168,7 +176,7 @@ export default function OrderFormPage() {
         process_item: r.process_item || null,
         net_weight_kg: r.net_weight_kg ? Number(r.net_weight_kg) : null,
         quantity: r.quantity ? Number(r.quantity) : 0,
-        unit: r.unit || null,
+        unit: combineUnit(r.unit1, r.unit2) || null,
         remark: r.remark || null,
       })),
     };
@@ -190,6 +198,8 @@ export default function OrderFormPage() {
   const vendorName = vendors.find((v) => String(v.id) === vendorId)?.name ?? "—";
   const receiverName = receivers.find((r) => String(r.id) === receiverId)?.name ?? "—";
   const previewRows = rows.filter((r) => r.product_name.trim());
+  // 防呆:廠商、接收都選了,且至少有一行品名才可送出
+  const formValid = !!vendorId && !!receiverId && previewRows.length > 0;
 
   if (loading) return <Spinner />;
 
@@ -212,21 +222,21 @@ export default function OrderFormPage() {
       <Card className="space-y-4">
         {/* 單頭:手機單欄、平板以上三欄 */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="廠商單位">
-            <Select value={vendorId} onChange={(e) => setVendorId(e.target.value)}>
-              <option value="">— 請選擇 —</option>
-              {vendors.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </Select>
+          <Field label="廠商單位" required>
+            <Combobox
+              value={vendorId}
+              onChange={setVendorId}
+              options={vendors.map((c) => ({ id: c.id, label: c.name }))}
+              placeholder="輸入廠商名稱搜尋…"
+            />
           </Field>
-          <Field label="接收單位">
-            <Select value={receiverId} onChange={(e) => setReceiverId(e.target.value)}>
-              <option value="">— 請選擇 —</option>
-              {receivers.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </Select>
+          <Field label="接收單位" required>
+            <Combobox
+              value={receiverId}
+              onChange={setReceiverId}
+              options={receivers.map((c) => ({ id: c.id, label: c.name }))}
+              placeholder="輸入接收單位搜尋…"
+            />
           </Field>
           <Field label="日期" required>
             <Input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} />
@@ -266,10 +276,21 @@ export default function OrderFormPage() {
                   />
                 </Field>
                 <Field label="規格1">
-                  <Input list="spec-options" value={r.spec1} onChange={(e) => updateRow(idx, { spec1: e.target.value })} placeholder="例:1/2" />
+                  <Select value={r.spec1} onChange={(e) => updateRow(idx, { spec1: e.target.value, spec2: "" })}>
+                    <option value="">—</option>
+                    {spec1Options(specs).map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </Select>
                 </Field>
                 <Field label="規格2">
-                  <Input list="spec-options" value={r.spec2} onChange={(e) => updateRow(idx, { spec2: e.target.value })} placeholder="例:H17" />
+                  {/* 規格2 只顯示能與所選規格1搭配的組合;未選規格1 → 顯示全部 */}
+                  <Select value={r.spec2} onChange={(e) => updateRow(idx, { spec2: e.target.value })}>
+                    <option value="">—</option>
+                    {spec2Options(specs, r.spec1).map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </Select>
                 </Field>
                 <Field label="加工項目">
                   <Select value={r.process_item} onChange={(e) => updateRow(idx, { process_item: e.target.value })}>
@@ -285,8 +306,18 @@ export default function OrderFormPage() {
                 <Field label="數量" required>
                   <Input type="number" inputMode="decimal" step="0.01" value={r.quantity} onChange={(e) => updateRow(idx, { quantity: e.target.value })} />
                 </Field>
-                <Field label="單位">
-                  <Input list="unit-options" value={r.unit} onChange={(e) => updateRow(idx, { unit: e.target.value })} placeholder="K / 件" />
+                <Field label="單位1">
+                  <Select value={r.unit1} onChange={(e) => updateRow(idx, { unit1: e.target.value })}>
+                    <option value="">—</option>
+                    {UNIT_OPTIONS.map((u) => (<option key={u} value={u}>{u}</option>))}
+                  </Select>
+                </Field>
+                <Field label="單位2">
+                  {/* 可選第二個單位,送出顯示為「單位1+單位2」例:2k+3b */}
+                  <Select value={r.unit2} onChange={(e) => updateRow(idx, { unit2: e.target.value })}>
+                    <option value="">—</option>
+                    {UNIT_OPTIONS.map((u) => (<option key={u} value={u}>{u}</option>))}
+                  </Select>
                 </Field>
               </div>
               <div className="mt-3">
@@ -301,16 +332,6 @@ export default function OrderFormPage() {
         <datalist id="product-options">
           {products.map((p) => (
             <option key={p.id} value={p.name} />
-          ))}
-        </datalist>
-        <datalist id="spec-options">
-          {specs.map((s) => (
-            <option key={s.id} value={s.name} />
-          ))}
-        </datalist>
-        <datalist id="unit-options">
-          {["K", "KG", "件", "支", "箱"].map((u) => (
-            <option key={u} value={u} />
           ))}
         </datalist>
 
@@ -331,7 +352,8 @@ export default function OrderFormPage() {
             <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>
               取消
             </Button>
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" disabled={busy || !formValid}
+              title={!formValid ? "請先選擇廠商單位、接收單位,並至少填一行品名" : undefined}>
               {editingId ? "儲存變更" : "建立訂單"}
             </Button>
           </div>
@@ -363,7 +385,7 @@ export default function OrderFormPage() {
                 <span className="font-medium">{r.product_name}</span>
                 {combineSpec(r.spec1, r.spec2) && <span className="text-slate-500">{combineSpec(r.spec1, r.spec2)}</span>}
                 {r.process_item && <span className="text-slate-500">{r.process_item}</span>}
-                {r.quantity && <span className="text-slate-500">× {r.quantity}{r.unit}</span>}
+                {r.quantity && <span className="text-slate-500">× {r.quantity}{combineUnit(r.unit1, r.unit2)}</span>}
                 {r.remark && <span className="text-slate-400">註 {r.remark}</span>}
               </li>
             ))}

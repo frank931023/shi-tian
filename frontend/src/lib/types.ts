@@ -13,10 +13,13 @@ export interface User {
 export interface Company {
   id: number;
   name: string;
-  role_type: "vendor" | "receiver" | "both";
+  role_type: "vendor" | "receiver"; // 廠商與接收完全分開,無「兩者」
   phone?: string | null;
+  fax?: string | null;
   address?: string | null;
   note?: string | null;
+  // 完整原始資料(廠商:含多位聯絡人 contact[];接收:加工方式等),供點入查看
+  detail?: Record<string, unknown> | null;
   is_active: boolean;
 }
 
@@ -37,6 +40,8 @@ export interface ProcessItem {
 export interface Spec {
   id: number;
   name: string;
+  kind?: "規格1" | "規格2" | null; // 規格分兩類;null=舊資料,兩類皆可用
+  group_index?: number | null;      // 規格1↔規格2 的可搭配組合(同組才能配)
   is_active: boolean;
 }
 
