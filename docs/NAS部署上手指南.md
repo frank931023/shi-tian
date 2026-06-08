@@ -51,91 +51,128 @@
 
 ---
 
-## 3. 把「正式環境」部署到 NAS(逐步)
+## 3. 把「正式環境」部署到 NAS(完整逐步,從零開始)
 
-### a. 準備 NAS
-1. NAS 安裝 **Docker / Container Manager**(Synology)或 **Container Station**(QNAP)。
-2. 開啟 **SSH**(控制台 → 終端機與 SNMP → 啟用 SSH),用電腦 SSH 連進 NAS。
-   > 之後的指令都是在「SSH 進 NAS 後」打的。
+> 以下以 **Synology(DSM 7)** 為例,全程在 **Windows** 操作。QNAP 幾乎一樣,只是套件名稱不同(下面會註明)。
+> 不會指令沒關係,**一步一步照打/照點**就好。每個指令我都說明在做什麼。
 
-### b. 取得程式碼
-在 NAS 上選一個資料夾(例:`/volume1/docker/shitian`):
+### 步驟 1:找到 NAS 的區網 IP
+- 開瀏覽器登入你的 NAS 管理介面(平常進 DSM 的網址,例如 `http://192.168.1.50:5000`)。
+- 那個 `192.168.1.50` 就是 NAS 的 IP,**記下來**(你的會不一樣)。
+- 找不到的話:路由器後台的「裝置清單」,或 Synology 官網下載「Synology Assistant」會列出來。
+
+### 步驟 2:在 NAS 開啟 SSH(才能用指令連進去)
+- DSM → **控制台** → **終端機與 SNMP** → 勾選 **「啟用 SSH 功能」**,連接埠保持 **22** → **套用**。
+- (QNAP:控制台 → 系統 → Telnet/SSH → 勾「允許 SSH 連線」。)
+
+### 步驟 3:安裝 Docker(用圖形介面,不用指令)
+- DSM → **套件中心** → 搜尋 **「Container Manager」**(舊版 DSM 叫「Docker」)→ **安裝**。
+- 裝好後,`docker` 與 `docker compose` 指令就能用了。
+- (QNAP:App Center → 安裝 **「Container Station」**。)
+
+### 步驟 4:建立放程式的資料夾
+- DSM → **File Station** → 進入 **docker** 這個共用資料夾(Container Manager 安裝時通常會自動建)。
+- 在裡面**新增資料夾** `shitian`。
+- 這個資料夾的完整路徑就是 **`/volume1/docker/shitian`**(下面會一直用到)。
+
+### 步驟 5:把程式放進 NAS(用 File Station 上傳,最直覺)
+- 在你**電腦**上,進到專案資料夾 `C:\Users\frank\Desktop\code\shi-tian`。
+- 把裡面**所有東西**(`backend/`、`frontend/`、`realdata/`、`docker-compose*.yml`、`Caddyfile`、`scripts/`、`.env.prod.example` …)上傳到 NAS 的 `docker/shitian` 資料夾。
+  - File Station → 進 `shitian` → 上方 **上傳** → 選檔案/資料夾。
+  - 不用上傳 `.venv`、`node_modules`、`pgdata`、`backups` 這些(本來就不該帶)。
+- (會用 Git 的進階做法:在步驟 6 連上 SSH 後 `cd /volume1/docker/shitian` 再 `git clone <你的repo網址> .`。不會就用上傳即可。)
+
+### 步驟 6:用 SSH 從 Windows 連進 NAS(Windows 內建,免裝軟體)
+- 在 Windows 開 **PowerShell**(就是你現在這個視窗)。
+- 輸入(把 `admin` 換成你的 DSM 管理員帳號、IP 換成步驟 1 記的):
+  ```powershell
+  ssh admin@192.168.1.50
+  ```
+- 第一次會出現 `Are you sure you want to continue connecting (yes/no)?` → 打 **yes** 按 Enter。
+- 接著要你輸入密碼:打你的 **DSM 登入密碼**(**打字不會顯示**是正常的,打完按 Enter)。
+- 看到類似 `admin@NAS:~$` 的提示字,就代表**連上了**。
+- 切換成系統管理權限(Synology 必須):
+  ```sh
+  sudo -i
+  ```
+  再輸入一次密碼。提示字變成 `root@NAS:~#` 就對了。
+
+### 步驟 7:進到程式資料夾、確認檔案都在
 ```sh
-mkdir -p /volume1/docker/shitian
 cd /volume1/docker/shitian
-git clone <你的 GitHub repo 網址> .
+ls
 ```
-> 沒裝 git 也可以用 File Station 把整個專案上傳到這個資料夾。
+- `ls` 會列出資料夾內容,應該看得到 `docker-compose.yml`、`backend`、`frontend`、`realdata` 等。沒看到就是步驟 5 沒上傳對位置。
 
-### c. 建立正式用的 `.env`
+### 步驟 8:建立正式設定檔 `.env`
 ```sh
 cp .env.prod.example .env
 ```
-然後編輯 `.env`,**務必改這幾個**(← 改這裡):
-```ini
-POSTGRES_PASSWORD=<改成強密碼>                         # ← 改這裡
-DATABASE_URL=postgresql+psycopg://shitian_app:<同上密碼>@db:5432/shitian   # ← 密碼要跟上面一致
-SECRET_KEY=<用下面指令產生的一長串亂數>                 # ← 改這裡
-SITE_ADDRESS=your.domain.tw                            # ← 你的網域(見 e)
-FRONTEND_ORIGIN=https://your.domain.tw                 # ← 同網域
-```
-產生 SECRET_KEY(在電腦或 NAS 任一台執行):
+- 這是「複製範本成 .env」。接著要**編輯 .env**,**用圖形介面改最簡單**:
+  - File Station → 進 `docker/shitian` → 右上 **設定**(齒輪)勾「**顯示隱藏的檔案**」(`.env` 是隱藏檔)。
+  - 對 `.env` 按右鍵 → **以文字編輯器開啟** → 改完**儲存**。
+- **要改的只有這幾行**(其他不用動):
+  ```ini
+  POSTGRES_PASSWORD=這裡填一組強密碼
+  DATABASE_URL=postgresql+psycopg://shitian_app:這裡填同一組密碼@db:5432/shitian
+  SECRET_KEY=這裡填一串亂數(見下)
+  SITE_ADDRESS=你的網域或Tailscale域名(見步驟10)
+  FRONTEND_ORIGIN=https://你的網域(跟上面同一個)
+  ```
+- **產生 SECRET_KEY**:在你**電腦的 PowerShell**(你有 Python)執行,把印出來的長字串貼進去:
+  ```powershell
+  python -c "import secrets; print(secrets.token_hex(32))"
+  ```
+- (不想用 File Station、想在 SSH 裡改的話:輸入 `nano .env` → 用方向鍵移動游標改字 → 改完按 `Ctrl+O` 再 `Enter` 存檔 → `Ctrl+X` 離開。)
+
+### 步驟 9:把資料庫資料指到 NAS 實體路徑(避免重建時資料消失)
+- 同樣用 File Station 文字編輯器開 `docker-compose.prod.yml`,找到 `db:` 底下的 `volumes:`,把那行改成:
+  ```yaml
+  - /volume1/docker/shitian/pgdata:/var/lib/postgresql/data
+  ```
+- 之後到 DSM → **控制台 → 快照** 或你的備份方案,把 `docker/shitian` 納入備份。
+
+### 步驟 10:設定 HTTPS(二選一,**務必其一**,否則登不進去)
+**方案 A:有自己的網域(要對外服務)**
+- 把網域的 DNS **A 紀錄**指到 NAS 的公網 IP,路由器把 **80、443** 轉發到 NAS。
+- `.env` 的 `SITE_ADDRESS` 填你的網域 → Caddy 會**自動申請免費憑證、自動把 http 轉 https**,你不用自己用憑證。
+
+**方案 B:不想開放到網際網路(較安全,推薦)→ 用 Tailscale**
+- NAS 套件中心安裝 **Tailscale**,你的電腦/平板也裝,登入**同一個 Tailscale 帳號**。
+- 用 NAS 的 Tailscale 網域(MagicDNS,形如 `xxx.your-tailnet.ts.net`)當 `SITE_ADDRESS`。只有你自己的裝置連得到,不曝露到公網。
+
+> 為什麼一定要 HTTPS:正式登入的 cookie 設了「只走 HTTPS」,用 `http://IP` 會「**帳密對了卻一直登不進去**」。
+
+### 步驟 11:啟動!(回到 SSH 視窗,在 `root@NAS:/volume1/docker/shitian#`)
 ```sh
-python -c "import secrets; print(secrets.token_hex(32))"
+docker compose up -d --build
 ```
-> `.env` 不會進 git(已被忽略),機密只留在 NAS 上。
+- 因為 `.env` 裡的 `COMPOSE_FILE` 已指定正式疊法,**直接 `docker compose` 就是正式環境**,不用加一堆 `-f`。
+- 第一次會**建置映像,需要幾分鐘**(會跑很多文字,正常)。
+- 完成後看狀態:
+  ```sh
+  docker compose ps
+  ```
+  五個服務(proxy / frontend / backend / db / redis)都 `Up` 就成功。後端啟動時會**自動建好資料表**。
 
-### d. 把資料庫資料存到 NAS 實體路徑(才不會被砍掉)
-編輯 `docker-compose.prod.yml`,把 db 的 volume 改成你的實體路徑(← 改這裡):
-```yaml
-  db:
-    volumes:
-      - /volume1/docker/shitian/pgdata:/var/lib/postgresql/data   # ← 改成你的 NAS 路徑
-```
-並把這個 `pgdata` 資料夾**納入 NAS 的快照/備份**。
-
-### e. 設定 HTTPS(二選一,務必其一)
-**方案 1:有網域(對外服務)**
-- 把網域 DNS A 紀錄指到 NAS 的公網 IP,對外開放 **80 / 443**。
-- `.env` 的 `SITE_ADDRESS` 填網域 → Caddy 會自動申請 Let's Encrypt 憑證、自動把 http 轉 https。**不用自己用憑證。**
-
-**方案 2:不想開公網(推薦,較安全)→ 用 Tailscale**
-- NAS 與你的裝置都裝 **Tailscale**、加入同一個帳號(tailnet)。
-- 用 Tailscale 的 **HTTPS 網域(MagicDNS)** 當 `SITE_ADDRESS`(Tailscale 會發憑證),只有你自己的裝置連得到,不曝露到網際網路。
-
-> 重點:無論哪個方案,目的都是讓使用者用 **https://** 連進來,登入 cookie 才會生效。
-
-### f. 啟動正式環境
+### 步驟 12:建立管理員帳號(只有第一次)
 ```sh
-cd /volume1/docker/shitian
-sh scripts/prod-up.sh
+docker compose exec backend flask create-admin --username admin --display-name 管理員
 ```
-這會用「基底 + prod」啟動,並自動:
-- 建好 PostgreSQL、Redis、後端、前端、Caddy。
-- 後端啟動時**自動套用資料庫 migration**(建表/升級 schema),你不用手動跑。
+- 會問你**密碼兩次**(打字不顯示)。這就是之後登入系統的帳密。
 
-確認服務狀態:
+### 步驟 13:灌入主檔資料(廠商/品名/規格…)
 ```sh
-docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+docker compose run --rm -v /volume1/docker/shitian/realdata:/seed backend flask seed-real --path /seed
 ```
+- 這會把你上傳的 `realdata/` 內容灌進資料庫(廠商含統一編號、品名、加工項目、規格等)。
+- 成功會印出「已匯入:廠商 … / 接收 … / 品名 … / 加工 … / 規格 …」。
 
-### g. 建立管理員帳號(第一次才要)
-```sh
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec backend \
-  flask create-admin --username admin --display-name 管理員
-```
-會互動式問密碼(輸入兩次)。
+### 步驟 14:驗證成功
+- 用瀏覽器開 **`https://你的網域`**(或 Tailscale 域名)。
+- 用步驟 12 建的 **admin 帳密登入** → 能進系統、看到廠商/品名等資料 → **完成!** 🎉
 
-### h. 灌入主檔資料(廠商/品名/規格…)
-把專案的 `realdata/` 資料灌進資料庫:
-```sh
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec backend \
-  flask seed-real --path /app/../realdata
-```
-> 若路徑找不到,改用掛載方式:把 `realdata` 掛進容器再灌(同開發機做法)。realdata 在 repo 根目錄。
-
-### i. 驗證
-用瀏覽器開 `https://你的網域`(或 Tailscale 網域)→ 用 admin 登入 → 應該能進系統、看到廠商/品名等資料。
+> 之後要關閉 SSH 視窗:輸入 `exit` 兩次(先離開 root、再離開 SSH)即可,服務會在 NAS 背景繼續跑。
 
 ---
 
