@@ -1,6 +1,7 @@
 """Phase 1 煙霧測試:用 SQLite 快速驗證 CRUD / 金額重算 / 快照 / 篩選邏輯。
 
 這支不是正式測試框架,只是「可重現的驗證範例」(CLAUDE.md §6)。
+注意:主檔/訂單端點需登入 + CSRF(Phase 2 起),故這裡先建 admin 並登入。
 跑法(在 backend/ 下、venv 已啟動):
     DATABASE_URL="sqlite:///smoke.db" SECRET_KEY=test python tests/smoke_phase1.py
 """
@@ -9,6 +10,8 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///smoke.db")
 os.environ.setdefault("SECRET_KEY", "test")
+# 關閉 secure cookie,否則 test client 走 http 不會帶 session cookie
+os.environ.setdefault("SESSION_COOKIE_SECURE", "false")
 
 from app import create_app  # noqa: E402
 from app.core.db import db  # noqa: E402
@@ -26,18 +29,30 @@ def main() -> None:
     with app.app_context():
         db.drop_all()
         db.create_all()
+        # 建一個 admin 供登入(主檔/訂單寫入需要)
+        from app.models import User
+        from app.services import auth_service
+        db.session.add(User(
+            username="admin", display_name="admin", role="admin",
+            password_hash=auth_service.hash_password("pw123456"),
+        ))
+        db.session.commit()
 
     c = app.test_client()
+    # 登入並取得 csrf token;之後寫入請求都帶 X-CSRF-Token
+    r = c.post("/api/auth/login", json={"username": "admin", "password": "pw123456"})
+    check("admin 登入", r.status_code == 200, str(r.status_code))
+    H = {"X-CSRF-Token": r.get_json()["data"]["csrf"]}
 
     # --- 建立主檔 ---
-    r = c.post("/api/companies", json={"name": "甲廠商", "role_type": "vendor"})
-    check("建立廠商公司", r.status_code == 201)
+    r = c.post("/api/companies", json={"name": "甲廠商", "role_type": "vendor"}, headers=H)
+    check("建立廠商公司", r.status_code == 201, str(r.status_code))
     vendor_id = r.get_json()["data"]["id"]
 
-    r = c.post("/api/companies", json={"name": "乙接收", "role_type": "receiver"})
+    r = c.post("/api/companies", json={"name": "乙接收", "role_type": "receiver"}, headers=H)
     receiver_id = r.get_json()["data"]["id"]
 
-    r = c.post("/api/products", json={"name": "HBS", "default_unit": "K"})
+    r = c.post("/api/products", json={"name": "HBS", "default_unit": "K"}, headers=H)
     check("建立品名", r.status_code == 201)
 
     # role 篩選:vendor 不該回傳 receiver-only 的公司
@@ -57,8 +72,8 @@ def main() -> None:
             {"product_name": "螺帽", "quantity": "3", "unit_price": "10", "process_item": "車刃"},
         ],
     }
-    r = c.post("/api/orders", json=order_payload)
-    check("建立訂單", r.status_code == 201)
+    r = c.post("/api/orders", json=order_payload, headers=H)
+    check("建立訂單", r.status_code == 201, str(r.status_code))
     order = r.get_json()["data"]
     order_id = order["id"]
 
@@ -69,12 +84,11 @@ def main() -> None:
     check("總額 = 80.0", order["total_amount"] == 80.0, str(order["total_amount"]))
 
     # --- 反正規化快照:改品名主檔不影響已建訂單 ---
-    # (這裡直接比對:訂單存的是 product_name 字串快照,而非關聯主檔即時讀取)
     r = c.get(f"/api/orders/{order_id}")
     check("快照:訂單存的是品名文字", r.get_json()["data"]["items"][0]["product_name"] == "HBS")
 
     # --- 驗證失敗:沒有 items 應回 422 ---
-    r = c.post("/api/orders", json={"order_date": "2026-06-04", "items": []})
+    r = c.post("/api/orders", json={"order_date": "2026-06-04", "items": []}, headers=H)
     check("空 items 驗證失敗 (422)", r.status_code == 422, str(r.status_code))
 
     # --- 篩選 + 分頁 ---
@@ -90,12 +104,12 @@ def main() -> None:
 
     # --- 更新:改數量,總額應跟著重算 ---
     order_payload["items"][0]["quantity"] = "10"  # 10 * 12.5 = 125
-    r = c.put(f"/api/orders/{order_id}", json=order_payload)
+    r = c.put(f"/api/orders/{order_id}", json=order_payload, headers=H)
     check("更新後總額重算 = 155.0", r.get_json()["data"]["total_amount"] == 155.0,
           str(r.get_json()["data"]["total_amount"]))
 
     # --- 刪除 ---
-    r = c.delete(f"/api/orders/{order_id}")
+    r = c.delete(f"/api/orders/{order_id}", headers=H)
     check("刪除訂單", r.status_code == 200)
     r = c.get(f"/api/orders/{order_id}")
     check("刪除後查不到 (404)", r.status_code == 404)

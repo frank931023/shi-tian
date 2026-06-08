@@ -29,3 +29,6 @@ pydyf==0.10.0
 # --- 點陣套表(Phase 7)---
 # ReportLab 以精準座標輸出套表 PDF + 校正頁(純 Python,跨平台,可在 Windows 驗證)。
 reportlab==4.2.5
+
+# --- 訂單匯出 Excel ---
+openpyxl==3.1.5               # 產生 .xlsx(CSV 走內建 csv,不需額外套件)

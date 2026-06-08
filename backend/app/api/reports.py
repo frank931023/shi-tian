@@ -55,6 +55,13 @@ def summary():
         db.select(func.coalesce(func.sum(OrderItem.quantity), 0))
         .select_from(OrderItem).join(Order).where(*conds)
     )
+    # 活躍廠商 / 接收單位數(去重,排除未指定)
+    vendor_count = db.session.scalar(
+        db.select(func.count(func.distinct(Order.vendor_id))).where(*conds)
+    )
+    receiver_count = db.session.scalar(
+        db.select(func.count(func.distinct(Order.receiver_id))).where(*conds)
+    )
 
     # 每期(週/月)數量:join 單身,在 DB 端用 date_trunc 分組
     period = func.date_trunc(group_by, Order.order_date)
@@ -71,6 +78,8 @@ def summary():
     return ok({
         "total_count": int(total_count or 0),
         "total_quantity": float(total_qty or 0),
+        "vendor_count": int(vendor_count or 0),
+        "receiver_count": int(receiver_count or 0),
         "group_by": group_by,
         "series": series,
     })
@@ -92,6 +101,9 @@ def by_product():
 @reports_bp.get("/reports/by-company")
 @login_required
 def by_company():
+    # ?role=vendor(預設)| receiver:依廠商或接收單位排行
+    role = request.args.get("role", "vendor")
+    fk = Order.receiver_id if role == "receiver" else Order.vendor_id
     conds = _order_filters()
     rows = db.session.execute(
         db.select(
@@ -100,10 +112,32 @@ def by_company():
             func.count(func.distinct(Order.id)),
         )
         .select_from(Order)
-        .outerjoin(Company, Order.vendor_id == Company.id)
+        .outerjoin(Company, fk == Company.id)
         .join(OrderItem, OrderItem.order_id == Order.id)
         .where(*conds)
         .group_by(Company.name)
+        .order_by(func.sum(OrderItem.quantity).desc())
+    ).all()
+    return ok([
+        {"name": r[0], "quantity": float(r[1] or 0), "count": int(r[2] or 0)}
+        for r in rows
+    ])
+
+
+@reports_bp.get("/reports/by-process")
+@login_required
+def by_process():
+    """加工項目排行(數量 + 出現單數)。"""
+    conds = _order_filters()
+    rows = db.session.execute(
+        db.select(
+            func.coalesce(OrderItem.process_item, "未指定"),
+            func.sum(OrderItem.quantity),
+            func.count(func.distinct(Order.id)),
+        )
+        .select_from(OrderItem).join(Order)
+        .where(*conds)
+        .group_by(OrderItem.process_item)
         .order_by(func.sum(OrderItem.quantity).desc())
     ).all()
     return ok([

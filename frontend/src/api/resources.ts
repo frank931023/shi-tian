@@ -55,6 +55,8 @@ export interface ReportRange { from?: string; to?: string; }
 export interface Summary {
   total_count: number;
   total_quantity: number;
+  vendor_count: number;
+  receiver_count: number;
   group_by: "week" | "month";
   series: { period: string; quantity: number }[];
 }
@@ -65,7 +67,9 @@ export const reportsApi = {
   summary: (range: ReportRange & { group_by: "week" | "month" }) =>
     api<Summary>("/reports/summary", { params: range as unknown as Params }),
   byProduct: (range: ReportRange) => api<Share[]>("/reports/by-product", { params: range as unknown as Params }),
-  byCompany: (range: ReportRange) => api<Share[]>("/reports/by-company", { params: range as unknown as Params }),
+  byCompany: (range: ReportRange, role: "vendor" | "receiver" = "vendor") =>
+    api<Share[]>("/reports/by-company", { params: { ...range, role } as unknown as Params }),
+  byProcess: (range: ReportRange) => api<Share[]>("/reports/by-process", { params: range as unknown as Params }),
 };
 
 // ---- 訂單 ----
@@ -97,6 +101,17 @@ export const ordersApi = {
   update: (id: number, body: OrderInput) =>
     api<Order>(`/orders/${id}`, { method: "PUT", body }),
   remove: (id: number) => api<{ deleted: number }>(`/orders/${id}`, { method: "DELETE" }),
+  // 匯出目前篩選結果(全部,不分頁)成 CSV / Excel;回傳下載 URL(GET 帶 cookie)
+  exportUrl: (filters: OrderFilters, format: "csv" | "xlsx") => {
+    const qs = new URLSearchParams();
+    const keys: (keyof OrderFilters)[] = ["from", "to", "vendor_id", "product", "status", "q"];
+    for (const k of keys) {
+      const v = filters[k];
+      if (v !== undefined && v !== null && v !== "") qs.append(k, String(v));
+    }
+    qs.append("format", format);
+    return `/api/orders/export?${qs.toString()}`;
+  },
   // PDF 預覽走瀏覽器直接開(GET 帶 cookie),這裡只提供 URL
   pdfUrl: (id: number) => `/api/orders/${id}/pdf`,
   dotmatrixPdfUrl: (id: number) => `/api/orders/${id}/dotmatrix-pdf`,

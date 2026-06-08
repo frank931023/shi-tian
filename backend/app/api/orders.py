@@ -5,8 +5,9 @@
 - 全部用 SQLAlchemy 的條件物件(參數化),沒有任何字串拼接 SQL → 杜絕注入。
 """
 
+import csv
 from datetime import date, datetime
-from io import BytesIO
+from io import BytesIO, StringIO
 
 from flask import Blueprint, current_app, request, send_file
 from flask_login import current_user, login_required
@@ -31,14 +32,10 @@ def _parse_date(value: str | None) -> date | None:
         return None
 
 
-@orders_bp.get("/orders")
-@login_required
-def list_orders():
-    args = request.args
-
+def _build_filtered_query(args):
+    """依查詢參數組出已篩選的訂單 select(不含排序/分頁)。vendor_id 非數字會丟 ValueError。"""
     query = db.select(Order)
 
-    # 日期區間
     d_from = _parse_date(args.get("from"))
     d_to = _parse_date(args.get("to"))
     if d_from:
@@ -46,30 +43,33 @@ def list_orders():
     if d_to:
         query = query.where(Order.order_date <= d_to)
 
-    # 廠商
     if args.get("vendor_id"):
-        try:
-            query = query.where(Order.vendor_id == int(args["vendor_id"]))
-        except ValueError:
-            return err("bad_param", "vendor_id 必須是數字", 400)
+        query = query.where(Order.vendor_id == int(args["vendor_id"]))  # 非數字 → ValueError
 
-    # 狀態
     if args.get("status"):
         query = query.where(Order.status == args["status"])
 
     # 品名:單身有任一行品名包含關鍵字(用 EXISTS 子查詢)
     if args.get("product"):
-        kw = f"%{args['product']}%"
-        query = query.where(
-            Order.items.any(OrderItem.product_name.ilike(kw))
-        )
+        query = query.where(Order.items.any(OrderItem.product_name.ilike(f"%{args['product']}%")))
 
     # 關鍵字:單號或備註
     if args.get("q"):
         kw = f"%{args['q']}%"
-        query = query.where(
-            db.or_(Order.order_no.ilike(kw), Order.note.ilike(kw))
-        )
+        query = query.where(db.or_(Order.order_no.ilike(kw), Order.note.ilike(kw)))
+
+    return query
+
+
+@orders_bp.get("/orders")
+@login_required
+def list_orders():
+    args = request.args
+
+    try:
+        query = _build_filtered_query(args)
+    except ValueError:
+        return err("bad_param", "vendor_id 必須是數字", 400)
 
     # 分頁
     try:
@@ -92,6 +92,81 @@ def list_orders():
         "page_size": page_size,
         "total": total,
     })
+
+
+_EXPORT_HEADERS = [
+    "單號", "日期", "廠商單位", "接收單位", "狀態",
+    "品名", "規格", "加工項目", "重量(KG)", "數量", "單位", "品項備註", "單據備註",
+]
+
+
+def _export_rows(orders):
+    """把訂單展開成「一個品項一列」的二維資料(含單頭欄位重複)。"""
+    rows = []
+    for o in orders:
+        d = o.to_dict()  # 含 items
+        base = [
+            d["order_no"], d["order_date"] or "", d["vendor_name"] or "",
+            d["receiver_name"] or "", d["status"],
+        ]
+        note = d["note"] or ""
+        items = d.get("items") or []
+        if not items:
+            rows.append(base + ["", "", "", "", "", "", "", note])
+            continue
+        for it in items:
+            rows.append(base + [
+                it["product_name"], it["spec"] or "", it["process_item"] or "",
+                "" if it["net_weight_kg"] is None else it["net_weight_kg"],
+                it["quantity"], it["unit"] or "", it["remark"] or "", note,
+            ])
+    return rows
+
+
+@orders_bp.get("/orders/export")
+@login_required
+def export_orders():
+    """匯出目前篩選結果(全部,不分頁)成 CSV 或 Excel。?format=csv|xlsx,其餘篩選參數同 list。"""
+    args = request.args
+    try:
+        query = _build_filtered_query(args)
+    except ValueError:
+        return err("bad_param", "vendor_id 必須是數字", 400)
+    query = query.order_by(Order.order_date.desc(), Order.id.desc())
+    orders = db.session.scalars(query).all()
+    rows = _export_rows(orders)
+
+    today = date.today().strftime("%Y%m%d")
+    fmt = (args.get("format") or "csv").lower()
+
+    if fmt == "xlsx":
+        from openpyxl import Workbook
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "訂單"
+        ws.append(_EXPORT_HEADERS)
+        for r in rows:
+            ws.append(r)
+        buf = BytesIO()
+        wb.save(buf)
+        buf.seek(0)
+        return send_file(
+            buf,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            as_attachment=True, download_name=f"orders-{today}.xlsx",
+        )
+
+    # CSV:加 UTF-8 BOM,Excel 開啟中文不亂碼
+    sio = StringIO()
+    writer = csv.writer(sio)
+    writer.writerow(_EXPORT_HEADERS)
+    writer.writerows(rows)
+    data = sio.getvalue().encode("utf-8-sig")  # utf-8-sig 會自動加 BOM,Excel 開中文不亂碼
+    return send_file(
+        BytesIO(data), mimetype="text/csv",
+        as_attachment=True, download_name=f"orders-{today}.csv",
+    )
 
 
 @orders_bp.get("/orders/<int:order_id>")

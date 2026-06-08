@@ -53,6 +53,15 @@ export default function OrdersListPage() {
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.page_size)) : 1;
 
+  // 下載目前篩選結果(用 <a> 觸發,attachment 會直接下載不換頁)
+  function download(format: "xlsx" | "csv") {
+    const a = document.createElement("a");
+    a.href = ordersApi.exportUrl(filters, format);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
   return (
     <div className="mx-auto max-w-6xl space-y-4">
       <div className="flex items-center justify-between">
@@ -97,6 +106,19 @@ export default function OrdersListPage() {
           />
         </div>
       </Card>
+
+      {/* 下載目前篩選結果(全部,不分頁) */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-slate-500">
+          下載目前篩選結果{data ? `(共 ${data.total} 筆)` : ""}:
+        </span>
+        <Button variant="secondary" onClick={() => download("xlsx")} disabled={!data || data.total === 0}>
+          ⬇ Excel
+        </Button>
+        <Button variant="secondary" onClick={() => download("csv")} disabled={!data || data.total === 0}>
+          ⬇ CSV
+        </Button>
+      </div>
 
       <ErrorBar message={error} />
 
