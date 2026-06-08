@@ -97,6 +97,9 @@ export const ordersApi = {
   list: (filters: OrderFilters) =>
     api<Paginated<Order>>("/orders", { params: filters as Record<string, string | number | undefined> }),
   get: (id: number) => api<Order>(`/orders/${id}`),
+  // 銷貨統計表:依客戶 + 期間取含明細的訂單(不分頁)
+  statement: (vendorId: number, range: { from?: string; to?: string }) =>
+    api<Order[]>("/orders/statement", { params: { vendor_id: vendorId, ...range } }),
   create: (body: OrderInput) => api<Order>("/orders", { method: "POST", body }),
   update: (id: number, body: OrderInput) =>
     api<Order>(`/orders/${id}`, { method: "PUT", body }),

@@ -169,6 +169,36 @@ def export_orders():
     )
 
 
+@orders_bp.get("/orders/statement")
+@login_required
+def statement_orders():
+    """銷貨統計表用:依客戶(vendor_id)+ 期間取出「含明細」的訂單(不分頁,日期由舊到新)。"""
+    args = request.args
+    try:
+        query = _build_filtered_query(args)
+    except ValueError:
+        return err("bad_param", "vendor_id 必須是數字", 400)
+    query = query.order_by(Order.order_date.asc(), Order.id.asc())
+    orders = db.session.scalars(query).all()
+    return ok([o.to_dict() for o in orders])  # to_dict 預設含 items
+
+
+@orders_bp.post("/orders/statement-pdf")
+@login_required
+def statement_pdf():
+    """把前端目前的銷貨統計表(含使用者填的單價等)產成 PDF。"""
+    data = request.get_json(silent=True) or {}
+    try:
+        pdf = pdf_service.statement_to_pdf_bytes(data)
+    except pdf_service.PdfUnavailable as e:
+        return err("pdf_unavailable", str(e), 503)
+    name = (data.get("customer") or "statement").strip() or "statement"
+    return send_file(
+        BytesIO(pdf), mimetype="application/pdf",
+        as_attachment=False, download_name=f"銷貨統計表-{name}.pdf",
+    )
+
+
 @orders_bp.get("/orders/<int:order_id>")
 @login_required
 def get_order(order_id: int):

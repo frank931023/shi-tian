@@ -48,6 +48,23 @@ def order_to_pdf_bytes(order: Order) -> bytes:
     return HTML(string=html).write_pdf()
 
 
+def render_statement_html(data: dict) -> str:
+    """銷貨統計表 HTML(資料由前端帶入:含使用者填的單價/加工單號等)。"""
+    cfg = current_app.config
+    company = {"name1": cfg["COMPANY_NAME_1"], "tel": cfg["COMPANY_TEL"], "fax": cfg["COMPANY_FAX"]}
+    return render_template("sales_statement_pdf.html", d=data, company=company)
+
+
+def statement_to_pdf_bytes(data: dict) -> bytes:
+    try:
+        from weasyprint import HTML  # 延遲匯入
+    except Exception as e:  # pragma: no cover - 視環境而定
+        raise PdfUnavailable(
+            "PDF 產生需要 WeasyPrint 與其系統相依(pango/cairo),請在後端容器內執行。原始錯誤:%s" % e
+        )
+    return HTML(string=render_statement_html(data)).write_pdf()
+
+
 def archive_path(order: Order) -> Path:
     """PDF 封存路徑:archive/<YYYY-MM>/<order_no>.pdf。"""
     base = Path(current_app.config["ARCHIVE_DIR"])

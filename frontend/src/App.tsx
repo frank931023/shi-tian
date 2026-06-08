@@ -8,6 +8,7 @@ import OrdersListPage from "./pages/OrdersListPage";
 import OrderFormPage from "./pages/OrderFormPage";
 import BuildChooserPage from "./pages/BuildChooserPage";
 import MastersPage from "./pages/MastersPage";
+import SalesStatementPage from "./pages/SalesStatementPage";
 import SettingsPage from "./pages/SettingsPage";
 
 // 懶載入含重型套件的頁面,減少首次載入體積
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/orders/visual" element={<Suspense fallback={<Spinner />}><VisualOrderPage /></Suspense>} />
         <Route path="/orders/:id/edit" element={<OrderFormPage />} />
         <Route path="/reports" element={<Suspense fallback={<Spinner />}><ReportsPage /></Suspense>} />
+        <Route path="/sales" element={<SalesStatementPage />} />
         <Route path="/masters" element={<MastersPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

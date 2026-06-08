@@ -52,12 +52,15 @@ function ContactsEditor({ contacts, setContacts }: { contacts: Contact[]; setCon
   );
 }
 
-// 由聯絡人清單推導公司層級的電話/傳真(取第一位),並組出要存的 detail
-function buildVendorDetail(base: Record<string, unknown> | null | undefined, name: string, address: string, contacts: Contact[]) {
+// 由聯絡人清單推導公司層級的電話/傳真(取第一位),並組出要存的 detail(含統一編號)
+function buildVendorDetail(
+  base: Record<string, unknown> | null | undefined,
+  name: string, address: string, taxid: string, contacts: Contact[],
+) {
   const clean = contacts.filter((c) => c.name || c.company_phone || c.company_fax || c.mobile);
   const first = clean[0];
   return {
-    detail: { ...(base ?? {}), company: name, address, contact: clean },
+    detail: { ...(base ?? {}), company: name, address, taxid: taxid.trim(), contact: clean },
     phone: first ? first.company_phone || first.mobile : "",
     fax: first ? first.company_fax : "",
   };
@@ -263,6 +266,7 @@ function CompanyAddModal({
   const [phone, setPhone] = useState("");
   const [fax, setFax] = useState("");
   const [address, setAddress] = useState("");
+  const [taxid, setTaxid] = useState("");
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -272,7 +276,7 @@ function CompanyAddModal({
     setBusy(true);
     try {
       if (isVendor) {
-        const { detail, phone: p, fax: f } = buildVendorDetail(null, name.trim(), address, contacts);
+        const { detail, phone: p, fax: f } = buildVendorDetail(null, name.trim(), address, taxid, contacts);
         await companiesApi.create({ name: name.trim(), role_type: role, phone: p, fax: f, address, detail });
       } else {
         await companiesApi.create({ name: name.trim(), role_type: role, phone, fax, address });
@@ -299,6 +303,9 @@ function CompanyAddModal({
     >
       <div className="space-y-3">
         <Field label="名稱" required><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        {isVendor && (
+          <Field label="統一編號"><Input value={taxid} onChange={(e) => setTaxid(e.target.value)} placeholder="8 碼數字" /></Field>
+        )}
         <Field label="地址"><Input value={address} onChange={(e) => setAddress(e.target.value)} /></Field>
         {isVendor ? (
           <ContactsEditor contacts={contacts} setContacts={setContacts} />
@@ -324,6 +331,7 @@ function CompanyDetailModal({
   const [phone, setPhone] = useState(company.phone ?? "");
   const [fax, setFax] = useState(company.fax ?? "");
   const [address, setAddress] = useState(company.address ?? "");
+  const [taxid, setTaxid] = useState(String((company.detail as Record<string, unknown> | null)?.taxid ?? ""));
   const [contacts, setContacts] = useState<Contact[]>(() => toContacts(company.detail));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -337,7 +345,7 @@ function CompanyDetailModal({
     setBusy(true);
     try {
       const body = isVendor
-        ? { name: name.trim(), address, ...buildVendorDetail(d, name.trim(), address, contacts) }
+        ? { name: name.trim(), address, ...buildVendorDetail(d, name.trim(), address, taxid, contacts) }
         : { name: name.trim(), phone, fax, address };
       const updated = await companiesApi.update(company.id, body);
       onSaved(updated);
@@ -369,6 +377,9 @@ function CompanyDetailModal({
       {editing ? (
         <div className="space-y-3">
           <Field label="名稱" required><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
+          {isVendor && (
+            <Field label="統一編號"><Input value={taxid} onChange={(e) => setTaxid(e.target.value)} placeholder="8 碼數字" /></Field>
+          )}
           <Field label="地址"><Input value={address} onChange={(e) => setAddress(e.target.value)} /></Field>
           {isVendor ? (
             <ContactsEditor contacts={contacts} setContacts={setContacts} />
@@ -384,6 +395,7 @@ function CompanyDetailModal({
         <div className="space-y-3 text-sm">
           <div className="flex flex-wrap gap-x-6 gap-y-1">
             <span><span className="text-slate-400">用途 </span>{company.role_type === "vendor" ? "廠商單位" : "接收單位"}</span>
+            {d?.taxid ? <span><span className="text-slate-400">統一編號 </span>{String(d.taxid)}</span> : null}
             {company.phone && <span><span className="text-slate-400">電話 </span>{company.phone}</span>}
             {company.fax && <span><span className="text-slate-400">傳真 </span>{company.fax}</span>}
           </div>

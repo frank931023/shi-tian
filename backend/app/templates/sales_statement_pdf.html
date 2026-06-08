@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<style>
+  @page { size: A4 landscape; margin: 10mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans CJK TC", "Noto Sans TC", sans-serif; color: #111; font-size: 12px; }
+
+  .head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .title { flex: 1; text-align: center; font-size: 24px; font-weight: 700; letter-spacing: 10px; padding-top: 6px; }
+  .letter { border: 1px solid #111; padding: 6px 10px; font-size: 11px; line-height: 1.5; white-space: nowrap; }
+  .letter b { font-size: 13px; }
+
+  .cust { font-size: 16px; margin: 8px 0 4px; }
+  .cust .v { font-weight: 700; }
+  .meta { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px; }
+  .meta .taxid { font-size: 15px; }
+  .meta .taxid .v { font-weight: 700; letter-spacing: 1px; }
+  .meta .period { font-size: 13px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #333; padding: 4px 4px; text-align: center; font-size: 12px; }
+  th { font-weight: 700; }
+  td.l { text-align: left; }
+  td.r { text-align: right; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <div style="width: 130px"></div>
+    <div class="title">銷　貨　統　計　表</div>
+    <div class="letter">
+      <b>{{ company.name1 }}</b><br />
+      TEL:{{ company.tel }}<br />
+      FAX:{{ company.fax }}
+    </div>
+  </div>
+
+  <div class="cust">客　戶:<span class="v">{{ d.customer }}</span></div>
+  <div class="meta">
+    <div class="taxid">統一編號:<span class="v">{{ d.taxid }}</span></div>
+    <div class="period">計算期間:{{ d.period }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:4%">序號</th>
+        <th style="width:6%">日期</th>
+        <th style="width:9%">加工單號</th>
+        <th style="width:7%">收料單位</th>
+        <th style="width:8%">品名</th>
+        <th style="width:12%">規格</th>
+        <th style="width:8%">數量<br />(pcs)</th>
+        <th style="width:7%">淨重<br />(kg)</th>
+        <th style="width:5%">件數</th>
+        <th style="width:14%">加工項目</th>
+        <th style="width:6%">單價</th>
+        <th style="width:8%">金額</th>
+        <th style="width:6%">備註</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in d.rows %}
+      <tr>
+        <td>{{ r.seq }}</td>
+        <td>{{ r.date }}</td>
+        <td>{{ r.process_no }}</td>
+        <td>{{ r.receiver }}</td>
+        <td class="l">{{ r.product }}</td>
+        <td class="l">{{ r.spec }}</td>
+        <td class="r">{{ r.quantity }}</td>
+        <td class="r">{{ r.net_weight }}</td>
+        <td class="r">{{ r.pieces }}</td>
+        <td class="l">{{ r.process }}</td>
+        <td class="r">{{ r.unit_price }}</td>
+        <td class="r">{{ r.amount }}</td>
+        <td>{{ r.remark }}</td>
+      </tr>
+      {% endfor %}
+
+      <tr>
+        <td colspan="5"></td>
+        <td>數量合計</td>
+        <td class="r">{{ d.total_qty }}</td>
+        <td colspan="3"></td>
+        <td>合計</td>
+        <td class="r">{{ d.total_amount }}</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="10"></td>
+        <td>稅額</td>
+        <td class="r">{{ d.tax }}</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="10"></td>
+        <td>總計</td>
+        <td class="r">{{ d.grand }}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
