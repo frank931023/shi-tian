@@ -2,10 +2,47 @@
 import { Fragment, useEffect, useState } from "react";
 import { ApiError } from "../api/client";
 import { companiesApi, printingApi, processItemsApi, productsApi, specsApi } from "../api/resources";
-import { Button, Card, ErrorBar, Field, Input, Modal, Select, Spinner } from "../components/ui";
+import { Button, Card, ErrorBar, Field, Input, Modal, Pager, Select, Spinner } from "../components/ui";
 import { useAuth } from "../lib/AuthContext";
 import { sortSpecNames } from "../lib/spec";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
+
+// 客製分頁:每頁 10 筆,回傳目前頁資料 + 控制(超過範圍會自動夾住)
+function usePaged<T>(items: T[], size = 10) {
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(items.length / size));
+  const p = Math.min(page, totalPages);
+  return { page: p, setPage, totalPages, pageItems: items.slice((p - 1) * size, p * size) };
+}
+
+// 純名稱清單(品名 / 加工項目)用的「列表 / 卡片」呈現 + 分頁
+function NameListBody({
+  paged, view,
+}: {
+  paged: { pageItems: { id: number; name: string }[]; page: number; totalPages: number; setPage: (p: number) => void };
+  view: "list" | "grid";
+}) {
+  return (
+    <>
+      {view === "grid" ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {paged.pageItems.map((p) => (
+            <div key={p.id} className="rounded-xl border border-slate-200 p-3 font-medium">{p.name}</div>
+          ))}
+        </div>
+      ) : (
+        <ul className="divide-y divide-slate-100">
+          {paged.pageItems.map((p) => (
+            <li key={p.id} className="py-3 font-medium">{p.name}</li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-3 flex justify-end">
+        <Pager page={paged.page} totalPages={paged.totalPages} onChange={paged.setPage} />
+      </div>
+    </>
+  );
+}
 
 // 廠商聯絡人(可多筆)
 interface Contact { name: string; company_phone: string; company_fax: string; mobile: string; }
@@ -70,28 +107,38 @@ type Tab = "vendors" | "receivers" | "products" | "process" | "specs" | "calibra
 
 export default function MastersPage() {
   const [tab, setTab] = useState<Tab>("vendors");
+  const [view, setView] = useState<"list" | "grid">("list");
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const showViewToggle = ["vendors", "receivers", "products", "process"].includes(tab);
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       <h1 className="text-xl font-bold sm:text-2xl">主檔</h1>
       {!isAdmin && <p className="text-sm text-slate-500">你可以查看主檔;新增/修改需管理員權限。</p>}
 
-      {/* 分頁切換:大按鈕,手機也好點 */}
-      <div className="flex gap-2 overflow-x-auto">
-        <TabBtn active={tab === "vendors"} onClick={() => setTab("vendors")}>廠商單位</TabBtn>
-        <TabBtn active={tab === "receivers"} onClick={() => setTab("receivers")}>接收單位</TabBtn>
-        <TabBtn active={tab === "products"} onClick={() => setTab("products")}>品名</TabBtn>
-        <TabBtn active={tab === "process"} onClick={() => setTab("process")}>加工項目</TabBtn>
-        <TabBtn active={tab === "specs"} onClick={() => setTab("specs")}>規格</TabBtn>
-        <TabBtn active={tab === "calibration"} onClick={() => setTab("calibration")}>套表校正</TabBtn>
+      {/* 分頁 + 檢視切換:同一排(分頁靠左可橫向捲動,切換靠右) */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex gap-2 overflow-x-auto">
+          <TabBtn active={tab === "vendors"} onClick={() => setTab("vendors")}>廠商單位</TabBtn>
+          <TabBtn active={tab === "receivers"} onClick={() => setTab("receivers")}>接收單位</TabBtn>
+          <TabBtn active={tab === "products"} onClick={() => setTab("products")}>品名</TabBtn>
+          <TabBtn active={tab === "process"} onClick={() => setTab("process")}>加工項目</TabBtn>
+          <TabBtn active={tab === "specs"} onClick={() => setTab("specs")}>規格</TabBtn>
+          <TabBtn active={tab === "calibration"} onClick={() => setTab("calibration")}>套表校正</TabBtn>
+        </div>
+        {showViewToggle && (
+          <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-300 text-sm">
+            <button className={`px-3 py-1.5 ${view === "list" ? "bg-brand text-white" : "hover:bg-slate-50"}`} onClick={() => setView("list")}>☰ 列表</button>
+            <button className={`px-3 py-1.5 ${view === "grid" ? "bg-brand text-white" : "hover:bg-slate-50"}`} onClick={() => setView("grid")}>▦ 卡片</button>
+          </div>
+        )}
       </div>
 
-      {tab === "vendors" && <CompaniesPanel isAdmin={isAdmin} role="vendor" />}
-      {tab === "receivers" && <CompaniesPanel isAdmin={isAdmin} role="receiver" />}
-      {tab === "products" && <ProductsPanel isAdmin={isAdmin} />}
-      {tab === "process" && <ProcessPanel isAdmin={isAdmin} />}
+      {tab === "vendors" && <CompaniesPanel isAdmin={isAdmin} role="vendor" view={view} />}
+      {tab === "receivers" && <CompaniesPanel isAdmin={isAdmin} role="receiver" view={view} />}
+      {tab === "products" && <ProductsPanel isAdmin={isAdmin} view={view} />}
+      {tab === "process" && <ProcessPanel isAdmin={isAdmin} view={view} />}
       {tab === "specs" && <SpecsPanel isAdmin={isAdmin} />}
       {tab === "calibration" && <CalibrationPanel isAdmin={isAdmin} />}
     </div>
@@ -171,7 +218,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
   );
 }
 
-function CompaniesPanel({ isAdmin, role }: { isAdmin: boolean; role: "vendor" | "receiver" }) {
+function CompaniesPanel({ isAdmin, role, view }: { isAdmin: boolean; role: "vendor" | "receiver"; view: "list" | "grid" }) {
   const [items, setItems] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -190,6 +237,7 @@ function CompaniesPanel({ isAdmin, role }: { isAdmin: boolean; role: "vendor" | 
   const filtered = q
     ? items.filter((c) => `${c.name}${c.phone ?? ""}${c.fax ?? ""}`.toLowerCase().includes(q))
     : items;
+  const paged = usePaged(filtered, view === "grid" ? 12 : 10);
 
   return (
     <div className="space-y-4">
@@ -216,23 +264,45 @@ function CompaniesPanel({ isAdmin, role }: { isAdmin: boolean; role: "vendor" | 
         {loading ? <Spinner /> : filtered.length === 0 ? (
           <p className="py-6 text-center text-slate-400">沒有符合的{roleLabel}</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
-            {filtered.map((c) => (
-              <li key={c.id}>
-                <button
-                  type="button"
-                  onClick={() => setDetail(c)}
-                  className="flex w-full items-center justify-between gap-3 rounded-lg px-1 py-3 text-left hover:bg-slate-50"
-                >
-                  <span className="font-medium text-brand">{c.name}</span>
-                  <span className="text-right text-sm text-slate-500">
-                    {c.phone ? `☎ ${c.phone}` : ""}{c.fax ? ` · 傳真 ${c.fax}` : ""}
-                    <span className="ml-1 text-slate-300">›</span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <>
+            {view === "grid" ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {paged.pageItems.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setDetail(c)}
+                    className="flex flex-col rounded-xl border border-slate-200 p-3 text-left transition hover:border-brand hover:bg-slate-50"
+                  >
+                    <span className="truncate font-medium text-brand">{c.name}</span>
+                    <span className="mt-1 text-xs text-slate-500">{c.phone ? `☎ ${c.phone}` : "—"}</span>
+                    {c.fax && <span className="truncate text-xs text-slate-400">傳真 {c.fax}</span>}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {paged.pageItems.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onClick={() => setDetail(c)}
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-1 py-3 text-left hover:bg-slate-50"
+                    >
+                      <span className="font-medium text-brand">{c.name}</span>
+                      <span className="text-right text-sm text-slate-500">
+                        {c.phone ? `☎ ${c.phone}` : ""}{c.fax ? ` · 傳真 ${c.fax}` : ""}
+                        <span className="ml-1 text-slate-300">›</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="mt-3 flex justify-end">
+              <Pager page={paged.page} totalPages={paged.totalPages} onChange={paged.setPage} />
+            </div>
+          </>
         )}
       </Card>
 
@@ -437,7 +507,7 @@ function CompanyDetailModal({
   );
 }
 
-function ProductsPanel({ isAdmin }: { isAdmin: boolean }) {
+function ProductsPanel({ isAdmin, view }: { isAdmin: boolean; view: "list" | "grid" }) {
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -461,6 +531,8 @@ function ProductsPanel({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  const paged = usePaged(items, view === "grid" ? 12 : 10);
+
   return (
     <div className="space-y-4">
       {isAdmin && (
@@ -477,19 +549,13 @@ function ProductsPanel({ isAdmin }: { isAdmin: boolean }) {
         </Card>
       )}
       <Card>
-        {loading ? <Spinner /> : (
-          <ul className="divide-y divide-slate-100">
-            {items.map((p) => (
-              <li key={p.id} className="py-3 font-medium">{p.name}</li>
-            ))}
-          </ul>
-        )}
+        {loading ? <Spinner /> : <NameListBody paged={paged} view={view} />}
       </Card>
     </div>
   );
 }
 
-function ProcessPanel({ isAdmin }: { isAdmin: boolean }) {
+function ProcessPanel({ isAdmin, view }: { isAdmin: boolean; view: "list" | "grid" }) {
   const [items, setItems] = useState<ProcessItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -513,6 +579,8 @@ function ProcessPanel({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
+  const paged = usePaged(items, view === "grid" ? 12 : 10);
+
   return (
     <div className="space-y-4">
       {isAdmin && (
@@ -529,13 +597,7 @@ function ProcessPanel({ isAdmin }: { isAdmin: boolean }) {
         </Card>
       )}
       <Card>
-        {loading ? <Spinner /> : (
-          <ul className="divide-y divide-slate-100">
-            {items.map((p) => (
-              <li key={p.id} className="py-3 font-medium">{p.name}</li>
-            ))}
-          </ul>
-        )}
+        {loading ? <Spinner /> : <NameListBody paged={paged} view={view} />}
       </Card>
     </div>
   );

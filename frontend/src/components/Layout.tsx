@@ -21,6 +21,8 @@ const NAV: NavItem[] = [
   { to: "/sales", label: "銷貨統計", icon: "🧾" },
   { to: "/reports", label: "報表", icon: "📊" },
   { to: "/masters", label: "主檔", icon: "🗂️" },
+  { to: "/trash", label: "垃圾桶", icon: "🗑️", adminOnly: true },
+  { to: "/activity", label: "使用紀錄", icon: "📜", adminOnly: true },
   { to: "/settings", label: "設定", icon: "⚙️" },
 ];
 

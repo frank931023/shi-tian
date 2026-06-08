@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi } from "../api/resources";
-import { Button, Card, Combobox, ErrorBar, Field, Input, Spinner } from "../components/ui";
+import { Button, Card, Combobox, ErrorBar, Field, Input, Pager, Spinner } from "../components/ui";
 import type { Company, Order } from "../lib/types";
 
 const TAX_RATE = 0.05;
@@ -71,8 +71,11 @@ export default function SalesStatementPage() {
   const [from, setFrom] = useState(monthStart());
   const [to, setTo] = useState(ymd(new Date()));
   const [rows, setRows] = useState<Row[]>([]);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     companiesApi.list("vendor").then(setVendors).catch(() => {});
@@ -94,7 +97,7 @@ export default function SalesStatementPage() {
     setError(null);
     ordersApi
       .statement(Number(vendorId), { from, to })
-      .then((orders) => { if (alive) setRows(buildRows(orders)); })
+      .then((orders) => { if (alive) { setRows(buildRows(orders)); setPage(1); } })
       .catch((err) => alive && setError(err instanceof ApiError ? err.message : "載入失敗"))
       .finally(() => alive && setLoading(false));
     return () => { alive = false; };
@@ -153,6 +156,12 @@ export default function SalesStatementPage() {
   const tax = Math.round(totalAmount * TAX_RATE);
   const grand = totalAmount + tax;
   const orderCount = useMemo(() => new Set(rows.map((r) => r.orderId)).size, [rows]);
+
+  // 分頁(顯示用;合計與列印仍用全部 rows)
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const p = Math.min(page, totalPages);
+  const start = (p - 1) * PAGE_SIZE;
+  const pageRows = rows.slice(start, start + PAGE_SIZE);
 
   const cellInput = "w-full min-w-0 rounded-md border border-slate-200 bg-amber-50/50 px-2 py-1 text-sm outline-none focus:border-brand focus:bg-white";
 
@@ -219,7 +228,9 @@ export default function SalesStatementPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r, i) => (
+                {pageRows.map((r, localI) => {
+                  const i = start + localI;
+                  return (
                   <tr key={r.key} className={`border-t border-slate-100 hover:bg-slate-50/60 ${r.isFirst && i > 0 ? "border-t-slate-300" : ""}`}>
                     <td className="px-3 py-1.5 text-center text-slate-400">{i + 1}</td>
                     <td className="px-3 py-1.5 text-center text-slate-500">{r.isFirst ? r.date.slice(5) : ""}</td>
@@ -235,10 +246,17 @@ export default function SalesStatementPage() {
                     <td className="px-3 py-1.5 text-right font-semibold tabular-nums text-slate-800">{fmt(amountOf(r))}</td>
                     <td className="px-3 py-1.5 text-slate-400">{r.remark}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </Card>
+
+          {totalPages > 1 && (
+            <div className="flex justify-end">
+              <Pager page={p} totalPages={totalPages} onChange={setPage} />
+            </div>
+          )}
 
           {/* 彙總(發票式) */}
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">

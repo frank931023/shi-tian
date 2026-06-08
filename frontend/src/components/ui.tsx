@@ -218,6 +218,34 @@ export function ErrorBar({ message }: { message: string | null }) {
   );
 }
 
+// 分頁器:第一頁 / 上一頁 / 下一頁 / 最後一頁 + 直接跳頁
+export function Pager({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
+  const [jump, setJump] = useState("");
+  if (totalPages <= 1) return null;
+  const go = (p: number) => onChange(Math.min(totalPages, Math.max(1, p)));
+  const submitJump = () => { if (jump) { go(Number(jump)); setJump(""); } };
+  const btn = "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border border-slate-300 px-2 text-sm hover:bg-slate-50 disabled:opacity-40";
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 text-sm">
+      <button className={btn} onClick={() => go(1)} disabled={page <= 1} title="第一頁">«</button>
+      <button className={btn} onClick={() => go(page - 1)} disabled={page <= 1} title="上一頁">‹</button>
+      <span className="px-2 text-slate-600">第 <b>{page}</b> / {totalPages} 頁</span>
+      <button className={btn} onClick={() => go(page + 1)} disabled={page >= totalPages} title="下一頁">›</button>
+      <button className={btn} onClick={() => go(totalPages)} disabled={page >= totalPages} title="最後一頁">»</button>
+      <span className="ml-2 text-slate-400">跳至</span>
+      <input
+        className="h-9 w-14 rounded-lg border border-slate-300 px-2 text-center text-sm"
+        value={jump}
+        inputMode="numeric"
+        placeholder={String(page)}
+        onChange={(e) => setJump(e.target.value.replace(/\D/g, ""))}
+        onKeyDown={(e) => { if (e.key === "Enter") submitJump(); }}
+      />
+      <button className={btn} onClick={submitJump} disabled={!jump}>前往</button>
+    </div>
+  );
+}
+
 // 對話框(Modal):點背景或 ✕ 關閉
 export function Modal({
   open,

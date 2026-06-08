@@ -19,6 +19,8 @@ class Order(db.Model):
     order_date = db.Column(db.Date, nullable=False)
     # draft | confirmed | printed | void
     status = db.Column(db.String(20), nullable=False, default="draft")
+    # 軟刪除:true=在垃圾桶(列表/報表預設不顯示,可復原或永久刪除)
+    is_deleted = db.Column(db.Boolean, nullable=False, default=False)
     total_amount = db.Column(db.Numeric(12, 2), nullable=False, default=0)
     note = db.Column(db.Text)
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
@@ -48,6 +50,7 @@ class Order(db.Model):
             "receiver_name": self.receiver.name if self.receiver else None,
             "order_date": self.order_date.isoformat() if self.order_date else None,
             "status": self.status,
+            "is_deleted": self.is_deleted,
             "total_amount": float(self.total_amount) if self.total_amount is not None else 0,
             "note": self.note,
             "created_at": self.created_at.isoformat() if self.created_at else None,

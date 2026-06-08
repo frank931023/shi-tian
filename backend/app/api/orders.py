@@ -36,6 +36,12 @@ def _build_filtered_query(args):
     """依查詢參數組出已篩選的訂單 select(不含排序/分頁)。vendor_id 非數字會丟 ValueError。"""
     query = db.select(Order)
 
+    # 軟刪除:預設只看未刪除;?deleted=1 只看垃圾桶
+    if args.get("deleted") in ("1", "true"):
+        query = query.where(Order.is_deleted.is_(True))
+    else:
+        query = query.where(Order.is_deleted.is_(False))
+
     d_from = _parse_date(args.get("from"))
     d_to = _parse_date(args.get("to"))
     if d_from:
@@ -65,6 +71,10 @@ def _build_filtered_query(args):
 @login_required
 def list_orders():
     args = request.args
+
+    # 看垃圾桶(已刪除)需要 admin
+    if args.get("deleted") in ("1", "true") and getattr(current_user, "role", None) != "admin":
+        return err("forbidden", "需管理員權限", 403)
 
     try:
         query = _build_filtered_query(args)
@@ -192,6 +202,10 @@ def statement_pdf():
         pdf = pdf_service.statement_to_pdf_bytes(data)
     except pdf_service.PdfUnavailable as e:
         return err("pdf_unavailable", str(e), 503)
+    # 記錄到使用紀錄(誰在銷貨統計頁產了哪個客戶/期間的 PDF)
+    audit_service.record("statement_pdf", "sales", None,
+                         {"customer": data.get("customer"), "period": data.get("period")})
+    db.session.commit()
     name = (data.get("customer") or "statement").strip() or "statement"
     return send_file(
         BytesIO(pdf), mimetype="application/pdf",
@@ -319,14 +333,48 @@ def print_order(order_id: int):
 
 @orders_bp.delete("/orders/<int:order_id>")
 @login_required
-@admin_required
 def delete_order(order_id: int):
-    # 刪除限 admin(operator 不可刪資料,CLAUDE.md §5)
+    # 軟刪除:移到垃圾桶(is_deleted=true)。一般操作員也可刪(可復原);
+    # 垃圾桶的「復原 / 永久刪除」才限 admin。
     order = db.session.get(Order, order_id)
     if not order:
         return err("not_found", "找不到該訂單", 404)
-    order_no = order.order_no
-    db.session.delete(order)
-    audit_service.record("delete_order", "order", order_id, {"order_no": order_no})
+    order.is_deleted = True
+    audit_service.record("delete_order", "order", order_id, {"order_no": order.order_no})
     db.session.commit()
     return ok({"deleted": order_id})
+
+
+@orders_bp.post("/orders/trash/restore")
+@login_required
+@admin_required
+def restore_orders():
+    """從垃圾桶復原(可多筆)。body: {"ids": [...]}"""
+    ids = (request.get_json(silent=True) or {}).get("ids") or []
+    n = 0
+    for oid in ids:
+        o = db.session.get(Order, oid)
+        if o and o.is_deleted:
+            o.is_deleted = False
+            audit_service.record("restore_order", "order", o.id, {"order_no": o.order_no})
+            n += 1
+    db.session.commit()
+    return ok({"restored": n})
+
+
+@orders_bp.post("/orders/trash/delete")
+@login_required
+@admin_required
+def purge_orders():
+    """永久刪除(可多筆,僅垃圾桶內)。body: {"ids": [...]}"""
+    ids = (request.get_json(silent=True) or {}).get("ids") or []
+    n = 0
+    for oid in ids:
+        o = db.session.get(Order, oid)
+        if o and o.is_deleted:
+            no = o.order_no
+            db.session.delete(o)
+            audit_service.record("purge_order", "order", oid, {"order_no": no})
+            n += 1
+    db.session.commit()
+    return ok({"deleted": n})

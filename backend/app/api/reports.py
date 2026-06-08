@@ -32,7 +32,7 @@ def _date(v):
 
 
 def _order_filters():
-    conds = [Order.status != "void"]
+    conds = [Order.status != "void", Order.is_deleted.is_(False)]
     d_from = _date(request.args.get("from"))
     d_to = _date(request.args.get("to"))
     if d_from:

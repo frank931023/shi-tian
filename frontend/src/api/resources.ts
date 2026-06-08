@@ -80,6 +80,7 @@ export interface OrderFilters {
   product?: string;
   status?: string;
   q?: string;
+  deleted?: number; // 1=只看垃圾桶(已刪除,需 admin)
   page?: number;
   page_size?: number;
 }
@@ -104,6 +105,11 @@ export const ordersApi = {
   update: (id: number, body: OrderInput) =>
     api<Order>(`/orders/${id}`, { method: "PUT", body }),
   remove: (id: number) => api<{ deleted: number }>(`/orders/${id}`, { method: "DELETE" }),
+  // 垃圾桶:批次復原 / 永久刪除(admin)
+  restore: (ids: number[]) =>
+    api<{ restored: number }>("/orders/trash/restore", { method: "POST", body: { ids } }),
+  purge: (ids: number[]) =>
+    api<{ deleted: number }>("/orders/trash/delete", { method: "POST", body: { ids } }),
   // 匯出目前篩選結果(全部,不分頁)成 CSV / Excel;回傳下載 URL(GET 帶 cookie)
   exportUrl: (filters: OrderFilters, format: "csv" | "xlsx") => {
     const qs = new URLSearchParams();
@@ -123,6 +129,22 @@ export const ordersApi = {
       method: "POST",
       body: { target },
     }),
+};
+
+// ---- 使用紀錄(稽核,admin)----
+export interface AuditEntry {
+  id: number;
+  created_at?: string;
+  action: string;
+  entity?: string | null;
+  entity_id?: number | null;
+  detail?: Record<string, unknown> | null;
+  username?: string | null;
+  display_name?: string | null;
+}
+export const auditApi = {
+  list: (page = 1, pageSize = 10) =>
+    api<Paginated<AuditEntry>>("/audit", { params: { page, page_size: pageSize } }),
 };
 
 // ---- 使用者管理(admin)----

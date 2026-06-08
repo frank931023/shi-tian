@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, type OrderFilters } from "../api/resources";
-import { Button, Card, ErrorBar, Select, Spinner } from "../components/ui";
-import { useAuth } from "../lib/AuthContext";
+import { Button, Card, ErrorBar, Input, Modal, Pager, Select, Spinner } from "../components/ui";
 import type { Company, Order, Paginated } from "../lib/types";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export default function OrdersListPage() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [data, setData] = useState<Paginated<Order> | null>(null);
@@ -41,13 +39,29 @@ export default function OrdersListPage() {
     setFilters((f) => ({ ...f, ...patch, page: 1 }));
   }
 
-  async function onDelete(o: Order) {
-    if (!confirm(`確定要刪除單號 ${o.order_no}?此動作無法復原。`)) return;
+  // 刪除二次確認:開 Modal,需輸入單號才可真的刪
+  const [delTarget, setDelTarget] = useState<Order | null>(null);
+  const [delText, setDelText] = useState("");
+  const [delBusy, setDelBusy] = useState(false);
+  const [delErr, setDelErr] = useState<string | null>(null);
+
+  function onDelete(o: Order) {
+    setDelTarget(o);
+    setDelText("");
+    setDelErr(null);
+  }
+  async function confirmDelete() {
+    if (!delTarget || delText.trim() !== delTarget.order_no) return;
+    setDelBusy(true);
+    setDelErr(null);
     try {
-      await ordersApi.remove(o.id);
+      await ordersApi.remove(delTarget.id);
+      setDelTarget(null);
       setFilters((f) => ({ ...f })); // 觸發重新載入
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "刪除失敗");
+      setDelErr(err instanceof ApiError ? err.message : "刪除失敗");
+    } finally {
+      setDelBusy(false);
     }
   }
 
@@ -148,7 +162,7 @@ export default function OrdersListPage() {
                     <td className="py-3 pr-3">{o.order_date}</td>
                     <td className="py-3 pr-3">{o.vendor_name ?? "-"}</td>
                     <td className="py-3 text-right">
-                      <RowActions order={o} isAdmin={user?.role === "admin"} onDelete={onDelete} navigate={navigate} />
+                      <RowActions order={o} onDelete={onDelete} navigate={navigate} />
                     </td>
                   </tr>
                 ))}
@@ -164,47 +178,63 @@ export default function OrdersListPage() {
                   <p className="font-bold">{o.order_no}</p>
                   <p className="text-sm text-slate-500">{o.order_date} · {o.vendor_name ?? "-"}</p>
                 </div>
-                <RowActions order={o} isAdmin={user?.role === "admin"} onDelete={onDelete} navigate={navigate} />
+                <RowActions order={o} onDelete={onDelete} navigate={navigate} />
               </Card>
             ))}
           </div>
 
           {/* 分頁 */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">
-              共 {data.total} 筆 · 第 {data.page}/{totalPages} 頁
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                disabled={data.page <= 1}
-                onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) - 1 }))}
-              >
-                上一頁
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={data.page >= totalPages}
-                onClick={() => setFilters((f) => ({ ...f, page: (f.page ?? 1) + 1 }))}
-              >
-                下一頁
-              </Button>
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm text-slate-500">共 {data.total} 筆</span>
+            <Pager page={data.page} totalPages={totalPages} onChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
           </div>
         </>
       )}
+
+      {/* 刪除二次確認:必須輸入單號才能刪(防誤刪;此操作會永久刪除) */}
+      <Modal
+        open={delTarget !== null}
+        title="刪除訂單"
+        onClose={() => !delBusy && setDelTarget(null)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDelTarget(null)} disabled={delBusy}>取消</Button>
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+              disabled={delBusy || delText.trim() !== delTarget?.order_no}
+            >
+              {delBusy ? "刪除中…" : "確認刪除"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-slate-700">
+            此動作會<b className="text-red-600">永久刪除</b>單號
+            <b className="mx-1">{delTarget?.order_no}</b>
+            及其所有品項,<b className="text-red-600">無法復原</b>。
+          </p>
+          <p className="text-sm text-slate-500">請輸入此單號以確認刪除:</p>
+          <Input
+            value={delText}
+            onChange={(e) => setDelText(e.target.value)}
+            placeholder={delTarget?.order_no}
+            autoFocus
+          />
+          <ErrorBar message={delErr} />
+        </div>
+      </Modal>
     </div>
   );
 }
 
 function RowActions({
   order,
-  isAdmin,
   onDelete,
   navigate,
 }: {
   order: Order;
-  isAdmin: boolean;
   onDelete: (o: Order) => void;
   navigate: (to: string) => void;
 }) {
@@ -234,11 +264,9 @@ function RowActions({
       <button className="rounded-lg px-3 py-2 text-sm text-brand hover:bg-blue-50" onClick={() => navigate(`/orders/${order.id}/edit`)}>
         編輯
       </button>
-      {isAdmin && (
-        <button className="rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50" onClick={() => onDelete(order)}>
-          刪除
-        </button>
-      )}
+      <button className="rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50" onClick={() => onDelete(order)}>
+        刪除
+      </button>
     </div>
   );
 }
