@@ -20,4 +20,4 @@ services:
   db:
     volumes:
       # 改成你的 NAS 實體路徑(納入 NAS 快照/備份)
-      - /volume1/docker/shitian/pgdata:/var/lib/postgresql/data
+      - /volume2/docker/shitian/pgdata:/var/lib/postgresql/data
