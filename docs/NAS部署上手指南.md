@@ -201,8 +201,10 @@ sh scripts/prod-up.sh    # 重新建置 + 重啟(migration 會自動跑)
 ```sh
 cd /volume2/docker/shitian && sh scripts/backup.sh
 ```
-- 會把資料庫 dump 成 `backups/shitian-YYYYmmdd-HHMMSS.sql.gz`,保留最近 14 天。
-- 請再把 `backups/` 同步到**另一個地方**(外接硬碟/雲端),符合 3-2-1 原則。
+- 會把資料庫 dump 成 `backups/shitian-YYYYmmdd-HHMMSS.sql.gz`。
+- **預設「全部保留、永不自動刪除」**(歷史備份都留著)。
+- 若哪天想自動清理舊檔(例如只留 30 天),才執行時加環境變數:`KEEP_DAYS=30 sh scripts/backup.sh`。
+- 備份會越積越多,記得**留意磁碟空間**(每個 gzip 檔通常很小);並把 `backups/` 同步到**另一個地方**(外接硬碟/雲端),符合 3-2-1 原則。
 
 **還原**(萬一要救回):
 ```sh
