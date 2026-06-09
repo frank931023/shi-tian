@@ -623,7 +623,7 @@ function VisualOrderInner() {
         onClose={() => navigate("/orders")}
         footer={
           <>
-            <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>稍後再印</Button>
+            <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>稍後</Button>
             <Button
               type="button"
               onClick={() => {
@@ -631,12 +631,12 @@ function VisualOrderInner() {
                 navigate("/orders");
               }}
             >
-              產生 PDF 並列印
+              開啟 PDF
             </Button>
           </>
         }
       >
-        <p className="text-slate-600">訂單已建立,要現在產生三聯單 PDF 列印嗎?</p>
+        <p className="text-slate-600">訂單已建立,要現在開啟三聯單 PDF 嗎?(會在新分頁顯示)</p>
       </Modal>
 
       <datalist id="vo-product-options">

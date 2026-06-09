@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi } from "../api/resources";
-import { Button, Card, Combobox, ErrorBar, Field, Input, Pager, Spinner } from "../components/ui";
+import { Button, Card, Combobox, ErrorBar, Field, Input, Modal, Pager, Spinner } from "../components/ui";
 import type { Company, Order } from "../lib/types";
 
 const TAX_RATE = 0.05;
@@ -74,6 +74,10 @@ export default function SalesStatementPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 產生 PDF 進度
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfPct, setPdfPct] = useState(0);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null); // 自動開啟被擋時,顯示按鈕用
 
   const PAGE_SIZE = 10;
 
@@ -108,9 +112,16 @@ export default function SalesStatementPage() {
   }
   const amountOf = (r: Row) => r.quantity * (Number(r.unitPrice) || 0);
 
-  // 列印:把目前表格(含使用者填的單價等)送後端產生像表單的 PDF,開新分頁預覽/列印
-  async function printPdf() {
+  // 產生 PDF:把目前表格送後端產生像表單的 PDF,顯示進度後開新分頁檢視(不列印)
+  async function generatePdf() {
     setError(null);
+    setPdfUrl(null);
+    setPdfBusy(true);
+    setPdfPct(6);
+    // 動畫進度條:WeasyPrint 要幾秒,先平滑爬到 ~92%,回應到達再補到 100%
+    const timer = window.setInterval(() => {
+      setPdfPct((p) => (p < 92 ? p + Math.max(1, Math.round((92 - p) / 10)) : p));
+    }, 350);
     const payload = {
       customer: vendor?.name ?? "",
       taxid,
@@ -144,9 +155,20 @@ export default function SalesStatementPage() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
-      if (!res.ok) { setError("產生 PDF 失敗(需後端 WeasyPrint 可用)"); return; }
-      window.open(URL.createObjectURL(await res.blob()), "_blank");
+      window.clearInterval(timer);
+      if (!res.ok) {
+        setPdfBusy(false);
+        setError("產生 PDF 失敗(需後端 WeasyPrint 可用)");
+        return;
+      }
+      setPdfPct(100);
+      const url = URL.createObjectURL(await res.blob());
+      const win = window.open(url, "_blank"); // 嘗試自動開新分頁
+      setPdfBusy(false);
+      if (!win) setPdfUrl(url); // 被瀏覽器擋了 → 顯示按鈕讓使用者點開
     } catch {
+      window.clearInterval(timer);
+      setPdfBusy(false);
       setError("產生 PDF 失敗");
     }
   }
@@ -169,7 +191,7 @@ export default function SalesStatementPage() {
     <div className="mx-auto max-w-6xl space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold sm:text-2xl">銷貨統計表</h1>
-        <Button variant="secondary" onClick={printPdf} disabled={rows.length === 0}>🖨 列印 / PDF</Button>
+        <Button variant="secondary" onClick={generatePdf} disabled={rows.length === 0 || pdfBusy}>📄 產生 PDF</Button>
       </div>
 
       {/* 條件列 */}
@@ -277,6 +299,28 @@ export default function SalesStatementPage() {
           </div>
         </>
       )}
+
+      {/* 產生 PDF 進度 Modal */}
+      <Modal
+        open={pdfBusy || pdfUrl !== null}
+        title={pdfUrl ? "PDF 已產生" : "產生 PDF 中…"}
+        onClose={() => { if (!pdfBusy) setPdfUrl(null); }}
+        footer={pdfUrl ? (
+          <Button onClick={() => { window.open(pdfUrl, "_blank"); setPdfUrl(null); }}>開啟 PDF</Button>
+        ) : undefined}
+      >
+        {pdfBusy ? (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-600">正在產生 PDF,請稍候…</p>
+            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="h-full rounded-full bg-brand transition-all duration-300" style={{ width: `${pdfPct}%` }} />
+            </div>
+            <p className="text-right text-xs text-slate-400">{pdfPct}%</p>
+          </div>
+        ) : (
+          <p className="text-slate-600">PDF 已產生。瀏覽器擋住自動開啟時,請點下方「開啟 PDF」在新分頁檢視。</p>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -238,16 +238,6 @@ function RowActions({
   onDelete: (o: Order) => void;
   navigate: (to: string) => void;
 }) {
-  async function onPrint() {
-    if (!confirm(`確定要列印單號 ${order.order_no}?(送到一般印表機)`)) return;
-    try {
-      const r = await ordersApi.print(order.id, "normal");
-      alert(`已送印(佇列:${r.queue})`);
-    } catch (err) {
-      alert(err instanceof ApiError ? err.message : "列印失敗");
-    }
-  }
-
   return (
     <div className="flex flex-wrap justify-end gap-2">
       <a
@@ -258,9 +248,6 @@ function RowActions({
       >
         PDF
       </a>
-      <button className="rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100" onClick={onPrint}>
-        列印
-      </button>
       <button className="rounded-lg px-3 py-2 text-sm text-brand hover:bg-blue-50" onClick={() => navigate(`/orders/${order.id}/edit`)}>
         編輯
       </button>

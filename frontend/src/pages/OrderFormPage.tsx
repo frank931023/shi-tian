@@ -400,7 +400,7 @@ export default function OrderFormPage() {
         onClose={() => navigate("/orders")}
         footer={
           <>
-            <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>稍後再印</Button>
+            <Button type="button" variant="secondary" onClick={() => navigate("/orders")}>稍後</Button>
             <Button
               type="button"
               onClick={() => {
@@ -408,14 +408,13 @@ export default function OrderFormPage() {
                 navigate("/orders");
               }}
             >
-              產生 PDF 並列印
+              開啟 PDF
             </Button>
           </>
         }
       >
         <p className="text-slate-600">
-          訂單已儲存。要現在產生三聯單 PDF 列印嗎?(會開新分頁顯示 PDF,可直接列印;
-          正式環境也可由伺服器送印到印表機)
+          訂單已儲存。要現在開啟三聯單 PDF 嗎?(會在新分頁顯示 PDF)
         </p>
       </Modal>
     </form>
