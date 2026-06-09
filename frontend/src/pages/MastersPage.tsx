@@ -115,7 +115,6 @@ export default function MastersPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       <h1 className="text-xl font-bold sm:text-2xl">主檔</h1>
-      {!isAdmin && <p className="text-sm text-slate-500">你可以查看主檔;新增/修改需管理員權限。</p>}
 
       {/* 分頁 + 檢視切換:同一排(分頁靠左可橫向捲動,切換靠右) */}
       <div className="flex items-center justify-between gap-3">
@@ -135,11 +134,12 @@ export default function MastersPage() {
         )}
       </div>
 
-      {tab === "vendors" && <CompaniesPanel isAdmin={isAdmin} role="vendor" view={view} />}
-      {tab === "receivers" && <CompaniesPanel isAdmin={isAdmin} role="receiver" view={view} />}
-      {tab === "products" && <ProductsPanel isAdmin={isAdmin} view={view} />}
-      {tab === "process" && <ProcessPanel isAdmin={isAdmin} view={view} />}
-      {tab === "specs" && <SpecsPanel isAdmin={isAdmin} />}
+      {/* 主檔新增/編輯開放給所有登入者(含操作員);套表校正 offset 仍限管理員 */}
+      {tab === "vendors" && <CompaniesPanel isAdmin role="vendor" view={view} />}
+      {tab === "receivers" && <CompaniesPanel isAdmin role="receiver" view={view} />}
+      {tab === "products" && <ProductsPanel isAdmin view={view} />}
+      {tab === "process" && <ProcessPanel isAdmin view={view} />}
+      {tab === "specs" && <SpecsPanel isAdmin />}
       {tab === "calibration" && <CalibrationPanel isAdmin={isAdmin} />}
     </div>
   );

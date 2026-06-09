@@ -5,7 +5,6 @@ from flask_login import login_required
 
 from app.core.db import db
 from app.core.responses import ok
-from app.core.security import admin_required
 from app.core.validation import validate_body
 from app.models import ProcessItem, Product, Spec
 from app.schemas.master import ProcessItemIn, ProductIn, SpecIn
@@ -26,7 +25,6 @@ def list_products():
 
 @products_bp.post("/products")
 @login_required
-@admin_required
 @validate_body(ProductIn)
 def create_product(payload: ProductIn):
     product = Product(**payload.model_dump())
@@ -49,7 +47,6 @@ def list_process_items():
 
 @products_bp.post("/process-items")
 @login_required
-@admin_required
 @validate_body(ProcessItemIn)
 def create_process_item(payload: ProcessItemIn):
     item = ProcessItem(**payload.model_dump())
@@ -72,7 +69,6 @@ def list_specs():
 
 @products_bp.post("/specs")
 @login_required
-@admin_required
 @validate_body(SpecIn)
 def create_spec(payload: SpecIn):
     spec = Spec(**payload.model_dump())

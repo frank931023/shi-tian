@@ -10,7 +10,6 @@ from flask_login import login_required
 
 from app.core.db import db
 from app.core.responses import err, ok
-from app.core.security import admin_required
 from app.core.validation import validate_body
 from app.models import Company
 from app.schemas.master import CompanyIn, CompanyUpdate
@@ -43,7 +42,6 @@ def get_company(company_id: int):
 
 @companies_bp.post("/companies")
 @login_required
-@admin_required
 @validate_body(CompanyIn)
 def create_company(payload: CompanyIn):
     data = payload.model_dump()
@@ -60,7 +58,6 @@ def create_company(payload: CompanyIn):
 
 @companies_bp.patch("/companies/<int:company_id>")
 @login_required
-@admin_required
 @validate_body(CompanyUpdate)
 def update_company(company_id: int, payload: CompanyUpdate):
     company = db.session.get(Company, company_id)
