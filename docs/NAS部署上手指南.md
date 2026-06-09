@@ -73,14 +73,14 @@
 ### 步驟 4:建立放程式的資料夾
 - DSM → **File Station** → 進入 **docker** 這個共用資料夾(Container Manager 安裝時通常會自動建)。
 - 在裡面**新增資料夾** `shitian`。
-- 這個資料夾的完整路徑就是 **`/volume1/docker/shitian`**(下面會一直用到)。
+- 這個資料夾的完整路徑就是 **`/volume2/docker/shitian`**(下面會一直用到)。
 
 ### 步驟 5:把程式放進 NAS(用 File Station 上傳,最直覺)
 - 在你**電腦**上,進到專案資料夾 `C:\Users\frank\Desktop\code\shi-tian`。
 - 把裡面**所有東西**(`backend/`、`frontend/`、`realdata/`、`docker-compose*.yml`、`Caddyfile`、`scripts/`、`.env.prod.example` …)上傳到 NAS 的 `docker/shitian` 資料夾。
   - File Station → 進 `shitian` → 上方 **上傳** → 選檔案/資料夾。
   - 不用上傳 `.venv`、`node_modules`、`pgdata`、`backups` 這些(本來就不該帶)。
-- (會用 Git 的進階做法:在步驟 6 連上 SSH 後 `cd /volume1/docker/shitian` 再 `git clone <你的repo網址> .`。不會就用上傳即可。)
+- (會用 Git 的進階做法:在步驟 6 連上 SSH 後 `cd /volume2/docker/shitian` 再 `git clone <你的repo網址> .`。不會就用上傳即可。)
 
 ### 步驟 6:用 SSH 從 Windows 連進 NAS(Windows 內建,免裝軟體)
 - 在 Windows 開 **PowerShell**(就是你現在這個視窗)。
@@ -99,7 +99,7 @@
 
 ### 步驟 7:進到程式資料夾、確認檔案都在
 ```sh
-cd /volume1/docker/shitian
+cd /volume2/docker/shitian
 ls
 ```
 - `ls` 會列出資料夾內容,應該看得到 `docker-compose.yml`、`backend`、`frontend`、`realdata` 等。沒看到就是步驟 5 沒上傳對位置。
@@ -116,9 +116,10 @@ cp .env.prod.example .env
   POSTGRES_PASSWORD=這裡填一組強密碼
   DATABASE_URL=postgresql+psycopg://shitian_app:這裡填同一組密碼@db:5432/shitian
   SECRET_KEY=這裡填一串亂數(見下)
-  SITE_ADDRESS=你的網域或Tailscale域名(見步驟10)
-  FRONTEND_ORIGIN=https://你的網域(跟上面同一個)
+  SITE_ADDRESS=nas.yourpasswordiswrong.com
+  FRONTEND_ORIGIN=https://nas.yourpasswordiswrong.com
   ```
+  > 上面 `SITE_ADDRESS` / `FRONTEND_ORIGIN` 已填你的網域 `nas.yourpasswordiswrong.com`;若日後換網域再改這兩行即可。
 - **產生 SECRET_KEY**:在你**電腦的 PowerShell**(你有 Python)執行,把印出來的長字串貼進去:
   ```powershell
   python -c "import secrets; print(secrets.token_hex(32))"
@@ -128,14 +129,17 @@ cp .env.prod.example .env
 ### 步驟 9:把資料庫資料指到 NAS 實體路徑(避免重建時資料消失)
 - 同樣用 File Station 文字編輯器開 `docker-compose.prod.yml`,找到 `db:` 底下的 `volumes:`,把那行改成:
   ```yaml
-  - /volume1/docker/shitian/pgdata:/var/lib/postgresql/data
+  - /volume2/docker/shitian/pgdata:/var/lib/postgresql/data
   ```
 - 之後到 DSM → **控制台 → 快照** 或你的備份方案,把 `docker/shitian` 納入備份。
 
 ### 步驟 10:設定 HTTPS(二選一,**務必其一**,否則登不進去)
-**方案 A:有自己的網域(要對外服務)**
-- 把網域的 DNS **A 紀錄**指到 NAS 的公網 IP,路由器把 **80、443** 轉發到 NAS。
-- `.env` 的 `SITE_ADDRESS` 填你的網域 → Caddy 會**自動申請免費憑證、自動把 http 轉 https**,你不用自己用憑證。
+**方案 A:用你的網域 `nas.yourpasswordiswrong.com`(要對外服務)**
+- 到你的網域 DNS 設定,把 **`nas.yourpasswordiswrong.com` 的 A 紀錄指到 NAS 的公網 IP**。
+- 路由器設定 **連接埠轉發**,把對外的 **80、443** 轉到 NAS 的內網 IP。
+- `.env` 已填 `SITE_ADDRESS=nas.yourpasswordiswrong.com` → Caddy 會**自動申請免費 Let's Encrypt 憑證、自動把 http 轉 https**,你不用自己用憑證。
+- 完成後用 **`https://nas.yourpasswordiswrong.com`** 連線即可。
+  > 提醒:Let's Encrypt 簽憑證時需要從網際網路連到你 NAS 的 80 埠,所以 DNS 與 80/443 轉發要先設好。
 
 **方案 B:不想開放到網際網路(較安全,推薦)→ 用 Tailscale**
 - NAS 套件中心安裝 **Tailscale**,你的電腦/平板也裝,登入**同一個 Tailscale 帳號**。
@@ -143,7 +147,7 @@ cp .env.prod.example .env
 
 > 為什麼一定要 HTTPS:正式登入的 cookie 設了「只走 HTTPS」,用 `http://IP` 會「**帳密對了卻一直登不進去**」。
 
-### 步驟 11:啟動!(回到 SSH 視窗,在 `root@NAS:/volume1/docker/shitian#`)
+### 步驟 11:啟動!(回到 SSH 視窗,在 `root@NAS:/volume2/docker/shitian#`)
 ```sh
 docker compose up -d --build
 ```
@@ -163,13 +167,13 @@ docker compose exec backend flask create-admin --username admin --display-name �
 
 ### 步驟 13:灌入主檔資料(廠商/品名/規格…)
 ```sh
-docker compose run --rm -v /volume1/docker/shitian/realdata:/seed backend flask seed-real --path /seed
+docker compose run --rm -v /volume2/docker/shitian/realdata:/seed backend flask seed-real --path /seed
 ```
 - 這會把你上傳的 `realdata/` 內容灌進資料庫(廠商含統一編號、品名、加工項目、規格等)。
 - 成功會印出「已匯入:廠商 … / 接收 … / 品名 … / 加工 … / 規格 …」。
 
 ### 步驟 14:驗證成功
-- 用瀏覽器開 **`https://你的網域`**(或 Tailscale 域名)。
+- 用瀏覽器開 **`https://nas.yourpasswordiswrong.com`**(或 Tailscale 域名)。
 - 用步驟 12 建的 **admin 帳密登入** → 能進系統、看到廠商/品名等資料 → **完成!** 🎉
 
 > 之後要關閉 SSH 視窗:輸入 `exit` 兩次(先離開 root、再離開 SSH)即可,服務會在 NAS 背景繼續跑。
@@ -180,7 +184,7 @@ docker compose run --rm -v /volume1/docker/shitian/realdata:/seed backend flask 
 
 在 NAS 的專案資料夾:
 ```sh
-cd /volume1/docker/shitian
+cd /volume2/docker/shitian
 git pull                 # 取得最新程式
 sh scripts/prod-up.sh    # 重新建置 + 重啟(migration 會自動跑)
 ```
@@ -195,7 +199,7 @@ sh scripts/prod-up.sh    # 重新建置 + 重啟(migration 會自動跑)
 
 **每日自動備份**(用 NAS 的排程或 crontab,每天凌晨跑):
 ```sh
-cd /volume1/docker/shitian && sh scripts/backup.sh
+cd /volume2/docker/shitian && sh scripts/backup.sh
 ```
 - 會把資料庫 dump 成 `backups/shitian-YYYYmmdd-HHMMSS.sql.gz`,保留最近 14 天。
 - 請再把 `backups/` 同步到**另一個地方**(外接硬碟/雲端),符合 3-2-1 原則。
@@ -240,6 +244,90 @@ docker compose -p shitian-dev --env-file .env.dev \
 | 重啟全部 | `sh scripts/prod-up.sh`(等同重建重啟) |
 | 忘記管理員密碼 | 再跑一次 `flask create-admin` 用**新帳號**,或進 DB 重設(進階)。 |
 | 資料庫升級失敗 | 看 backend 日誌的 migration 錯誤訊息;先確認是用 PostgreSQL(本系統正式只支援 PostgreSQL)。 |
+| `docker compose up` 出現 `network is unreachable` / 拉不到映像 | NAS 走了 IPv6 但沒有 IPv6 對外路由。**關掉 IPv6 走 IPv4**,見 §8。 |
+
+---
+
+## 8. 網路問題排除:Docker 拉不到映像(IPv6)— 實戰整理
+
+> 這一節是真的踩過的坑的完整解法。如果你 `docker compose up` 一直出現 `network is unreachable`,照這節做。
+
+### 症狀
+`docker compose up -d --build` 出現:
+```
+Error response from daemon: Get "https://registry-1.docker.io/...":
+dial tcp [2a06:....]:443: connect: network is unreachable
+```
+看到中括號 `[2a06:...]` 或 `[2600:...]` 這種「**冒號很多**」的位址,就是 **IPv6 位址**。
+
+### 📖 先補背景知識(很重要,看懂就不慌)
+- **IPv4 / IPv6 是兩種「網路地址」格式**。IPv4 長這樣 `98.85.199.129`(數字+點);IPv6 長這樣 `2a06:98c1:...`(很多冒號)。兩者像兩條不同的路。
+- 你的 NAS **同時有 IPv4 和 IPv6 位址**,但「**有位址 ≠ 出得去**」。要連到網際網路,還需要一個「**對外閘道(Gateway)**」。
+  - 從你的截圖看到:`預設閘道器(IPv4)= 192.168.0.1`(有),但 **`IPv6 預設閘道器 = --`(沒有)**。
+  - 所以 IPv4 出得去、**IPv6 出不去**。
+- Docker 抓映像時會問 DNS「Docker Hub 的位址是?」,DNS 同時回 IPv4 和 IPv6。Docker **偏好先試 IPv6** → 但 IPv6 沒有出口 → `network is unreachable`。
+- **關鍵雷點**:只在「網路介面」把 IPv6 關掉**有時不夠**,因為 **Docker 背景程式(daemon)會自己做 DNS 查詢、自己挑 IPv6**。所以要在**系統核心層**整個關掉 IPv6,Docker 才不會再拿到 IPv6 位址。
+- **另一個常見誤會**:`ping` 不通**不代表**網路壞了——Docker Hub 故意擋掉 ping(ICMP)。**判斷通不通要用 `docker pull alpine`,不要用 ping。**
+
+### 解法(照順序做,做到 `docker pull alpine` 成功為止)
+
+**第 1 步:GUI 關閉網卡 IPv6**
+DSM → 控制台 → 網路 → **網路介面** → 點「區域網路 1」(連線中那張)→ **編輯** → **IPv6** 分頁 → 「IPv6 設定」選 **「關閉」** → 確定。
+(網卡會重連,SSH 可能斷,重連即可。)
+
+**第 2 步:核心層強制關閉 IPv6(這步才是關鍵,別跳過)**
+SSH 進 NAS(`sudo -i` 成為 root)後執行:
+```sh
+sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sysctl -w net.ipv6.conf.default.disable_ipv6=1
+sysctl -w net.ipv6.conf.lo.disable_ipv6=1
+```
+確認(要顯示 `1`):
+```sh
+cat /proc/sys/net/ipv6/conf/all/disable_ipv6
+```
+> 若 `sysctl -w` 報權限/唯讀錯誤,改成寫進設定檔再套用:
+> ```sh
+> echo "net.ipv6.conf.all.disable_ipv6=1" >> /etc/sysctl.conf
+> echo "net.ipv6.conf.default.disable_ipv6=1" >> /etc/sysctl.conf
+> sysctl -p
+> ```
+
+**第 3 步:重啟 Docker(讓它重新只用 IPv4)**
+```sh
+synopkg restart ContainerManager
+```
+(找不到就試 `synopkg restart Docker`,或用 GUI:套件中心 → Container Manager → 停止 → 啟動。)
+
+**第 4 步:用 `docker pull` 測(不要用 ping)**
+```sh
+docker pull alpine
+```
+- 能成功拉下來、**不再出現 `2a06:` / `2600:` 開頭** → 通了。
+
+**第 5 步:啟動服務**
+```sh
+cd /volume2/docker/shitian
+docker compose up -d --build
+```
+
+### ⚠️ 讓設定「重開機後也維持」
+第 2 步的 `sysctl -w` **重開機會失效**,NAS 一重啟又會壞。兩個保險做法(擇一或都做):
+- 已用上面「寫進 `/etc/sysctl.conf`」的版本 → 大多會自動套用。
+- 再加一個開機排程當保險:**DSM → 控制台 → 任務排程器 → 新增 → 觸發的任務 → 開機啟動**,使用者選 **root**,指令貼:
+  ```sh
+  sysctl -w net.ipv6.conf.all.disable_ipv6=1; sysctl -w net.ipv6.conf.default.disable_ipv6=1
+  ```
+
+### 如果關了 IPv6「IPv4 也連不出去」(更基本的問題)
+```sh
+ping -4 -c 3 8.8.8.8                 # 測 IPv4 對外
+```
+- 不通 → NAS 沒網路:檢查網路線、控制台 → 網路 → 一般 的 **預設閘道器**(你的應是 `192.168.0.1`)。
+- 通但 `docker pull` 仍失敗於網域 → **DNS**:控制台 → 網路 → 一般 → 慣用 DNS 設 `192.168.0.1`,替代 DNS 補 `8.8.8.8` → 套用。
+
+### (觀念)那我想用 IPv6 不行嗎?
+不是不行,是要**整條鏈都支援**才行:ISP 有發 IPv6、路由器有開 IPv6 並配發前綴、NAS 拿到全域 IPv6 **+ 對外閘道**。你目前 `IPv6 閘道 = --` 就是中間有一段沒有。對「自家區網用」這套系統,**用 IPv4 完全足夠**,關掉 IPv6 是最省事且穩定的選擇。
 
 ---
 
