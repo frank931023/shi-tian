@@ -333,6 +333,7 @@ function CompanyAddModal({
 }: { role: "vendor" | "receiver"; roleLabel: string; onClose: () => void; onSaved: () => void }) {
   const isVendor = role === "vendor";
   const [name, setName] = useState("");
+  const [abbr, setAbbr] = useState("");
   const [phone, setPhone] = useState("");
   const [fax, setFax] = useState("");
   const [address, setAddress] = useState("");
@@ -349,7 +350,8 @@ function CompanyAddModal({
         const { detail, phone: p, fax: f } = buildVendorDetail(null, name.trim(), address, taxid, contacts);
         await companiesApi.create({ name: name.trim(), role_type: role, phone: p, fax: f, address, detail });
       } else {
-        await companiesApi.create({ name: name.trim(), role_type: role, phone, fax, address });
+        // 接收單位:縮寫預設同名稱
+        await companiesApi.create({ name: name.trim(), role_type: role, phone, fax, address, abbr: abbr.trim() || name.trim() });
       }
       onSaved();
     } catch (err) {
@@ -381,6 +383,9 @@ function CompanyAddModal({
           <ContactsEditor contacts={contacts} setContacts={setContacts} />
         ) : (
           <>
+            <Field label="縮寫" hint="預設同名稱,可自行修改;銷貨統計表會顯示縮寫">
+              <Input value={abbr} onChange={(e) => setAbbr(e.target.value)} placeholder={name || "預設同名稱"} />
+            </Field>
             <Field label="電話"><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
             <Field label="傳真"><Input value={fax} onChange={(e) => setFax(e.target.value)} /></Field>
           </>
@@ -398,6 +403,7 @@ function CompanyDetailModal({
   const isVendor = company.role_type === "vendor";
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(company.name);
+  const [abbr, setAbbr] = useState(company.abbr ?? company.name);
   const [phone, setPhone] = useState(company.phone ?? "");
   const [fax, setFax] = useState(company.fax ?? "");
   const [address, setAddress] = useState(company.address ?? "");
@@ -416,7 +422,7 @@ function CompanyDetailModal({
     try {
       const body = isVendor
         ? { name: name.trim(), address, ...buildVendorDetail(d, name.trim(), address, taxid, contacts) }
-        : { name: name.trim(), phone, fax, address };
+        : { name: name.trim(), phone, fax, address, abbr: abbr.trim() || name.trim() };
       const updated = await companiesApi.update(company.id, body);
       onSaved(updated);
       setEditing(false);
@@ -455,6 +461,9 @@ function CompanyDetailModal({
             <ContactsEditor contacts={contacts} setContacts={setContacts} />
           ) : (
             <>
+              <Field label="縮寫" hint="銷貨統計表會顯示此縮寫">
+                <Input value={abbr} onChange={(e) => setAbbr(e.target.value)} placeholder={name} />
+              </Field>
               <Field label="電話"><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
               <Field label="傳真"><Input value={fax} onChange={(e) => setFax(e.target.value)} /></Field>
             </>
@@ -465,6 +474,9 @@ function CompanyDetailModal({
         <div className="space-y-3 text-sm">
           <div className="flex flex-wrap gap-x-6 gap-y-1">
             <span><span className="text-slate-400">用途 </span>{company.role_type === "vendor" ? "廠商單位" : "接收單位"}</span>
+            {company.role_type === "receiver" && company.abbr && (
+              <span><span className="text-slate-400">縮寫 </span>{company.abbr}</span>
+            )}
             {d?.taxid ? <span><span className="text-slate-400">統一編號 </span>{String(d.taxid)}</span> : null}
             {company.phone && <span><span className="text-slate-400">電話 </span>{company.phone}</span>}
             {company.fax && <span><span className="text-slate-400">傳真 </span>{company.fax}</span>}

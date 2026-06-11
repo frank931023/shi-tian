@@ -20,6 +20,7 @@ export const authApi = {
     }),
   logout: () => api("/auth/logout", { method: "POST" }),
   me: () => api<User | null>("/auth/me"),
+  status: () => api<{ has_admin: boolean }>("/auth/status"),
 };
 
 // ---- 主檔 ----

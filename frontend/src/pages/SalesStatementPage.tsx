@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi } from "../api/resources";
 import { Button, Card, Combobox, ErrorBar, Field, Input, Modal, Pager, Spinner } from "../components/ui";
+import { groupDigits } from "../lib/format";
 import type { Company, Order } from "../lib/types";
 
 const TAX_RATE = 0.05;
@@ -49,7 +50,8 @@ function buildRows(orders: Order[]): Row[] {
         orderId: o.id,
         isFirst: idx === 0,
         date: o.order_date ?? "",
-        receiver: o.receiver_name ?? "",
+        // 收料單位顯示「縮寫」(即時讀取;PDF 也用此值)
+        receiver: o.receiver_abbr || o.receiver_name || "",
         product: it.product_name ?? "",
         spec: it.spec ?? "",
         quantity: Number(it.quantity ?? 0),
@@ -261,7 +263,7 @@ export default function SalesStatementPage() {
                     <td className="px-3 py-1.5 font-medium text-slate-800">{r.product}</td>
                     <td className="px-3 py-1.5 text-slate-600">{r.spec}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmt(r.quantity)}</td>
-                    <td className="px-2 py-1.5"><input className={`${cellInput} text-right`} inputMode="decimal" value={r.netWeight} onChange={(e) => update(r.key, { netWeight: e.target.value })} /></td>
+                    <td className="px-2 py-1.5"><input className={`${cellInput} text-right`} inputMode="decimal" value={r.netWeight} onChange={(e) => update(r.key, { netWeight: groupDigits(e.target.value) })} /></td>
                     <td className="px-3 py-1.5 text-center text-slate-600">{r.pieces}</td>
                     <td className="px-3 py-1.5 text-slate-600">{r.process}</td>
                     <td className="px-2 py-1.5"><input className={`${cellInput} text-right`} inputMode="decimal" value={r.unitPrice} onChange={(e) => update(r.key, { unitPrice: e.target.value })} placeholder="0" /></td>

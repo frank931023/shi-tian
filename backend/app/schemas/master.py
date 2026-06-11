@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class CompanyIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
+    abbr: Optional[str] = Field(default=None, max_length=100)
     role_type: str = Field(default="vendor")
     phone: Optional[str] = Field(default=None, max_length=50)
     fax: Optional[str] = Field(default=None, max_length=50)
@@ -27,6 +28,7 @@ class CompanyIn(BaseModel):
 class CompanyUpdate(BaseModel):
     """更新公司:所有欄位皆選填,只更新有帶的欄位。"""
     name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    abbr: Optional[str] = Field(default=None, max_length=100)
     role_type: Optional[str] = None
     phone: Optional[str] = Field(default=None, max_length=50)
     fax: Optional[str] = Field(default=None, max_length=50)

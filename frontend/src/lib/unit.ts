@@ -2,7 +2,7 @@
 // 輸入端(表單兩欄 / 視覺化兩個單位節點)分開填,儲存與 PDF 只存單一字串。
 
 export const UNIT_OPTIONS: string[] = [
-  ...Array.from({ length: 10 }, (_, i) => `${i + 1}k`),
+  ...Array.from({ length: 10 }, (_, i) => `${i + 1}K`),
   ...Array.from({ length: 10 }, (_, i) => `${i + 1}b`),
 ];
 

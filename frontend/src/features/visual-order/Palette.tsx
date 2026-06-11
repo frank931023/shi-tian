@@ -126,7 +126,7 @@ export default function Palette({
           {item("s2-custom", "＋ 規格2(打字)", { kind: "field", field: "規格2", custom: true }, true)}
         </Section>
 
-        <Section title="數量">
+        <Section title="數量(pcs)">
           {item("qty", "＋ 數量(可填數字)", { kind: "field", field: "數量" }, true)}
         </Section>
 

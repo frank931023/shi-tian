@@ -13,6 +13,7 @@ export interface User {
 export interface Company {
   id: number;
   name: string;
+  abbr?: string | null; // 縮寫(預設等於名稱;銷貨統計表顯示用)
   role_type: "vendor" | "receiver"; // 廠商與接收完全分開,無「兩者」
   phone?: string | null;
   fax?: string | null;
@@ -69,6 +70,7 @@ export interface Order {
   vendor_name?: string | null;
   receiver_id?: number | null;
   receiver_name?: string | null;
+  receiver_abbr?: string | null; // 接收單位縮寫(銷貨統計顯示用)
   order_date: string; // YYYY-MM-DD
   status: OrderStatus;
   total_amount: number;

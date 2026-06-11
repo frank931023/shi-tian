@@ -7,7 +7,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
 import { Button, Card, Combobox, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
-import { today } from "../lib/format";
+import { groupDigits, stripGroups, today } from "../lib/format";
 import { combineSpec, spec1Options, spec2Options, splitSpec } from "../lib/spec";
 import { combineUnit, splitUnit, UNIT_OPTIONS } from "../lib/unit";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
@@ -98,8 +98,8 @@ export default function OrderFormPage() {
               spec1,
               spec2,
               process_item: it.process_item ?? "",
-              net_weight_kg: it.net_weight_kg != null ? String(it.net_weight_kg) : "",
-              quantity: String(it.quantity ?? ""),
+              net_weight_kg: it.net_weight_kg != null ? groupDigits(String(it.net_weight_kg)) : "",
+              quantity: groupDigits(String(it.quantity ?? "")),
               unit1: splitUnit(it.unit)[0],
               unit2: splitUnit(it.unit)[1],
               remark: it.remark ?? "",
@@ -124,7 +124,7 @@ export default function OrderFormPage() {
 
   // 純移轉單:不算金額,改算合計數量
   const totalQty = useMemo(
-    () => rows.reduce((sum, r) => sum + (Number(r.quantity) || 0), 0),
+    () => rows.reduce((sum, r) => sum + (Number(stripGroups(r.quantity)) || 0), 0),
     [rows],
   );
 
@@ -174,8 +174,8 @@ export default function OrderFormPage() {
         product_name: r.product_name.trim(),
         spec: combineSpec(r.spec1, r.spec2) || null,
         process_item: r.process_item || null,
-        net_weight_kg: r.net_weight_kg ? Number(r.net_weight_kg) : null,
-        quantity: r.quantity ? Number(r.quantity) : 0,
+        net_weight_kg: r.net_weight_kg ? Number(stripGroups(r.net_weight_kg)) : null,
+        quantity: r.quantity ? Number(stripGroups(r.quantity)) : 0,
         unit: combineUnit(r.unit1, r.unit2) || null,
         remark: r.remark || null,
       })),
@@ -300,11 +300,11 @@ export default function OrderFormPage() {
                     ))}
                   </Select>
                 </Field>
-                <Field label="淨重(KG)">
-                  <Input type="number" inputMode="decimal" step="0.01" value={r.net_weight_kg} onChange={(e) => updateRow(idx, { net_weight_kg: e.target.value })} />
+                <Field label="重量(KG)">
+                  <Input inputMode="decimal" value={r.net_weight_kg} onChange={(e) => updateRow(idx, { net_weight_kg: groupDigits(e.target.value) })} />
                 </Field>
-                <Field label="數量" required>
-                  <Input type="number" inputMode="decimal" step="0.01" value={r.quantity} onChange={(e) => updateRow(idx, { quantity: e.target.value })} />
+                <Field label="數量(pcs)" required>
+                  <Input inputMode="decimal" value={r.quantity} onChange={(e) => updateRow(idx, { quantity: groupDigits(e.target.value) })} />
                 </Field>
                 <Field label="單位1">
                   <Select value={r.unit1} onChange={(e) => updateRow(idx, { unit1: e.target.value })}>

@@ -10,6 +10,7 @@ class Company(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    abbr = db.Column(db.String(100))  # 縮寫(預設等於名稱;銷貨統計表顯示用)
     # 'vendor'(廠商) | 'receiver'(接收) | 'both'(兩者皆可)
     role_type = db.Column(db.String(20), nullable=False, default="both")
     phone = db.Column(db.String(50))
@@ -24,6 +25,7 @@ class Company(db.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "abbr": self.abbr or self.name,
             "role_type": self.role_type,
             "phone": self.phone,
             "fax": self.fax,

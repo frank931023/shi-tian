@@ -64,7 +64,7 @@ export default function FieldNode({ id, data }: NodeProps) {
     <div className={`relative w-44 rounded-xl border-2 ${s.color} bg-white p-2.5 shadow-md`}>
       <div className="mb-1 flex items-center justify-between">
         <span className="text-xs font-bold text-slate-600">
-          {d.field}{d.field === "備註" && <span className="ml-1 font-normal text-slate-400">選填</span>}
+          {d.field === "數量" ? "數量(pcs)" : d.field}{d.field === "備註" && <span className="ml-1 font-normal text-slate-400">選填</span>}
         </span>
         <button className="nodrag text-xs text-red-500 hover:underline" onClick={() => removeNode(id)}>
           ✕

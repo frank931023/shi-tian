@@ -46,6 +46,13 @@ def logout():
     return ok({"logout": True})
 
 
+@auth_bp.get("/auth/status")
+def auth_status():
+    """公開:回報系統是否已有管理員(給登入頁判斷「尚無管理員」用)。"""
+    count = db.session.scalar(db.select(db.func.count(User.id)).where(User.role == "admin"))
+    return ok({"has_admin": bool(count and count > 0)})
+
+
 @auth_bp.get("/auth/me")
 def me():
     # 用來讓前端重新整理後還原登入狀態;未登入回 null(非錯誤)

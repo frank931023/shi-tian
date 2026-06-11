@@ -48,6 +48,7 @@ class Order(db.Model):
             "vendor_name": self.vendor.name if self.vendor else None,
             "receiver_id": self.receiver_id,
             "receiver_name": self.receiver.name if self.receiver else None,
+            "receiver_abbr": (self.receiver.abbr or self.receiver.name) if self.receiver else None,
             "order_date": self.order_date.isoformat() if self.order_date else None,
             "status": self.status,
             "is_deleted": self.is_deleted,

@@ -127,7 +127,7 @@ def register_cli(app: Flask) -> None:
                     lines.append(line)
             note = "聯絡人:\n" + "\n".join(lines) if lines else None
             db.session.add(Company(
-                name=name, role_type="vendor",
+                name=name, abbr=name, role_type="vendor",
                 phone=phone, fax=fax, address=(v.get("address") or "").strip() or None, note=note,
                 detail=json.dumps(v, ensure_ascii=False),  # 保留完整原始資料(多位聯絡人)供查看
             ))
@@ -147,7 +147,7 @@ def register_cli(app: Flask) -> None:
             if r.get("mobile"):
                 note_parts.append("手機:" + r["mobile"])
             db.session.add(Company(
-                name=name, role_type="receiver",
+                name=name, abbr=name, role_type="receiver",
                 phone=(r.get("phone") or "").strip() or None,
                 fax=(r.get("fax") or "").strip() or None,
                 address=(r.get("address") or "").strip() or None,
