@@ -79,7 +79,7 @@ export default function OrdersListPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold sm:text-2xl">訂單清單</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">出貨單</h1>
         <Link to="/orders/new">
           <Button>+ 建單</Button>
         </Link>

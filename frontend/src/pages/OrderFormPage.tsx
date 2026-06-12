@@ -6,7 +6,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi, processItemsApi, productsApi, specsApi } from "../api/resources";
-import { Button, Card, Combobox, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
+import { Button, Card, CascadeSelect, Combobox, ErrorBar, Field, Input, Modal, Select, Spinner, Textarea } from "../components/ui";
+import { receiverMethod, receiverMethodOptions } from "../lib/company";
 import { groupDigits, stripGroups, today } from "../lib/format";
 import { combineSpec, spec1Options, spec2Options, splitSpec } from "../lib/spec";
 import { combineUnit, splitUnit, UNIT_OPTIONS } from "../lib/unit";
@@ -26,7 +27,7 @@ interface RowState {
   remark: string;
 }
 
-const MAX_ITEMS = 5; // 一張移轉單一次最多 5 筆品項
+const MAX_ITEMS = 20; // 一張移轉單一次最多 20 筆品項(PDF 超過一張會自動分頁)
 
 const emptyRow = (): RowState => ({
   product_name: "",
@@ -124,6 +125,17 @@ export default function OrderFormPage() {
 
   const vendors = companies.filter((c) => c.role_type === "vendor");
   const receivers = companies.filter((c) => c.role_type === "receiver");
+  // 接收單位:單一欄位的階層選單 → 依加工方式分組(無方式者歸「未分類」)
+  const recvGroups = [
+    ...receiverMethodOptions(receivers).map((m) => ({
+      key: m,
+      items: receivers.filter((c) => receiverMethod(c) === m).map((c) => ({ id: c.id, label: c.name })),
+    })),
+    ...(() => {
+      const un = receivers.filter((c) => !receiverMethod(c));
+      return un.length ? [{ key: "未分類", items: un.map((c) => ({ id: c.id, label: c.name })) }] : [];
+    })(),
+  ];
 
   // 純移轉單:不算金額,改算合計數量
   const totalQty = useMemo(
@@ -238,11 +250,12 @@ export default function OrderFormPage() {
             />
           </Field>
           <Field label="接收單位" required>
-            <Combobox
+            {/* 單一欄位的階層選單:左選加工方式 → 右跑出該方式的公司 */}
+            <CascadeSelect
               value={receiverId}
               onChange={setReceiverId}
-              options={receivers.map((c) => ({ id: c.id, label: c.name }))}
-              placeholder="輸入接收單位搜尋…"
+              groups={recvGroups}
+              placeholder="選擇接收單位…"
             />
           </Field>
           <Field label="日期" required>

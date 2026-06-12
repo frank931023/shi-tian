@@ -30,7 +30,7 @@ class OrderIn(BaseModel):
     order_no: Optional[str] = Field(default=None, max_length=30)  # 不給則自動產生
     status: str = Field(default="draft")
     note: Optional[str] = None
-    items: list[OrderItemIn] = Field(min_length=1, max_length=5)  # 1~5 行品項(移轉單一次最多 5 筆)
+    items: list[OrderItemIn] = Field(min_length=1, max_length=20)  # 1~20 行品項(移轉單一次最多 20 筆,PDF 會自動分頁)
 
     @field_validator("status")
     @classmethod

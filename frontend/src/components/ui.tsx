@@ -1,6 +1,6 @@
 // 可重用的小 UI 元件。全部以「大字、大點擊區、清楚對比」為基底(長輩友善),
 // 並用 Tailwind 斷點確保手機/平板/筆電都好用。
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -87,28 +87,44 @@ export function Combobox({
   options,
   placeholder,
   allowClear = true,
+  disabled = false,
 }: {
   value: string;
   onChange: (id: string) => void;
-  options: { id: string | number; label: string }[];
+  // group:下拉內的分組標題(如加工方式);keywords:額外可搜尋字串(讓打分組名也能篩到)
+  options: { id: string | number; label: string; group?: string; keywords?: string }[];
   placeholder?: string;
   allowClear?: boolean;
+  disabled?: boolean; // 連動式下拉:上層未選時鎖住
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const boxRef = useRef<HTMLDivElement>(null);
   const selected = options.find((o) => String(o.id) === value);
+  const hasGroups = options.some((o) => o.group);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options.slice(0, 100);
+    if (!q) return options.slice(0, 300);
     return options
-      .map((o) => ({ o, s: matchScore(o.label, q) }))
+      .map((o) => ({ o, s: matchScore(`${o.label} ${o.keywords ?? ""}`, q) }))
       .filter((x) => x.s > 0)
       .sort((a, b) => b.s - a.s)
-      .slice(0, 100)
+      .slice(0, 300)
       .map((x) => x.o);
   }, [query, options]);
+
+  // 依 group 分組(保留出現順序,組名依繁中排序);無 group 時回單一無名分組
+  const grouped = useMemo(() => {
+    if (!hasGroups) return [["", filtered]] as [string, typeof filtered][];
+    const map = new Map<string, typeof filtered>();
+    for (const o of filtered) {
+      const g = o.group || "其他";
+      if (!map.has(g)) map.set(g, []);
+      map.get(g)!.push(o);
+    }
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0], "zh-Hant"));
+  }, [filtered, hasGroups]);
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -118,16 +134,31 @@ export function Combobox({
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
+  const renderOption = (o: { id: string | number; label: string }) => (
+    <li key={o.id}>
+      <button
+        type="button"
+        className={`block w-full px-3 py-2 text-left text-sm hover:bg-brand/10 ${
+          String(o.id) === value ? "bg-brand/5 font-medium" : ""
+        }`}
+        onMouseDown={(e) => { e.preventDefault(); onChange(String(o.id)); setOpen(false); }}
+      >
+        {o.label}
+      </button>
+    </li>
+  );
+
   return (
     <div className="relative" ref={boxRef}>
       <input
-        className={inputBase}
+        className={`${inputBase} ${disabled ? "cursor-not-allowed bg-slate-100 text-slate-400" : ""}`}
         value={open ? query : selected?.label ?? ""}
         placeholder={placeholder ?? "輸入關鍵字搜尋…"}
-        onFocus={() => { setOpen(true); setQuery(""); }}
+        disabled={disabled}
+        onFocus={() => { if (!disabled) { setOpen(true); setQuery(""); } }}
         onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
       />
-      {open && (
+      {open && !disabled && (
         <ul className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-slate-200 bg-white shadow-lg">
           {allowClear && (
             <li>
@@ -142,22 +173,125 @@ export function Combobox({
           )}
           {filtered.length === 0 ? (
             <li className="px-3 py-2 text-sm text-slate-400">找不到符合的</li>
-          ) : (
-            filtered.map((o) => (
-              <li key={o.id}>
-                <button
-                  type="button"
-                  className={`block w-full px-3 py-2 text-left text-sm hover:bg-brand/10 ${
-                    String(o.id) === value ? "bg-brand/5 font-medium" : ""
-                  }`}
-                  onMouseDown={(e) => { e.preventDefault(); onChange(String(o.id)); setOpen(false); }}
-                >
-                  {o.label}
-                </button>
-              </li>
+          ) : hasGroups ? (
+            grouped.map(([g, items]) => (
+              <Fragment key={g}>
+                <li className="sticky top-0 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">{g}</li>
+                {items.map(renderOption)}
+              </Fragment>
             ))
+          ) : (
+            filtered.map(renderOption)
           )}
         </ul>
+      )}
+    </div>
+  );
+}
+
+// 階層(連動)選單:單一欄位,點開後左欄選分類、右欄跑出該分類的項目。
+// 用於「接收單位」:左=加工方式、右=該方式的公司。
+export function CascadeSelect({
+  value,
+  onChange,
+  groups,
+  placeholder = "請選擇…",
+  allowClear = true,
+}: {
+  value: string;
+  onChange: (id: string) => void;
+  groups: { key: string; items: { id: string | number; label: string }[] }[];
+  placeholder?: string;
+  allowClear?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  // 找出目前選的項目 label 與所屬分類
+  let selectedLabel = "";
+  let selectedGroup = "";
+  for (const g of groups) {
+    const it = g.items.find((i) => String(i.id) === value);
+    if (it) { selectedLabel = it.label; selectedGroup = g.key; break; }
+  }
+  const [active, setActive] = useState(selectedGroup || groups[0]?.key || "");
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const activeItems = groups.find((g) => g.key === active)?.items ?? [];
+
+  return (
+    <div className="relative" ref={boxRef}>
+      <button
+        type="button"
+        className={`${inputBase} flex items-center justify-between text-left`}
+        onClick={() => {
+          if (open) { setOpen(false); return; }
+          setActive(selectedGroup || groups[0]?.key || "");
+          setOpen(true);
+        }}
+      >
+        <span className={`truncate ${selectedLabel ? "" : "text-slate-400"}`}>{selectedLabel || placeholder}</span>
+        <span className="ml-2 shrink-0 text-slate-400">▾</span>
+      </button>
+      {open && (
+        <div className="nodrag nowheel absolute z-40 mt-1 flex w-[22rem] max-w-[85vw] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+          {/* 左:分類(加工方式) */}
+          <ul className="max-h-64 w-32 shrink-0 overflow-auto border-r border-slate-100 bg-slate-50/60">
+            {groups.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-slate-400">無分類</li>
+            ) : groups.map((g) => (
+              <li key={g.key}>
+                <button
+                  type="button"
+                  onMouseEnter={() => setActive(g.key)}
+                  onClick={() => setActive(g.key)}
+                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm ${
+                    active === g.key ? "bg-white font-medium text-brand" : "text-slate-600 hover:bg-white"
+                  }`}
+                >
+                  <span className="truncate">{g.key}</span>
+                  <span className="ml-1 shrink-0 text-xs text-slate-300">›</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {/* 右:該分類的項目(公司) */}
+          <ul className="max-h-64 flex-1 overflow-auto">
+            {allowClear && (
+              <li>
+                <button
+                  type="button"
+                  className="block w-full px-3 py-2 text-left text-sm text-slate-400 hover:bg-slate-100"
+                  onClick={() => { onChange(""); setOpen(false); }}
+                >
+                  — 清除 —
+                </button>
+              </li>
+            )}
+            {activeItems.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-slate-400">此分類沒有項目</li>
+            ) : activeItems.map((it) => (
+              <li key={it.id}>
+                <button
+                  type="button"
+                  onClick={() => { onChange(String(it.id)); setOpen(false); }}
+                  className={`block w-full truncate px-3 py-2 text-left text-sm hover:bg-brand/10 ${
+                    String(it.id) === value ? "bg-brand/5 font-medium" : ""
+                  }`}
+                >
+                  {it.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

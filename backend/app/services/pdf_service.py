@@ -18,22 +18,80 @@ class PdfUnavailable(RuntimeError):
     """WeasyPrint(或其系統相依)不可用時拋出。"""
 
 
-def render_order_html(order: Order) -> str:
+def _company_cfg() -> dict:
     cfg = current_app.config
-    company = {
+    return {
         "name1": cfg["COMPANY_NAME_1"],
         "name2": cfg["COMPANY_NAME_2"],
         "address": cfg["COMPANY_ADDRESS"],
         "tel": cfg["COMPANY_TEL"],
         "fax": cfg["COMPANY_FAX"],
     }
+
+
+def _pages_html(data: dict, company: dict, pages: list) -> str:
+    return render_template("order_pdf.html", order=data, company=company, pages=pages)
+
+
+def _sheet_page_count(HTML, data: dict, company: dict, rows: list, blank_rows: int) -> int:
+    """試排「單獨一張 sheet」,回傳它實際佔幾頁(>1 代表塞不下)。"""
+    pages = [{
+        "rows": rows,
+        "blank_rows": blank_rows,
+        # 用帶後綴的 NO 試排,寬度比照最終輸出,避免邊界誤差
+        "order_no": f"{data.get('order_no') or ''}-01",
+        "page_no": 1,
+        "page_count": 1,
+    }]
+    return len(HTML(string=_pages_html(data, company, pages)).render().pages)
+
+
+def _paginate(HTML, data: dict, company: dict) -> list:
+    """動態分頁:用實際排版高度,把每一張紙塞到滿才換下一張(不固定每張幾筆)。"""
+    items = data["items"]
+    base_no = data.get("order_no") or ""
+
+    # 1) 貪婪打包:逐筆加入目前這張,直到再加一筆會爆頁就換新的一張
+    sheets: list[list] = []
+    cur: list = []
+    for it in items:
+        if _sheet_page_count(HTML, data, company, cur + [it], 0) <= 1:
+            cur.append(it)
+        elif cur:
+            sheets.append(cur)
+            cur = [it]
+        else:
+            sheets.append([it])  # 單筆就超過一頁(極端情況),自己佔一張
+            cur = []
+    if cur or not sheets:
+        sheets.append(cur)
+
+    # 2) 每一張用空白列補到滿(版面像預印單據,格線到底)
+    n = len(sheets)
+    pages = []
+    for idx, rows in enumerate(sheets):
+        blanks = 0
+        while _sheet_page_count(HTML, data, company, rows, blanks + 1) <= 1:
+            blanks += 1
+        pages.append({
+            "rows": rows,
+            "blank_rows": blanks,
+            "order_no": base_no if n == 1 else f"{base_no}-{idx + 1:02d}",
+            "page_no": idx + 1,
+            "page_count": n,
+        })
+    return pages
+
+
+def render_order_html(order: Order) -> str:
+    """單純 HTML(單張、不分頁),給除錯/預覽用;實際 PDF 走 order_to_pdf_bytes 會動態分頁。"""
     data = order.to_dict()
-    # 補滿到 5 列(一張移轉單最多 5 筆),版面固定、單頁印得下
-    blank_rows = max(0, 5 - len(data["items"]))
-    # 注意:items 另外傳,避免 Jinja 把 dict 的 order.items 解析成方法
-    return render_template(
-        "order_pdf.html", order=data, items=data["items"], company=company, blank_rows=blank_rows
-    )
+    company = _company_cfg()
+    pages = [{
+        "rows": data["items"], "blank_rows": 0,
+        "order_no": data.get("order_no") or "", "page_no": 1, "page_count": 1,
+    }]
+    return _pages_html(data, company, pages)
 
 
 def order_to_pdf_bytes(order: Order) -> bytes:
@@ -44,8 +102,10 @@ def order_to_pdf_bytes(order: Order) -> bytes:
             "PDF 產生需要 WeasyPrint 與其系統相依(pango/cairo),"
             "請在後端容器內執行。原始錯誤:%s" % e
         )
-    html = render_order_html(order)
-    return HTML(string=html).write_pdf()
+    data = order.to_dict()
+    company = _company_cfg()
+    pages = _paginate(HTML, data, company)
+    return HTML(string=_pages_html(data, company, pages)).write_pdf()
 
 
 def render_statement_html(data: dict) -> str:

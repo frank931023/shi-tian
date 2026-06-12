@@ -4,6 +4,7 @@ import { ApiError } from "../api/client";
 import { companiesApi, printingApi, processItemsApi, productsApi, specsApi } from "../api/resources";
 import { Button, Card, ErrorBar, Field, Input, Modal, Pager, Select, Spinner } from "../components/ui";
 import { useAuth } from "../lib/AuthContext";
+import { receiverMethod, receiverMethodOptions } from "../lib/company";
 import { sortSpecNames } from "../lib/spec";
 import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 
@@ -222,6 +223,7 @@ function CompaniesPanel({ isAdmin, role, view }: { isAdmin: boolean; role: "vend
   const [items, setItems] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [method, setMethod] = useState(""); // 接收單位:依加工方式篩選("" = 全部)
   const [addOpen, setAddOpen] = useState(false);
   const [detail, setDetail] = useState<Company | null>(null);
 
@@ -233,10 +235,16 @@ function CompaniesPanel({ isAdmin, role, view }: { isAdmin: boolean; role: "vend
   }
   useEffect(reload, [role]);
 
+  // 接收單位才有加工方式:蒐集所有出現過的基底分類(去重、排序)當下拉選項
+  const methodOptions = role === "receiver" ? receiverMethodOptions(items) : [];
+
   const q = query.trim().toLowerCase();
-  const filtered = q
-    ? items.filter((c) => `${c.name}${c.phone ?? ""}${c.fax ?? ""}`.toLowerCase().includes(q))
-    : items;
+  const filtered = items.filter((c) => {
+    // 名稱 / 縮寫 / 電話 / 傳真 都可搜
+    if (q && !`${c.name}${c.abbr ?? ""}${c.phone ?? ""}${c.fax ?? ""}`.toLowerCase().includes(q)) return false;
+    if (method && receiverMethod(c) !== method) return false;
+    return true;
+  });
   const paged = usePaged(filtered, view === "grid" ? 12 : 10);
 
   return (
@@ -247,9 +255,19 @@ function CompaniesPanel({ isAdmin, role, view }: { isAdmin: boolean; role: "vend
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`搜尋${roleLabel}(名稱 / 電話 / 傳真)`}
+            placeholder={role === "receiver" ? `搜尋${roleLabel}(名稱 / 縮寫 / 電話 / 傳真)` : `搜尋${roleLabel}(名稱 / 電話 / 傳真)`}
           />
         </div>
+        {role === "receiver" && methodOptions.length > 0 && (
+          <div className="w-40 shrink-0">
+            <Select value={method} onChange={(e) => setMethod(e.target.value)}>
+              <option value="">全部加工方式</option>
+              {methodOptions.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </Select>
+          </div>
+        )}
         {isAdmin && (
           <Button type="button" onClick={() => setAddOpen(true)} className="whitespace-nowrap">
             ＋ 新增{roleLabel}

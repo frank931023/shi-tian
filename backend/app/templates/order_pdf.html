@@ -6,6 +6,9 @@
   /* 移轉單紙張 21×14 cm(橫式);四周盡量少留白,內容放大 */
   @page { size: 210mm 140mm; margin: 4mm; }
   * { box-sizing: border-box; }
+  /* 每一張移轉單佔一頁;最後一張之後不要再多一頁空白 */
+  .sheet { break-after: page; page-break-after: always; }
+  .sheet:last-child { break-after: auto; page-break-after: auto; }
   body { font-family: "Noto Sans CJK TC", "Noto Sans TC", sans-serif; color: #111; font-size: 14px; }
 
   /* 公司名獨占最上面一行(放大、置中),下方一條分隔線。 */
@@ -42,71 +45,76 @@
 </style>
 </head>
 <body>
-  <div class="head">
-    <!-- 公司名獨占頂部一行 + 分隔線 -->
-    <div class="company-bar">
-      <div class="c1">{{ company.name1 }}</div>
-    </div>
-    <!-- 分隔線以下的三欄 -->
-    <div class="head-cols">
-      <div class="head-left">
-        <div class="field"><span class="label">廠商單位：</span><span class="value">{{ order.vendor_name or '' }}</span></div>
-        <div class="field"><span class="label">接收單位：</span><span class="value">{{ order.receiver_name or '' }}</span></div>
+  {# 品項多到放不下時自動分頁:每一張 sheet 都重複頁首/頁尾,NO 後綴 -01、-02… #}
+  {% for pg in pages %}
+  <div class="sheet">
+    <div class="head">
+      <!-- 公司名獨占頂部一行 + 分隔線 -->
+      <div class="company-bar">
+        <div class="c1">{{ company.name1 }}</div>
       </div>
-      <div class="head-center">
-        <div class="title">
-          <div class="t">移 轉 單</div>
+      <!-- 分隔線以下的三欄 -->
+      <div class="head-cols">
+        <div class="head-left">
+          <div class="field"><span class="label">廠商單位：</span><span class="value">{{ order.vendor_name or '' }}</span></div>
+          <div class="field"><span class="label">接收單位：</span><span class="value">{{ order.receiver_abbr or order.receiver_name or '' }}</span></div>
         </div>
-        <div class="date"><span class="label">日期：</span><span class="value">{{ order.order_date }}</span></div>
-      </div>
-      <div class="meta">
-        <div>NO. <span class="no">{{ order.order_no }}</span></div>
-        <div>{{ company.address }}</div>
-        <div>TEL：{{ company.tel }}</div>
-        <div>FAX：{{ company.fax }}</div>
+        <div class="head-center">
+          <div class="title">
+            <div class="t">移 轉 單</div>
+          </div>
+          <div class="date"><span class="label">日期：</span><span class="value">{{ order.order_date }}</span></div>
+        </div>
+        <div class="meta">
+          <div style="white-space: nowrap">NO. <span class="no">{{ pg.order_no }}</span></div>
+          <div>{{ company.address }}</div>
+          <div>TEL：{{ company.tel }}</div>
+          <div>FAX：{{ company.fax }}</div>
+        </div>
       </div>
     </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:9%">加工單號</th>
+          <th style="width:15%">品名</th>
+          <th style="width:21%">規格</th>
+          <th style="width:17%">加工項目</th>
+          <th style="width:9%">重量(KG)</th>
+          <th style="width:8%">數量</th>
+          <th style="width:7%">單位</th>
+          <th style="width:14%">備註</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in pg.rows %}
+        <tr>
+          <td></td>
+          <td class="left">{{ it.product_name }}</td>
+          <td class="nowrap">{{ it.spec or '' }}</td>
+          <td class="left">{{ it.process_item or '' }}</td>
+          <td class="num">{{ '{:,.2f}'.format(it.net_weight_kg) if it.net_weight_kg is not none else '' }}</td>
+          <td class="num">{{ '{:,g}'.format(it.quantity) if it.quantity is not none else '' }}</td>
+          <td>{{ it.unit or '' }}</td>
+          <td>{{ it.remark or '' }}</td>
+        </tr>
+        {% endfor %}
+        {# 補滿空白列讓表格高度穩定 #}
+        {% for _ in range(pg.blank_rows) %}
+        <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if order.note %}<p style="margin-top:8px">備註：{{ order.note }}</p>{% endif %}
+
+    <div class="foot">
+      <div class="sign">移出單位<div class="line"></div></div>
+      <div class="sign">接收單位<div class="line"></div></div>
+      <div class="sign">備註<div class="line"></div></div>
+    </div>
   </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th style="width:9%">加工單號</th>
-        <th style="width:15%">品名</th>
-        <th style="width:21%">規格</th>
-        <th style="width:17%">加工項目</th>
-        <th style="width:9%">重量(KG)</th>
-        <th style="width:8%">數量</th>
-        <th style="width:7%">單位</th>
-        <th style="width:14%">備註</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for it in items %}
-      <tr>
-        <td></td>
-        <td class="left">{{ it.product_name }}</td>
-        <td class="nowrap">{{ it.spec or '' }}</td>
-        <td class="left">{{ it.process_item or '' }}</td>
-        <td class="num">{{ '{:,.2f}'.format(it.net_weight_kg) if it.net_weight_kg is not none else '' }}</td>
-        <td class="num">{{ '{:,g}'.format(it.quantity) if it.quantity is not none else '' }}</td>
-        <td>{{ it.unit or '' }}</td>
-        <td>{{ it.remark or '' }}</td>
-      </tr>
-      {% endfor %}
-      {# 補滿空白列讓表格高度穩定 #}
-      {% for _ in range(blank_rows) %}
-      <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  {% if order.note %}<p style="margin-top:8px">備註：{{ order.note }}</p>{% endif %}
-
-  <div class="foot">
-    <div class="sign">移出單位<div class="line"></div></div>
-    <div class="sign">接收單位<div class="line"></div></div>
-    <div class="sign">備註<div class="line"></div></div>
-  </div>
+  {% endfor %}
 </body>
 </html>

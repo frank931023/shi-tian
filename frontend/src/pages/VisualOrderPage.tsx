@@ -50,7 +50,7 @@ const nodeTypes = { company: CompanyNode, field: FieldNode, order: OrderNode };
 const edgeTypes = { bendable: BendableEdge };
 const E = "bendable"; // 所有連線都用可折彎線型
 const ROW_GAP = 200; // 一排內欄位節點的水平間距(避免重疊,排版整齊)
-const MAX_ITEMS = 5; // 一張移轉單一次最多 5 筆品項(排)
+const MAX_ITEMS = 20; // 一張移轉單一次最多 20 筆品項(排;PDF 超過一張會自動分頁)
 
 function useIsDesktop() {
   const [desktop, setDesktop] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
