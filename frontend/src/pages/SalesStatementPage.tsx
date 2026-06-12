@@ -1,5 +1,5 @@
 // 銷貨統計表:選客戶(可搜尋)→ 帶出/可改統一編號 → 選計算期間 → 自動列出該客戶區間內訂單明細。
-// 加工單號、淨重、件數、單價留給使用者填;金額=數量×單價,合計→稅額(5%)→總計 自動計算。
+// 加工單號、淨重、件數、單價留給使用者填;金額=數量×單價,合計→稅額(稅率可自訂,預設5%)→總計 自動計算。
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api/client";
 import { companiesApi, ordersApi } from "../api/resources";
@@ -7,7 +7,7 @@ import { Button, Card, Combobox, ErrorBar, Field, Input, Modal, Pager, Spinner }
 import { groupDigits } from "../lib/format";
 import type { Company, Order } from "../lib/types";
 
-const TAX_RATE = 0.05;
+const DEFAULT_TAX_PCT = "5"; // 稅率預設 5%,使用者可自訂
 const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
 function ymd(d: Date): string {
@@ -70,6 +70,7 @@ export default function SalesStatementPage() {
   const [vendors, setVendors] = useState<Company[]>([]);
   const [vendorId, setVendorId] = useState("");
   const [taxid, setTaxid] = useState("");
+  const [taxPctStr, setTaxPctStr] = useState(DEFAULT_TAX_PCT); // 稅率(%),可自訂
   const [from, setFrom] = useState(monthStart());
   const [to, setTo] = useState(ymd(new Date()));
   const [rows, setRows] = useState<Row[]>([]);
@@ -146,6 +147,7 @@ export default function SalesStatementPage() {
       total_qty: fmt(totalQty),
       total_amount: fmt(totalAmount),
       tax: fmt(tax),
+      tax_pct: taxPctStr || "0", // 讓 PDF 標示實際稅率
       grand: fmt(grand),
     };
     const m = document.cookie.match(/(?:^|; )csrf_token=([^;]+)/);
@@ -177,7 +179,8 @@ export default function SalesStatementPage() {
 
   const totalQty = useMemo(() => rows.reduce((s, r) => s + r.quantity, 0), [rows]);
   const totalAmount = useMemo(() => rows.reduce((s, r) => s + amountOf(r), 0), [rows]);
-  const tax = Math.round(totalAmount * TAX_RATE);
+  const taxPct = Math.max(0, Number(taxPctStr) || 0); // 解析稅率,空白或非數字當 0
+  const tax = Math.round(totalAmount * (taxPct / 100));
   const grand = totalAmount + tax;
   const orderCount = useMemo(() => new Set(rows.map((r) => r.orderId)).size, [rows]);
 
@@ -290,7 +293,20 @@ export default function SalesStatementPage() {
             <div className="w-full sm:max-w-xs">
               <Card className="space-y-2 !p-4">
                 <TotalRow label="合計" value={fmt(totalAmount)} />
-                <TotalRow label="稅額(5%)" value={fmt(tax)} />
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-1 text-slate-500">
+                    稅額(
+                    <input
+                      value={taxPctStr}
+                      onChange={(e) => setTaxPctStr(e.target.value.replace(/[^\d.]/g, ""))}
+                      inputMode="decimal"
+                      className="w-10 rounded border border-slate-200 px-1 py-0.5 text-center text-sm tabular-nums outline-none focus:border-brand"
+                      aria-label="稅率百分比"
+                    />
+                    %)
+                  </span>
+                  <span className="font-medium tabular-nums text-slate-800">{fmt(tax)}</span>
+                </div>
                 <div className="border-t border-slate-200" />
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-slate-700">總計</span>
