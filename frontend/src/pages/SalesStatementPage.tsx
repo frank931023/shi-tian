@@ -261,7 +261,7 @@ export default function SalesStatementPage() {
                     <td className="px-2 py-1.5">{r.isFirst && <input className={cellInput} value={r.processNo} onChange={(e) => update(r.key, { processNo: e.target.value })} />}</td>
                     <td className="px-3 py-1.5 text-slate-700">{r.isFirst ? r.receiver : ""}</td>
                     <td className="px-3 py-1.5 font-medium text-slate-800">{r.product}</td>
-                    <td className="px-3 py-1.5 text-slate-600">{r.spec}</td>
+                    <td className="whitespace-nowrap px-3 py-1.5 text-slate-600">{r.spec}</td>
                     <td className="px-3 py-1.5 text-right tabular-nums">{fmt(r.quantity)}</td>
                     <td className="px-2 py-1.5"><input className={`${cellInput} text-right`} inputMode="decimal" value={r.netWeight} onChange={(e) => update(r.key, { netWeight: groupDigits(e.target.value) })} /></td>
                     <td className="px-3 py-1.5 text-center text-slate-600">{r.pieces}</td>

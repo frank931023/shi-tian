@@ -11,12 +11,13 @@ export interface Combo {
 }
 
 const KEY = "shitian.recentCombos";
-const MAX = 12;
+const MAX = 10; // 最近使用組合上限,最多 10 個
 
 export function loadRecent(): Combo[] {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Combo[]) : [];
+    // 載入時就裁到上限,舊資料超過 10 個也會被截掉
+    return raw ? (JSON.parse(raw) as Combo[]).slice(0, MAX) : [];
   } catch {
     return [];
   }

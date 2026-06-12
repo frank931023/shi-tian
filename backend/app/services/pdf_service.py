@@ -28,8 +28,8 @@ def render_order_html(order: Order) -> str:
         "fax": cfg["COMPANY_FAX"],
     }
     data = order.to_dict()
-    # 補滿到至少 8 列,版面比較穩定、好對紙
-    blank_rows = max(0, 8 - len(data["items"]))
+    # 補滿到 5 列(一張移轉單最多 5 筆),版面固定、單頁印得下
+    blank_rows = max(0, 5 - len(data["items"]))
     # 注意:items 另外傳,避免 Jinja 把 dict 的 order.items 解析成方法
     return render_template(
         "order_pdf.html", order=data, items=data["items"], company=company, blank_rows=blank_rows

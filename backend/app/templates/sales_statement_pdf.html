@@ -24,6 +24,7 @@
   th { font-weight: 700; }
   td.l { text-align: left; }
   td.r { text-align: right; }
+  td.nowrap { white-space: nowrap; }   /* 規格:保證一行,不換行 */
 </style>
 </head>
 <body>
@@ -69,7 +70,7 @@
         <td>{{ r.process_no }}</td>
         <td>{{ r.receiver }}</td>
         <td class="l">{{ r.product }}</td>
-        <td class="l">{{ r.spec }}</td>
+        <td class="l nowrap">{{ r.spec }}</td>
         <td class="r">{{ r.quantity }}</td>
         <td class="r">{{ r.net_weight }}</td>
         <td class="r">{{ r.pieces }}</td>

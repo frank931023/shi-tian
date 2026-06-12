@@ -50,6 +50,7 @@ const nodeTypes = { company: CompanyNode, field: FieldNode, order: OrderNode };
 const edgeTypes = { bendable: BendableEdge };
 const E = "bendable"; // 所有連線都用可折彎線型
 const ROW_GAP = 200; // 一排內欄位節點的水平間距(避免重疊,排版整齊)
+const MAX_ITEMS = 5; // 一張移轉單一次最多 5 筆品項(排)
 
 function useIsDesktop() {
   const [desktop, setDesktop] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
@@ -103,6 +104,7 @@ function VisualOrderInner() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [menu, setMenu] = useState<MenuState | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [limitMsg, setLimitMsg] = useState<string | null>(null); // 超過 8 排的提醒
   const [savedId, setSavedId] = useState<number | null>(null);
   const [orderDate, setOrderDate] = useState(today());
   // 「+建議下一個」浮動選單
@@ -147,18 +149,38 @@ function VisualOrderInner() {
   );
   const copyNodes = useCallback(
     (ids: string[]) => {
+      const sel = ids.filter((id) => id !== ORDER_ID);
+      if (sel.length === 0) return;
+      // 先配好新舊 id 對照,節點與連線都用它,確保複製出來的「排」內部仍連著
+      const idMap = new Map<string, string>();
+      sel.forEach((id) => idMap.set(id, `n-${++seq.current}`));
+
       setNodes((ns) => {
         const extra: Node[] = [];
-        for (const id of ids) {
-          if (id === ORDER_ID) continue;
+        for (const id of sel) {
           const n = ns.find((x) => x.id === id);
           if (!n) continue;
-          extra.push({ ...n, id: `n-${++seq.current}`, position: { x: n.position.x + 40, y: n.position.y + 40 }, data: { ...n.data }, selected: false });
+          extra.push({ ...n, id: idMap.get(id)!, position: { x: n.position.x + 40, y: n.position.y + 40 }, data: { ...n.data }, selected: false });
         }
         return extra.length ? [...ns, ...extra] : ns;
       });
+
+      // 一併複製連線:兩端都在選取內的(欄位↔欄位),以及「訂單→選取節點」(讓複製的排也接到訂單)
+      setEdges((es) => {
+        const extra: Edge[] = [];
+        for (const e of es) {
+          const s = idMap.get(e.source);
+          const t = idMap.get(e.target);
+          if (s && t) {
+            extra.push({ ...e, id: `e-${s}-${t}`, source: s, target: t, selected: false });
+          } else if (e.source === ORDER_ID && t) {
+            extra.push({ ...e, id: `e-order-${t}`, source: ORDER_ID, target: t, selected: false });
+          }
+        }
+        return extra.length ? [...es, ...extra] : es;
+      });
     },
-    [setNodes],
+    [setNodes, setEdges],
   );
   // 連線規則:
   // - 欄位節點:每個輸出/輸入點只允許一條線(接新的自動斷舊的,防止分叉)。
@@ -273,6 +295,11 @@ function VisualOrderInner() {
 
   const spawn = useCallback(
     (payload: DragPayload, pos: { x: number; y: number }) => {
+      // 整排 / 組合會新增一筆品項;已達上限就擋下並提醒
+      if ((payload.kind === "row" || payload.kind === "combo") && recon.rows.length >= MAX_ITEMS) {
+        setLimitMsg(`一次最多 ${MAX_ITEMS} 筆品項,無法再新增。`);
+        return;
+      }
       const newNodes: Node[] = [];
       const newEdges: Edge[] = [];
       const nid = () => `n-${++seq.current}`;
@@ -317,7 +344,7 @@ function VisualOrderInner() {
       setNodes((ns) => [...ns, ...newNodes]);
       if (newEdges.length) setEdges((es) => [...es, ...newEdges]);
     },
-    [setNodes, setEdges, nodes],
+    [setNodes, setEdges, nodes, recon.rows.length],
   );
 
   const onDrop = useCallback(
@@ -357,6 +384,10 @@ function VisualOrderInner() {
     setError(null);
     if (recon.rows.length === 0) {
       setError("沒有偵測到任何「有品名且連到訂單」的排");
+      return;
+    }
+    if (recon.rows.length > MAX_ITEMS) {
+      setLimitMsg(`一次最多 ${MAX_ITEMS} 筆品項,目前有 ${recon.rows.length} 筆,請先刪除多餘的排。`);
       return;
     }
     setConfirmOpen(true);
@@ -415,7 +446,7 @@ function VisualOrderInner() {
   return (
     <div className="mx-auto max-w-[1400px] space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-bold sm:text-2xl">視覺化建單</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">視覺化建單 <span className="text-sm font-normal text-slate-400">(一次最多 {MAX_ITEMS} 筆品項)</span></h1>
         <Link to="/orders/new">
           <Button variant="secondary">切換到表單模式</Button>
         </Link>
@@ -637,6 +668,16 @@ function VisualOrderInner() {
         }
       >
         <p className="text-slate-600">訂單已建立,要現在開啟三聯單 PDF 嗎?(會在新分頁顯示)</p>
+      </Modal>
+
+      {/* 超過 8 筆品項的提醒 */}
+      <Modal
+        open={limitMsg !== null}
+        title="無法新增"
+        onClose={() => setLimitMsg(null)}
+        footer={<Button type="button" onClick={() => setLimitMsg(null)}>知道了</Button>}
+      >
+        <p className="text-slate-700">{limitMsg}</p>
       </Modal>
 
       <datalist id="vo-product-options">

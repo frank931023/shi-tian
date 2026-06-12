@@ -26,6 +26,8 @@ interface RowState {
   remark: string;
 }
 
+const MAX_ITEMS = 5; // 一張移轉單一次最多 5 筆品項
+
 const emptyRow = (): RowState => ({
   product_name: "",
   spec1: "",
@@ -63,6 +65,7 @@ export default function OrderFormPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [limitMsg, setLimitMsg] = useState<string | null>(null); // 超過 8 筆的提醒
 
   // 載入參考主檔 + (編輯/複製時)既有單
   useEffect(() => {
@@ -132,6 +135,10 @@ export default function OrderFormPage() {
     setRows((rs) => rs.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
   }
   function addRow() {
+    if (rows.length >= MAX_ITEMS) {
+      setLimitMsg(`一次最多 ${MAX_ITEMS} 筆品項,無法再新增。`);
+      return;
+    }
     setRows((rs) => [...rs, emptyRow()]);
   }
   function removeRow(idx: number) {
@@ -247,8 +254,8 @@ export default function OrderFormPage() {
       {/* 品項列 */}
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold">品項</h2>
-          <span className="text-sm text-slate-500">共 {rows.length} 行</span>
+          <h2 className="font-bold">品項 <span className="text-sm font-normal text-slate-400">(一次最多 {MAX_ITEMS} 筆)</span></h2>
+          <span className="text-sm text-slate-500">共 {rows.length} / {MAX_ITEMS} 筆</span>
         </div>
 
         {rows.map((r, idx) => {
@@ -416,6 +423,16 @@ export default function OrderFormPage() {
         <p className="text-slate-600">
           訂單已儲存。要現在開啟三聯單 PDF 嗎?(會在新分頁顯示 PDF)
         </p>
+      </Modal>
+
+      {/* 超過 8 筆品項的提醒 */}
+      <Modal
+        open={limitMsg !== null}
+        title="無法新增"
+        onClose={() => setLimitMsg(null)}
+        footer={<Button type="button" onClick={() => setLimitMsg(null)}>知道了</Button>}
+      >
+        <p className="text-slate-700">{limitMsg}</p>
       </Modal>
     </form>
   );
