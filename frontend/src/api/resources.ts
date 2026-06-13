@@ -27,28 +27,61 @@ export const authApi = {
 export const companiesApi = {
   list: (role?: "vendor" | "receiver") =>
     api<Company[]>("/companies", { params: { role } }),
+  listDeleted: (role?: "vendor" | "receiver") =>
+    api<Company[]>("/companies", { params: { role, deleted: 1 } }),
   create: (body: Partial<Company>) =>
     api<Company>("/companies", { method: "POST", body }),
   update: (id: number, body: Partial<Company>) =>
     api<Company>(`/companies/${id}`, { method: "PATCH", body }),
+  remove: (id: number) =>
+    api<{ deleted: number }>(`/companies/${id}`, { method: "DELETE" }),
+  restore: (id: number) =>
+    api<Company>(`/companies/${id}/restore`, { method: "POST" }),
+  purge: (id: number) =>
+    api<{ purged: number }>(`/companies/${id}/purge`, { method: "DELETE" }),
 };
 
 export const productsApi = {
   list: () => api<Product[]>("/products"),
+  listDeleted: () => api<Product[]>("/products", { params: { deleted: 1 } }),
   create: (body: Partial<Product>) =>
     api<Product>("/products", { method: "POST", body }),
+  update: (id: number, body: { name?: string; note?: string | null }) =>
+    api<Product>(`/products/${id}`, { method: "PATCH", body }),
+  remove: (id: number) =>
+    api<{ deleted: number }>(`/products/${id}`, { method: "DELETE" }),
+  restore: (id: number) =>
+    api<Product>(`/products/${id}/restore`, { method: "POST" }),
+  purge: (id: number) =>
+    api<{ purged: number }>(`/products/${id}/purge`, { method: "DELETE" }),
 };
 
 export const processItemsApi = {
   list: () => api<ProcessItem[]>("/process-items"),
-  create: (body: { name: string }) =>
+  listDeleted: () => api<ProcessItem[]>("/process-items", { params: { deleted: 1 } }),
+  create: (body: { name: string; note?: string | null }) =>
     api<ProcessItem>("/process-items", { method: "POST", body }),
+  update: (id: number, body: { name?: string; note?: string | null }) =>
+    api<ProcessItem>(`/process-items/${id}`, { method: "PATCH", body }),
+  remove: (id: number) =>
+    api<{ deleted: number }>(`/process-items/${id}`, { method: "DELETE" }),
+  restore: (id: number) =>
+    api<ProcessItem>(`/process-items/${id}/restore`, { method: "POST" }),
+  purge: (id: number) =>
+    api<{ purged: number }>(`/process-items/${id}/purge`, { method: "DELETE" }),
 };
 
 export const specsApi = {
   list: () => api<Spec[]>("/specs"),
+  listDeleted: () => api<Spec[]>("/specs", { params: { deleted: 1 } }),
   create: (body: { name: string; kind?: "規格1" | "規格2" | null }) =>
     api<Spec>("/specs", { method: "POST", body }),
+  remove: (id: number) =>
+    api<{ deleted: number }>(`/specs/${id}`, { method: "DELETE" }),
+  restore: (id: number) =>
+    api<Spec>(`/specs/${id}/restore`, { method: "POST" }),
+  purge: (id: number) =>
+    api<{ purged: number }>(`/specs/${id}/purge`, { method: "DELETE" }),
 };
 
 // ---- 報表 ----

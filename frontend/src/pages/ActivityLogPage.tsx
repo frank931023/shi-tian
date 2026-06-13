@@ -20,11 +20,29 @@ const ACTIONS: Record<string, { label: string; icon: string; cls: string }> = {
   generate_pdf: { label: "產生訂單 PDF(封存)", icon: "📄", cls: "text-slate-600" },
   print_order: { label: "列印訂單", icon: "🖨️", cls: "text-slate-600" },
   statement_pdf: { label: "產生銷貨統計表 PDF", icon: "📊", cls: "text-indigo-600" },
+  // 公司(廠商/接收)主檔
   create_company: { label: "新增公司(主檔)", icon: "🏢", cls: "text-emerald-600" },
   update_company: { label: "修改公司(主檔)", icon: "🏢", cls: "text-blue-600" },
+  delete_company: { label: "刪除公司(移到垃圾桶)", icon: "🗑️", cls: "text-red-500" },
+  restore_company: { label: "復原公司(主檔)", icon: "♻️", cls: "text-emerald-600" },
+  purge_company: { label: "永久刪除公司(主檔)", icon: "❌", cls: "text-red-600" },
+  // 品名主檔
   create_product: { label: "新增品名(主檔)", icon: "📦", cls: "text-emerald-600" },
+  update_product: { label: "修改品名(主檔)", icon: "📦", cls: "text-blue-600" },
+  delete_product: { label: "刪除品名(移到垃圾桶)", icon: "🗑️", cls: "text-red-500" },
+  restore_product: { label: "復原品名(主檔)", icon: "♻️", cls: "text-emerald-600" },
+  purge_product: { label: "永久刪除品名(主檔)", icon: "❌", cls: "text-red-600" },
+  // 加工項目主檔
   create_process_item: { label: "新增加工項目(主檔)", icon: "🛠️", cls: "text-emerald-600" },
+  update_process_item: { label: "修改加工項目(主檔)", icon: "🛠️", cls: "text-blue-600" },
+  delete_process_item: { label: "刪除加工項目(移到垃圾桶)", icon: "🗑️", cls: "text-red-500" },
+  restore_process_item: { label: "復原加工項目(主檔)", icon: "♻️", cls: "text-emerald-600" },
+  purge_process_item: { label: "永久刪除加工項目(主檔)", icon: "❌", cls: "text-red-600" },
+  // 規格主檔
   create_spec: { label: "新增規格(主檔)", icon: "📐", cls: "text-emerald-600" },
+  delete_spec: { label: "刪除規格(移到垃圾桶)", icon: "🗑️", cls: "text-red-500" },
+  restore_spec: { label: "復原規格(主檔)", icon: "♻️", cls: "text-emerald-600" },
+  purge_spec: { label: "永久刪除規格(主檔)", icon: "❌", cls: "text-red-600" },
 };
 
 function describe(e: AuditEntry): string {

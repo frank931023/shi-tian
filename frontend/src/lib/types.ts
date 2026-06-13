@@ -35,6 +35,7 @@ export interface Product {
 export interface ProcessItem {
   id: number;
   name: string;
+  note?: string | null;
   is_active: boolean;
 }
 

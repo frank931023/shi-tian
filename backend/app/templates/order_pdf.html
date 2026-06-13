@@ -30,13 +30,17 @@
   .value { font-weight: 700; border-bottom: 1px solid #333; padding: 0 8px; min-width: 90px; display: inline-block; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-  th, td { border: 1px solid #333; padding: 4px 5px; text-align: center; font-size: 14px; line-height: 1.25; }
-  th { background: #f2f2f2; font-weight: 700; white-space: nowrap; padding: 5px 5px; }
+  /* 所有儲存格一律不換行;塞不下就靠各欄縮字 + 欄寬調整 */
+  th, td { border: 1px solid #333; padding: 4px 5px; text-align: center; font-size: 14px; line-height: 1.25; white-space: nowrap; }
+  th { background: #f2f2f2; font-weight: 700; padding: 5px 5px; }
   td.left { text-align: left; }
   td.num { text-align: right; }
-  /* 規格:絕不換行。WeasyPrint 在多欄表格會忽略 nowrap 的撐寬效果,
-     所以同時縮小字級 + 字距,讓最長規格也塞得進欄寬。 */
-  td.nowrap { white-space: nowrap; font-size: 12px; letter-spacing: -0.3px; }
+  /* 品名:不換行,稍微縮字塞進欄寬 */
+  td.prod { text-align: left; font-size: 13px; letter-spacing: -0.3px; }
+  /* 規格:絕不換行,縮字 + 字距塞進欄寬 */
+  td.nowrap { font-size: 12px; letter-spacing: -0.3px; }
+  /* 加工項目:同樣強制單行,縮字塞進欄寬 */
+  td.proc { font-size: 11px; letter-spacing: -0.3px; text-align: left; }
   tfoot td { font-weight: 700; }
 
   .foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 14px; }
@@ -77,25 +81,25 @@
     <table>
       <thead>
         <tr>
-          <th style="width:9%">加工單號</th>
+          <th style="width:12%">加工單號</th>
           <th style="width:15%">品名</th>
           <th style="width:21%">規格</th>
           <th style="width:17%">加工項目</th>
           <th style="width:9%">重量(KG)</th>
           <th style="width:8%">數量</th>
           <th style="width:7%">單位</th>
-          <th style="width:14%">備註</th>
+          <th style="width:11%">備註</th>
         </tr>
       </thead>
       <tbody>
         {% for it in pg.rows %}
         <tr>
           <td></td>
-          <td class="left">{{ it.product_name }}</td>
+          <td class="prod">{{ it.product_name }}</td>
           <td class="nowrap">{{ it.spec or '' }}</td>
-          <td class="left">{{ it.process_item or '' }}</td>
-          <td class="num">{{ '{:,.2f}'.format(it.net_weight_kg) if it.net_weight_kg is not none else '' }}</td>
-          <td class="num">{{ '{:,g}'.format(it.quantity) if it.quantity is not none else '' }}</td>
+          <td class="proc">{{ it.process_item or '' }}</td>
+          <td class="num">{{ '{:,.2f}'.format(it.net_weight_kg).rstrip('0').rstrip('.') if it.net_weight_kg is not none else '' }}</td>
+          <td class="num">{{ '{:,.2f}'.format(it.quantity).rstrip('0').rstrip('.') if it.quantity is not none else '' }}</td>
           <td>{{ it.unit or '' }}</td>
           <td>{{ it.remark or '' }}</td>
         </tr>

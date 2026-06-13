@@ -50,8 +50,22 @@ class ProductIn(BaseModel):
     note: Optional[str] = None
 
 
+class ProductUpdate(BaseModel):
+    """更新品名:可改名稱、備註(只更新有帶的欄位)。"""
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    default_unit: Optional[str] = Field(default=None, max_length=20)
+    note: Optional[str] = None
+
+
 class ProcessItemIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
+    note: Optional[str] = None
+
+
+class ProcessItemUpdate(BaseModel):
+    """更新加工項目:可改名稱、備註(只更新有帶的欄位)。"""
+    name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    note: Optional[str] = None
 
 
 class SpecIn(BaseModel):

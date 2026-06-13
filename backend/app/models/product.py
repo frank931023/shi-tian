@@ -27,7 +27,8 @@ class ProcessItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)        # 例:車刃、咬花
+    note = db.Column(db.Text)                               # 備註
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 
     def to_dict(self) -> dict:
-        return {"id": self.id, "name": self.name, "is_active": self.is_active}
+        return {"id": self.id, "name": self.name, "note": self.note, "is_active": self.is_active}

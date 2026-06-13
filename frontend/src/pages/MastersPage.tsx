@@ -2,11 +2,11 @@
 import { Fragment, useEffect, useState } from "react";
 import { ApiError } from "../api/client";
 import { companiesApi, printingApi, processItemsApi, productsApi, specsApi } from "../api/resources";
-import { Button, Card, ErrorBar, Field, Input, Modal, Pager, Select, Spinner } from "../components/ui";
+import { Button, Card, ErrorBar, Field, Input, Modal, Pager, Select, Spinner, Textarea } from "../components/ui";
 import { useAuth } from "../lib/AuthContext";
 import { receiverMethod, receiverMethodOptions } from "../lib/company";
-import { sortSpecNames } from "../lib/spec";
-import type { Company, ProcessItem, Product, Spec } from "../lib/types";
+import { compareSpecName } from "../lib/spec";
+import type { Company, Spec } from "../lib/types";
 
 // 客製分頁:每頁 10 筆,回傳目前頁資料 + 控制(超過範圍會自動夾住)
 function usePaged<T>(items: T[], size = 10) {
@@ -17,24 +17,143 @@ function usePaged<T>(items: T[], size = 10) {
 }
 
 // 純名稱清單(品名 / 加工項目)用的「列表 / 卡片」呈現 + 分頁
-function NameListBody({
-  paged, view,
+type SimpleItem = { id: number; name: string; note?: string | null };
+
+// 二次確認刪除 modal;requireText 有值時,要輸入完全相同的文字才能按刪除
+function ConfirmModal({
+  open, title, message, confirmLabel = "刪除", requireText, onConfirm, onClose,
 }: {
-  paged: { pageItems: { id: number; name: string }[]; page: number; totalPages: number; setPage: (p: number) => void };
-  view: "list" | "grid";
+  open: boolean; title: string; message: React.ReactNode; confirmLabel?: string;
+  requireText?: string; onConfirm: () => void | Promise<void>; onClose: () => void;
+}) {
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { if (open) { setTyped(""); setBusy(false); setError(null); } }, [open]);
+  const canConfirm = !requireText || typed.trim() === requireText.trim();
+  return (
+    <Modal
+      open={open}
+      title={title}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>取消</Button>
+          <Button
+            variant="danger"
+            disabled={!canConfirm || busy}
+            onClick={async () => {
+              setBusy(true);
+              setError(null);
+              try {
+                await onConfirm();
+              } catch (err) {
+                setError(err instanceof ApiError ? err.message : "刪除失敗,請稍後再試");
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? "處理中…" : confirmLabel}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-3 text-sm">
+        <div>{message}</div>
+        {requireText && (
+          <Field label={`請輸入完整名稱「${requireText}」以二次確認`}>
+            <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={requireText} />
+          </Field>
+        )}
+        <ErrorBar message={error} />
+      </div>
+    </Modal>
+  );
+}
+
+// 編輯名稱 + 備註的 modal(品名 / 加工項目共用)
+function NameEditModal({
+  title, item, onSave, onClose,
+}: {
+  title: string; item: SimpleItem;
+  onSave: (v: { name: string; note: string | null }) => Promise<void>;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState(item.name);
+  const [note, setNote] = useState(item.note ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function save() {
+    setBusy(true);
+    setError(null);
+    try {
+      await onSave({ name: name.trim(), note: note.trim() || null });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "儲存失敗");
+      setBusy(false);
+    }
+  }
+  return (
+    <Modal
+      open
+      title={title}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>取消</Button>
+          <Button onClick={save} disabled={busy || !name.trim()}>{busy ? "儲存中…" : "儲存"}</Button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <Field label="名稱" required><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label="備註"><Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="可填寫備註(選填)" /></Field>
+        <ErrorBar message={error} />
+      </div>
+    </Modal>
+  );
+}
+
+// 可編輯/刪除的名稱清單(品名、加工項目共用)
+function EditableNameList({
+  paged, view, isAdmin, onEdit, onDelete,
+}: {
+  paged: { pageItems: SimpleItem[]; page: number; totalPages: number; setPage: (p: number) => void };
+  view: "list" | "grid"; isAdmin: boolean;
+  onEdit: (item: SimpleItem) => void; onDelete: (item: SimpleItem) => void;
 }) {
   return (
     <>
       {view === "grid" ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {paged.pageItems.map((p) => (
-            <div key={p.id} className="rounded-xl border border-slate-200 p-3 font-medium">{p.name}</div>
+            <div key={p.id} className="flex flex-col rounded-xl border border-slate-200 p-3">
+              <span className="font-medium">{p.name}</span>
+              {p.note && <span className="mt-0.5 text-xs text-slate-500">{p.note}</span>}
+              {isAdmin && (
+                <div className="mt-2 flex gap-3">
+                  <button type="button" className="text-xs text-brand hover:underline" onClick={() => onEdit(p)}>編輯</button>
+                  <button type="button" className="text-xs text-red-500 hover:underline" onClick={() => onDelete(p)}>刪除</button>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       ) : (
         <ul className="divide-y divide-slate-100">
           {paged.pageItems.map((p) => (
-            <li key={p.id} className="py-3 font-medium">{p.name}</li>
+            <li key={p.id} className="flex items-center justify-between gap-3 py-3">
+              <div className="min-w-0">
+                <span className="font-medium">{p.name}</span>
+                {p.note && <span className="ml-2 text-sm text-slate-500">{p.note}</span>}
+              </div>
+              {isAdmin && (
+                <div className="flex shrink-0 gap-3">
+                  <button type="button" className="text-sm text-brand hover:underline" onClick={() => onEdit(p)}>編輯</button>
+                  <button type="button" className="text-sm text-red-500 hover:underline" onClick={() => onDelete(p)}>刪除</button>
+                </div>
+              )}
+            </li>
           ))}
         </ul>
       )}
@@ -42,6 +161,85 @@ function NameListBody({
         <Pager page={paged.page} totalPages={paged.totalPages} onChange={paged.setPage} />
       </div>
     </>
+  );
+}
+
+// 品名 / 加工項目 共用面板:新增 + 清單(可編輯名稱/備註、可刪除,刪除需二次確認)
+function SimpleMasterPanel({
+  isAdmin, view, label, placeholder, api,
+}: {
+  isAdmin: boolean; view: "list" | "grid"; label: string; placeholder?: string;
+  api: {
+    list: () => Promise<SimpleItem[]>;
+    create: (b: { name: string }) => Promise<unknown>;
+    update: (id: number, b: { name: string; note: string | null }) => Promise<unknown>;
+    remove: (id: number) => Promise<unknown>;
+  };
+}) {
+  const [items, setItems] = useState<SimpleItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [editItem, setEditItem] = useState<SimpleItem | null>(null);
+  const [delItem, setDelItem] = useState<SimpleItem | null>(null);
+
+  function reload() {
+    setLoading(true);
+    api.list().then(setItems).catch(() => {}).finally(() => setLoading(false));
+  }
+  useEffect(reload, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    try {
+      await api.create({ name });
+      setName("");
+      reload();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "新增失敗");
+    }
+  }
+
+  const paged = usePaged(items, view === "grid" ? 12 : 10);
+
+  return (
+    <div className="space-y-4">
+      {isAdmin && (
+        <Card>
+          <form onSubmit={add} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <Field label={label} required>
+              <Input value={name} onChange={(e) => setName(e.target.value)} required placeholder={placeholder} />
+            </Field>
+            <div className="flex items-end sm:col-span-2">
+              <Button type="submit">新增{label}</Button>
+            </div>
+          </form>
+          <ErrorBar message={error} />
+        </Card>
+      )}
+      <Card>
+        {loading ? <Spinner /> : (
+          <EditableNameList paged={paged} view={view} isAdmin={isAdmin} onEdit={setEditItem} onDelete={setDelItem} />
+        )}
+      </Card>
+
+      {editItem && (
+        <NameEditModal
+          title={`編輯${label}`}
+          item={editItem}
+          onClose={() => setEditItem(null)}
+          onSave={async (v) => { await api.update(editItem.id, v); setEditItem(null); reload(); }}
+        />
+      )}
+      <ConfirmModal
+        open={!!delItem}
+        title={`刪除${label}`}
+        message={<>確定要刪除「<b>{delItem?.name}</b>」嗎?刪除後不會出現在清單與建單下拉,歷史單據不受影響。</>}
+        onClose={() => setDelItem(null)}
+        onConfirm={async () => { if (delItem) { await api.remove(delItem.id); setDelItem(null); reload(); } }}
+      />
+    </div>
   );
 }
 
@@ -339,6 +537,7 @@ function CompaniesPanel({ isAdmin, role, view }: { isAdmin: boolean; role: "vend
           isAdmin={isAdmin}
           onClose={() => setDetail(null)}
           onSaved={(updated) => { setDetail(updated); reload(); }}
+          onDeleted={() => { setDetail(null); reload(); }}
         />
       )}
     </div>
@@ -416,10 +615,12 @@ function CompanyAddModal({
 
 // 點公司 → 顯示完整資料(廠商:多位聯絡人;接收:加工方式等),admin 可切換編輯
 function CompanyDetailModal({
-  company, isAdmin, onClose, onSaved,
-}: { company: Company; isAdmin: boolean; onClose: () => void; onSaved: (updated: Company) => void }) {
+  company, isAdmin, onClose, onSaved, onDeleted,
+}: { company: Company; isAdmin: boolean; onClose: () => void; onSaved: (updated: Company) => void; onDeleted: () => void }) {
   const isVendor = company.role_type === "vendor";
+  const roleLabel = isVendor ? "廠商單位" : "接收單位";
   const [editing, setEditing] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
   const [name, setName] = useState(company.name);
   const [abbr, setAbbr] = useState(company.abbr ?? company.name);
   const [phone, setPhone] = useState(company.phone ?? "");
@@ -452,6 +653,7 @@ function CompanyDetailModal({
   }
 
   return (
+    <>
     <Modal
       open
       title={company.name}
@@ -464,6 +666,7 @@ function CompanyDetailModal({
       ) : (
         <>
           <Button variant="secondary" onClick={onClose}>關閉</Button>
+          {isAdmin && <Button variant="danger" onClick={() => setConfirmDel(true)}>刪除</Button>}
           {isAdmin && <Button onClick={() => setEditing(true)}>編輯</Button>}
         </>
       )}
@@ -534,102 +737,49 @@ function CompanyDetailModal({
         </div>
       )}
     </Modal>
+
+    <ConfirmModal
+      open={confirmDel}
+      title={`刪除${roleLabel}`}
+      message={<>確定要刪除{roleLabel}「<b>{company.name}</b>」嗎?刪除後不會出現在清單與建單下拉,歷史單據不受影響。</>}
+      requireText={company.name}
+      onClose={() => setConfirmDel(false)}
+      onConfirm={async () => { await companiesApi.remove(company.id); setConfirmDel(false); onDeleted(); }}
+    />
+    </>
   );
 }
 
 function ProductsPanel({ isAdmin, view }: { isAdmin: boolean; view: "list" | "grid" }) {
-  const [items, setItems] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-
-  function reload() {
-    setLoading(true);
-    productsApi.list().then(setItems).catch(() => {}).finally(() => setLoading(false));
-  }
-  useEffect(reload, []);
-
-  async function add(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    try {
-      await productsApi.create({ name });
-      setName("");
-      reload();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "新增失敗");
-    }
-  }
-
-  const paged = usePaged(items, view === "grid" ? 12 : 10);
-
   return (
-    <div className="space-y-4">
-      {isAdmin && (
-        <Card>
-          <form onSubmit={add} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Field label="品名" required>
-              <Input value={name} onChange={(e) => setName(e.target.value)} required />
-            </Field>
-            <div className="flex items-end sm:col-span-2">
-              <Button type="submit">新增品名</Button>
-            </div>
-          </form>
-          <ErrorBar message={error} />
-        </Card>
-      )}
-      <Card>
-        {loading ? <Spinner /> : <NameListBody paged={paged} view={view} />}
-      </Card>
-    </div>
+    <SimpleMasterPanel
+      isAdmin={isAdmin}
+      view={view}
+      label="品名"
+      api={{
+        list: () => productsApi.list(),
+        create: (b) => productsApi.create(b),
+        update: (id, b) => productsApi.update(id, b),
+        remove: (id) => productsApi.remove(id),
+      }}
+    />
   );
 }
 
 function ProcessPanel({ isAdmin, view }: { isAdmin: boolean; view: "list" | "grid" }) {
-  const [items, setItems] = useState<ProcessItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-
-  function reload() {
-    setLoading(true);
-    processItemsApi.list().then(setItems).catch(() => {}).finally(() => setLoading(false));
-  }
-  useEffect(reload, []);
-
-  async function add(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    try {
-      await processItemsApi.create({ name });
-      setName("");
-      reload();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "新增失敗");
-    }
-  }
-
-  const paged = usePaged(items, view === "grid" ? 12 : 10);
-
   return (
-    <div className="space-y-4">
-      {isAdmin && (
-        <Card>
-          <form onSubmit={add} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Field label="加工項目" required>
-              <Input value={name} onChange={(e) => setName(e.target.value)} required placeholder="例:車刃、咬花" />
-            </Field>
-            <div className="flex items-end sm:col-span-2">
-              <Button type="submit">新增加工項目</Button>
-            </div>
-          </form>
-          <ErrorBar message={error} />
-        </Card>
-      )}
-      <Card>
-        {loading ? <Spinner /> : <NameListBody paged={paged} view={view} />}
-      </Card>
-    </div>
+    <SimpleMasterPanel
+      isAdmin={isAdmin}
+      view={view}
+      label="加工項目"
+      placeholder="例:車刃、咬花"
+      api={{
+        list: () => processItemsApi.list(),
+        create: (b) => processItemsApi.create(b),
+        update: (id, b) => processItemsApi.update(id, b),
+        remove: (id) => processItemsApi.remove(id),
+      }}
+    />
   );
 }
 
@@ -639,6 +789,8 @@ function SpecsPanel({ isAdmin }: { isAdmin: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [kind, setKind] = useState<"規格1" | "規格2">("規格1");
+  // 去重後的待刪項目:同名(可能對應多個 id / 多個搭配組合),刪除時一起刪掉
+  const [delSpec, setDelSpec] = useState<{ name: string; ids: number[] } | null>(null);
 
   function reload() {
     setLoading(true);
@@ -658,9 +810,40 @@ function SpecsPanel({ isAdmin }: { isAdmin: boolean }) {
     }
   }
 
-  // 依 kind 分兩欄,去重 + 按公制/英制排序(無 kind 的舊資料歸到規格1)
-  const spec1 = sortSpecNames(items.filter((s) => s.kind !== "規格2").map((s) => s.name));
-  const spec2 = sortSpecNames(items.filter((s) => s.kind === "規格2").map((s) => s.name));
+  // 依 kind 分兩欄,同名去重(規格2 因搭配組合會有重複),按公制/英制排序
+  function uniqueByName(list: Spec[]): { name: string; ids: number[] }[] {
+    const map = new Map<string, number[]>();
+    for (const s of list) {
+      const arr = map.get(s.name);
+      if (arr) arr.push(s.id);
+      else map.set(s.name, [s.id]);
+    }
+    return Array.from(map.entries())
+      .map(([name, ids]) => ({ name, ids }))
+      .sort((a, b) => compareSpecName(a.name, b.name));
+  }
+  const spec1 = uniqueByName(items.filter((s) => s.kind !== "規格2"));
+  const spec2 = uniqueByName(items.filter((s) => s.kind === "規格2"));
+
+  const renderChips = (list: { name: string; ids: number[] }[]) => (
+    <ul className="flex flex-wrap gap-1.5">
+      {list.map((s) => (
+        <li key={s.name} className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-sm">
+          <span>{s.name}</span>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setDelSpec(s)}
+              className="ml-0.5 text-base leading-none text-slate-400 hover:text-red-500"
+              aria-label={`刪除 ${s.name}`}
+            >
+              ×
+            </button>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <div className="space-y-4">
@@ -689,23 +872,30 @@ function SpecsPanel({ isAdmin }: { isAdmin: boolean }) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <h3 className="mb-1 font-bold text-slate-600">規格1 <span className="text-xs font-normal text-slate-400">({spec1.length})</span></h3>
-              <ul className="flex flex-wrap gap-1.5">
-                {spec1.map((name) => (
-                  <li key={name} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-sm">{name}</li>
-                ))}
-              </ul>
+              {renderChips(spec1)}
             </div>
             <div>
               <h3 className="mb-1 font-bold text-slate-600">規格2 <span className="text-xs font-normal text-slate-400">({spec2.length})</span></h3>
-              <ul className="flex flex-wrap gap-1.5">
-                {spec2.map((name) => (
-                  <li key={name} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-sm">{name}</li>
-                ))}
-              </ul>
+              {renderChips(spec2)}
             </div>
           </div>
         )}
       </Card>
+
+      <ConfirmModal
+        open={!!delSpec}
+        title="刪除規格"
+        message={<>確定要刪除規格「<b>{delSpec?.name}</b>」嗎?刪除後不會出現在建單下拉,歷史單據不受影響。</>}
+        onClose={() => setDelSpec(null)}
+        onConfirm={async () => {
+          if (delSpec) {
+            // 同名可能有多筆(不同搭配組合),一起刪
+            await Promise.all(delSpec.ids.map((id) => specsApi.remove(id)));
+            setDelSpec(null);
+            reload();
+          }
+        }}
+      />
     </div>
   );
 }
