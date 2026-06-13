@@ -16,6 +16,7 @@ import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 // 表單內部用:數值欄位以字串保存,方便輸入(送出時再轉)
 // 規格分成 spec1 / spec2 兩欄輸入,送出時合併成單一 spec(「規格1 x 規格2」)
 interface RowState {
+  process_no: string;
   product_name: string;
   spec1: string;
   spec2: string;
@@ -30,6 +31,7 @@ interface RowState {
 const MAX_ITEMS = 20; // 一張移轉單一次最多 20 筆品項(PDF 超過一張會自動分頁)
 
 const emptyRow = (): RowState => ({
+  process_no: "",
   product_name: "",
   spec1: "",
   spec2: "",
@@ -98,6 +100,7 @@ export default function OrderFormPage() {
             (o.items ?? []).map((it) => {
               const [spec1, spec2] = splitSpec(it.spec);
               return {
+              process_no: it.process_no ?? "",
               product_name: it.product_name,
               spec1,
               spec2,
@@ -191,6 +194,7 @@ export default function OrderFormPage() {
       note: note || null,
       items: validRows.map((r) => ({
         product_name: r.product_name.trim(),
+        process_no: r.process_no.trim() || null,
         spec: combineSpec(r.spec1, r.spec2) || null,
         process_item: r.process_item || null,
         net_weight_kg: r.net_weight_kg ? Number(stripGroups(r.net_weight_kg)) : null,
@@ -287,6 +291,13 @@ export default function OrderFormPage() {
               </div>
               {/* 手機單欄、平板兩欄、筆電多欄 */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Field label="加工單號">
+                  <Input
+                    value={r.process_no}
+                    onChange={(e) => updateRow(idx, { process_no: e.target.value })}
+                    placeholder="選填"
+                  />
+                </Field>
                 <Field label="品名" required>
                   <Input
                     list="product-options"

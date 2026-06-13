@@ -69,6 +69,7 @@ class OrderItem(db.Model):
     sort_order = db.Column(db.Integer, nullable=False, default=0)  # 行排序(支援拖曳)
     product_name = db.Column(db.String(100), nullable=False)       # 快照
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"))
+    process_no = db.Column(db.String(50))                          # 加工單號(每筆品項,選填)
     spec = db.Column(db.String(100))                               # 規格(快照)
     process_item = db.Column(db.String(100))                       # 加工項目
     net_weight_kg = db.Column(db.Numeric(10, 2))                   # 淨重
@@ -84,6 +85,7 @@ class OrderItem(db.Model):
             "sort_order": self.sort_order,
             "product_name": self.product_name,
             "product_id": self.product_id,
+            "process_no": self.process_no,
             "spec": self.spec,
             "process_item": self.process_item,
             "net_weight_kg": float(self.net_weight_kg) if self.net_weight_kg is not None else None,

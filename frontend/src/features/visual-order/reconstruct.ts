@@ -82,6 +82,7 @@ export function reconstruct(nodes: Node[], edges: Edge[]): Reconstructed {
     const fieldNodes = members.filter((n) => n.type === "field");
     if (fieldNodes.length === 0) continue;
     const row: ReconstructedRow = {
+      process_no: "",
       product_name: "",
       spec: "",
       process_item: "",
@@ -96,7 +97,8 @@ export function reconstruct(nodes: Node[], edges: Edge[]): Reconstructed {
       const d = n.data as FieldNodeData;
       const v = (d.value ?? "").trim();
       if (!v) continue;
-      if (d.field === "品名" && !row.product_name) row.product_name = v;
+      if (d.field === "加工單號" && !row.process_no) row.process_no = v;
+      else if (d.field === "品名" && !row.product_name) row.product_name = v;
       else if (d.field === "規格1" && !spec1) spec1 = v;
       else if (d.field === "規格2" && !spec2) spec2 = v;
       else if (d.field === "加工" && !row.process_item) row.process_item = v;

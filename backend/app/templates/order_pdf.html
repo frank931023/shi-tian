@@ -94,7 +94,7 @@
       <tbody>
         {% for it in pg.rows %}
         <tr>
-          <td></td>
+          <td class="nowrap">{{ it.process_no or '' }}</td>
           <td class="prod">{{ it.product_name }}</td>
           <td class="nowrap">{{ it.spec or '' }}</td>
           <td class="proc">{{ it.process_item or '' }}</td>

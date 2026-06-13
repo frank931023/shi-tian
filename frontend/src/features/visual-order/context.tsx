@@ -5,11 +5,11 @@ import { UNIT_OPTIONS } from "../../lib/unit";
 import type { Combo } from "./recentCombos";
 
 // 欄位節點的種類(規格分成規格1/規格2 兩欄輸入,送出時合併成單一 spec)
-export type FieldKind = "品名" | "規格1" | "規格2" | "加工" | "數量" | "單位" | "備註";
-// 一「排」預設的欄位(備註是選配,不在預設排內)
+export type FieldKind = "加工單號" | "品名" | "規格1" | "規格2" | "加工" | "數量" | "單位" | "備註";
+// 一「排」預設的欄位(加工單號、備註是選配,不在預設排內)
 export const FIELD_KINDS: FieldKind[] = ["品名", "規格1", "規格2", "加工", "數量", "單位"];
-// 可從「+」新增的欄位(含選配的備註)
-export const ADDABLE_KINDS: FieldKind[] = ["品名", "規格1", "規格2", "加工", "數量", "單位", "備註"];
+// 可從「+」新增的欄位(含選配的加工單號、備註)
+export const ADDABLE_KINDS: FieldKind[] = ["加工單號", "品名", "規格1", "規格2", "加工", "數量", "單位", "備註"];
 // 單位選項(1k–10k、1b–10b);一排可放兩個單位節點,送出時用 + 合併(例:2k+3b)
 export const COMMON_UNITS = UNIT_OPTIONS;
 
@@ -35,6 +35,7 @@ export interface CompanyNodeData {
 
 // 還原後的一排(給預覽/送出用)
 export interface ReconstructedRow {
+  process_no: string;
   product_name: string;
   spec: string;
   process_item: string;

@@ -400,7 +400,7 @@ function VisualOrderInner() {
       receiver_id: recon.receiverId ? Number(recon.receiverId) : null,
       order_date: orderDate,
       items: recon.rows.map((r) => ({
-        product_name: r.product_name, spec: r.spec || null, process_item: r.process_item || null,
+        product_name: r.product_name, process_no: r.process_no || null, spec: r.spec || null, process_item: r.process_item || null,
         quantity: r.quantity ? Number(r.quantity) : 0, unit: r.unit || null, remark: r.remark || null,
       })),
     };

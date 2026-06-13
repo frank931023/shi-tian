@@ -106,6 +106,10 @@ export default function Palette({
           {item("r-custom", "＋ 自訂", { kind: "company", role: "receiver" }, true)}
         </Section>
 
+        <Section title="加工單號">
+          {item("process-no", "＋ 加工單號(選填)", { kind: "field", field: "加工單號", custom: true }, true)}
+        </Section>
+
         <Section title="品名" count={products.length}>
           {products.map((p) => item(p.id, p.name, { kind: "field", field: "品名", value: p.name }))}
           {item("p-custom", "＋ 自訂品名", { kind: "field", field: "品名" }, true)}

@@ -6,6 +6,7 @@ import { spec1Options, spec2Options } from "../../lib/spec";
 import { COMMON_UNITS, useVisualOrder, type FieldNodeData } from "./context";
 
 const STYLE: Record<string, { color: string; placeholder: string }> = {
+  加工單號: { color: "border-cyan-400", placeholder: "加工單號(選填)" },
   品名: { color: "border-blue-400", placeholder: "品名,例:HBS" },
   規格1: { color: "border-violet-400", placeholder: "規格1,例:1/2" },
   規格2: { color: "border-violet-400", placeholder: "規格2,例:H17" },
@@ -58,13 +59,13 @@ export default function FieldNode({ id, data }: NodeProps) {
   }
   else if (d.field === "單位") control = d.custom ? renderInput() : renderSelect(COMMON_UNITS);
   else if (d.field === "數量") control = renderInput("number");
-  else control = renderInput(); // 品名 / 備註
+  else control = renderInput(); // 品名 / 加工單號 / 備註
 
   return (
     <div className={`relative w-44 rounded-xl border-2 ${s.color} bg-white p-2.5 shadow-md`}>
       <div className="mb-1 flex items-center justify-between">
         <span className="text-xs font-bold text-slate-600">
-          {d.field === "數量" ? "數量(pcs)" : d.field}{d.field === "備註" && <span className="ml-1 font-normal text-slate-400">選填</span>}
+          {d.field === "數量" ? "數量(pcs)" : d.field}{(d.field === "備註" || d.field === "加工單號") && <span className="ml-1 font-normal text-slate-400">選填</span>}
         </span>
         <button className="nodrag text-xs text-red-500 hover:underline" onClick={() => removeNode(id)}>
           ✕

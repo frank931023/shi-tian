@@ -53,6 +53,7 @@ def _apply_items(order: Order, items_in: list[OrderItemIn]) -> Decimal:
                 sort_order=idx,
                 product_name=item_in.product_name,   # 反正規化快照
                 product_id=item_in.product_id,
+                process_no=item_in.process_no,       # 加工單號(選填)
                 spec=item_in.spec,
                 process_item=item_in.process_item,
                 net_weight_kg=item_in.net_weight_kg,

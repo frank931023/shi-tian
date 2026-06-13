@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, field_validator
 class OrderItemIn(BaseModel):
     product_name: str = Field(min_length=1, max_length=100)
     product_id: Optional[int] = None
+    process_no: Optional[str] = Field(default=None, max_length=50)  # 加工單號(每筆品項,選填)
     spec: Optional[str] = Field(default=None, max_length=100)
     process_item: Optional[str] = Field(default=None, max_length=100)
     net_weight_kg: Optional[Decimal] = None

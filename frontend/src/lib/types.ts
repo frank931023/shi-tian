@@ -52,6 +52,7 @@ export interface OrderItem {
   sort_order?: number;
   product_name: string;
   product_id?: number | null;
+  process_no?: string | null; // 加工單號(每筆品項,選填)
   spec?: string | null;
   process_item?: string | null;
   net_weight_kg?: number | null;
