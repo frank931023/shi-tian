@@ -47,3 +47,15 @@ class Config:
     COMPANY_ADDRESS = os.environ.get("COMPANY_ADDRESS", "台中市大里區仁義路112號")
     COMPANY_TEL = os.environ.get("COMPANY_TEL", "04-2491-4552")
     COMPANY_FAX = os.environ.get("COMPANY_FAX", "04-2491-1453")
+
+    # ---- 聊天機器人(Text-to-SQL,LangGraph + OpenAI)----
+    # OpenAI 金鑰:沒設定時聊天機器人會優雅停用(不影響其他功能)。絕不寫死。
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+    CHATBOT_MODEL = os.environ.get("CHATBOT_MODEL", "gpt-4o-mini")
+    # 給聊天機器人查資料用的「唯讀」資料庫連線(強烈建議用只有 SELECT 權限的角色)。
+    # 未設定則退回主 DATABASE_URL(但查詢仍一律包在 READ ONLY 交易 + 多層防護內)。
+    CHATBOT_DATABASE_URL = os.environ.get("CHATBOT_DATABASE_URL", "") or SQLALCHEMY_DATABASE_URI
+    # 查詢回傳列數上限、SQL 逾時(毫秒)、可記住的對話輪數
+    CHATBOT_MAX_ROWS = int(os.environ.get("CHATBOT_MAX_ROWS", "200"))
+    CHATBOT_SQL_TIMEOUT_MS = int(os.environ.get("CHATBOT_SQL_TIMEOUT_MS", "5000"))
+    CHATBOT_MEMORY_TURNS = int(os.environ.get("CHATBOT_MEMORY_TURNS", "6"))

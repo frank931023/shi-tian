@@ -37,6 +37,7 @@ def create_app(config_object: type = Config) -> Flask:
     # --- 註冊 blueprints(全部掛在 /api 前綴下,對齊 Caddy /api/* 反代)---
     from app.api.audit import audit_bp
     from app.api.auth import auth_bp
+    from app.api.chat import chat_bp
     from app.api.companies import companies_bp
     from app.api.health import health_bp
     from app.api.orders import orders_bp
@@ -48,6 +49,7 @@ def create_app(config_object: type = Config) -> Flask:
     app.register_blueprint(health_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(audit_bp, url_prefix="/api")
+    app.register_blueprint(chat_bp, url_prefix="/api")
     app.register_blueprint(companies_bp, url_prefix="/api")
     app.register_blueprint(products_bp, url_prefix="/api")
     app.register_blueprint(orders_bp, url_prefix="/api")

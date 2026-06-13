@@ -43,6 +43,9 @@ const ACTIONS: Record<string, { label: string; icon: string; cls: string }> = {
   delete_spec: { label: "刪除規格(移到垃圾桶)", icon: "🗑️", cls: "text-red-500" },
   restore_spec: { label: "復原規格(主檔)", icon: "♻️", cls: "text-emerald-600" },
   purge_spec: { label: "永久刪除規格(主檔)", icon: "❌", cls: "text-red-600" },
+  // 聊天機器人
+  chat_query: { label: "使用聊天機器人查詢", icon: "🤖", cls: "text-indigo-600" },
+  chatbot_set_access: { label: "調整聊天機器人權限", icon: "🤖", cls: "text-blue-600" },
 };
 
 function describe(e: AuditEntry): string {

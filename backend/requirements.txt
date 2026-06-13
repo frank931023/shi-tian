@@ -32,3 +32,10 @@ reportlab==4.2.5
 
 # --- 訂單匯出 Excel ---
 openpyxl==3.1.5               # 產生 .xlsx(CSV 走內建 csv,不需額外套件)
+
+# --- 聊天機器人(Text-to-SQL agent;見 docs/chatbot.md)---
+# LangGraph 編排多節點流程;langchain-openai 接 OpenAI。沒裝/沒 key 時聊天機器人會優雅停用。
+# 後端程式對這些套件採「延遲匯入」,缺套件不會影響其他 API 啟動。
+langgraph==0.2.45
+langchain-core==0.3.15
+langchain-openai==0.2.5

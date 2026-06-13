@@ -4,7 +4,7 @@
 //   ※ 依資安規範:密碼為 bcrypt 雜湊不可逆,只能「重設」不能檢視明碼。
 import { useEffect, useState } from "react";
 import { ApiError } from "../api/client";
-import { usersApi } from "../api/resources";
+import { chatApi, usersApi, type ChatAccess } from "../api/resources";
 import { Button, Card, ErrorBar, Field, Input, Select, Spinner } from "../components/ui";
 import { useAuth } from "../lib/AuthContext";
 import type { User } from "../lib/types";
@@ -23,8 +23,83 @@ export default function SettingsPage() {
         </p>
       </Card>
 
+      {user?.role === "admin" && <ChatbotAccessPanel />}
       {user?.role === "admin" && <UsersPanel meId={user.id} />}
     </div>
+  );
+}
+
+// 聊天機器人權限(僅 admin):關閉 / 僅管理員 / 所有人
+function ChatbotAccessPanel() {
+  const [access, setAccess] = useState<ChatAccess | null>(null);
+  const [configured, setConfigured] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState(false);
+
+  useEffect(() => {
+    chatApi.config()
+      .then((c) => { setAccess(c.access); setConfigured(c.configured); })
+      .catch((e) => setError(e instanceof ApiError ? e.message : "載入失敗"));
+  }, []);
+
+  async function change(next: ChatAccess) {
+    setSaving(true);
+    setError(null);
+    setSavedAt(false);
+    try {
+      await chatApi.setAccess(next);
+      setAccess(next);
+      setSavedAt(true);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "儲存失敗");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const OPTS: { value: ChatAccess; label: string; desc: string }[] = [
+    { value: "off", label: "關閉", desc: "所有人(含管理員)都看不到、不能用。" },
+    { value: "admin_only", label: "僅管理員", desc: "只有管理員右下角會出現助理。" },
+    { value: "everyone", label: "所有人", desc: "所有登入者都能使用。" },
+  ];
+
+  return (
+    <Card className="space-y-3">
+      <div>
+        <h2 className="font-bold">聊天機器人(資料查詢助理)</h2>
+        <p className="text-sm text-slate-500">
+          設定誰可以使用右下角的查詢助理。助理只能「查詢」資料,無法修改;手機不顯示,僅平板/電腦可用。
+        </p>
+      </div>
+      {access === null ? <Spinner /> : (
+        <div className="space-y-2">
+          {OPTS.map((o) => (
+            <label key={o.value} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 ${access === o.value ? "border-brand bg-brand/5" : "border-slate-200"}`}>
+              <input
+                type="radio"
+                name="chatbot-access"
+                className="mt-1"
+                checked={access === o.value}
+                disabled={saving}
+                onChange={() => change(o.value)}
+              />
+              <div>
+                <p className="font-medium">{o.label}</p>
+                <p className="text-sm text-slate-500">{o.desc}</p>
+              </div>
+            </label>
+          ))}
+        </div>
+      )}
+      {!configured && access !== "off" && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+          ⚠️ 後端尚未備妥(缺少 OpenAI API 金鑰或套件未安裝),助理會顯示「尚未設定」。請見 docs/chatbot.md。
+        </p>
+      )}
+      {savedAt && <p className="text-sm text-emerald-600">已儲存</p>}
+      <ErrorBar message={error} />
+    </Card>
   );
 }
 

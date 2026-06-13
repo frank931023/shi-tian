@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/AuthContext";
+import ChatWidget from "./ChatWidget";
 
 const HOME = "/orders"; // 點公司名稱回首頁
 
@@ -115,6 +116,9 @@ export default function Layout() {
           </NavLink>
         ))}
       </nav>
+
+      {/* 右下角聊天機器人(手機隱藏;依後端權限決定是否出現) */}
+      <ChatWidget />
     </div>
   );
 }

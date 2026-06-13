@@ -196,6 +196,28 @@ export const usersApi = {
     api<User>(`/users/${id}`, { method: "PATCH", body }),
 };
 
+// ---- 聊天機器人 ----
+export type ChatAccess = "off" | "admin_only" | "everyone";
+export interface ChatConfig {
+  access: ChatAccess;
+  allowed: boolean;     // 目前登入者能不能用
+  configured: boolean;  // 後端是否已備妥(有 API key + 套件)
+}
+export interface ChatResult {
+  answer: string;
+  intent?: string | null;
+  needs_clarification?: boolean;
+  disabled?: boolean;
+  result?: { columns: string[]; rows: unknown[][]; truncated: boolean } | null;
+}
+export const chatApi = {
+  config: () => api<ChatConfig>("/chat/config"),
+  setAccess: (access: ChatAccess) =>
+    api<{ access: ChatAccess }>("/chat/access", { method: "PUT", body: { access } }),
+  send: (message: string, conversationId: string) =>
+    api<ChatResult>("/chat/message", { method: "POST", body: { message, conversation_id: conversationId } }),
+};
+
 // ---- 點陣套表校正(Phase 7)----
 export const printingApi = {
   calibrationUrl: () => "/api/print/calibration",
