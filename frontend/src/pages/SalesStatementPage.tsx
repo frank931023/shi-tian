@@ -59,7 +59,9 @@ function buildRows(orders: Order[]): Row[] {
         remark: it.remark ?? "",
         // 件數 = 訂單的單位(已是「單位1+單位2」用 + 串接,例:2k+3b)
         pieces: it.unit ?? "",
-        processNo: "", netWeight: "", unitPrice: "",
+        // 加工單號:帶入該品項的加工單號(有就填,沒有留白,仍可手動改)
+        processNo: it.process_no ?? "",
+        netWeight: "", unitPrice: "",
       });
     });
   }
@@ -132,7 +134,7 @@ export default function SalesStatementPage() {
       rows: rows.map((r, i) => ({
         seq: i + 1,
         date: r.isFirst ? rocDate(r.date) : "",
-        process_no: r.isFirst ? r.processNo : "",
+        process_no: r.processNo,
         receiver: r.isFirst ? r.receiver : "",
         product: r.product,
         spec: r.spec,
@@ -261,7 +263,7 @@ export default function SalesStatementPage() {
                   <tr key={r.key} className={`border-t border-slate-100 hover:bg-slate-50/60 ${r.isFirst && i > 0 ? "border-t-slate-300" : ""}`}>
                     <td className="px-3 py-1.5 text-center text-slate-400">{i + 1}</td>
                     <td className="px-3 py-1.5 text-center text-slate-500">{r.isFirst ? r.date.slice(5) : ""}</td>
-                    <td className="px-2 py-1.5">{r.isFirst && <input className={cellInput} value={r.processNo} onChange={(e) => update(r.key, { processNo: e.target.value })} />}</td>
+                    <td className="px-2 py-1.5"><input className={cellInput} value={r.processNo} onChange={(e) => update(r.key, { processNo: e.target.value })} /></td>
                     <td className="px-3 py-1.5 text-slate-700">{r.isFirst ? r.receiver : ""}</td>
                     <td className="px-3 py-1.5 font-medium text-slate-800">{r.product}</td>
                     <td className="whitespace-nowrap px-3 py-1.5 text-slate-600">{r.spec}</td>

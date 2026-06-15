@@ -555,6 +555,7 @@ function CompanyAddModal({
   const [fax, setFax] = useState("");
   const [address, setAddress] = useState("");
   const [taxid, setTaxid] = useState("");
+  const [method, setMethod] = useState(""); // 接收單位:加工方式
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -567,8 +568,12 @@ function CompanyAddModal({
         const { detail, phone: p, fax: f } = buildVendorDetail(null, name.trim(), address, taxid, contacts);
         await companiesApi.create({ name: name.trim(), role_type: role, phone: p, fax: f, address, detail });
       } else {
-        // 接收單位:縮寫預設同名稱
-        await companiesApi.create({ name: name.trim(), role_type: role, phone, fax, address, abbr: abbr.trim() || name.trim() });
+        // 接收單位:縮寫預設同名稱;加工方式存進 detail
+        await companiesApi.create({
+          name: name.trim(), role_type: role, phone, fax, address,
+          abbr: abbr.trim() || name.trim(),
+          detail: method.trim() ? { proccessMethod: method.trim() } : undefined,
+        });
       }
       onSaved();
     } catch (err) {
@@ -603,6 +608,9 @@ function CompanyAddModal({
             <Field label="縮寫" hint="預設同名稱,可自行修改;銷貨統計表會顯示縮寫">
               <Input value={abbr} onChange={(e) => setAbbr(e.target.value)} placeholder={name || "預設同名稱"} />
             </Field>
+            <Field label="加工方式" hint="例:CNC、研磨、車工;建單時可依此分類篩選">
+              <Input value={method} onChange={(e) => setMethod(e.target.value)} placeholder="例:CNC" />
+            </Field>
             <Field label="電話"><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
             <Field label="傳真"><Input value={fax} onChange={(e) => setFax(e.target.value)} /></Field>
           </>
@@ -627,6 +635,7 @@ function CompanyDetailModal({
   const [fax, setFax] = useState(company.fax ?? "");
   const [address, setAddress] = useState(company.address ?? "");
   const [taxid, setTaxid] = useState(String((company.detail as Record<string, unknown> | null)?.taxid ?? ""));
+  const [method, setMethod] = useState(String((company.detail as Record<string, unknown> | null)?.proccessMethod ?? ""));
   const [contacts, setContacts] = useState<Contact[]>(() => toContacts(company.detail));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -639,9 +648,11 @@ function CompanyDetailModal({
     setError(null);
     setBusy(true);
     try {
+      // 接收單位:把加工方式併回 detail(保留 detail 內其他欄位,如聯絡人/手機)
+      const recvDetail = { ...(d ?? {}), proccessMethod: method.trim() };
       const body = isVendor
         ? { name: name.trim(), address, ...buildVendorDetail(d, name.trim(), address, taxid, contacts) }
-        : { name: name.trim(), phone, fax, address, abbr: abbr.trim() || name.trim() };
+        : { name: name.trim(), phone, fax, address, abbr: abbr.trim() || name.trim(), detail: recvDetail };
       const updated = await companiesApi.update(company.id, body);
       onSaved(updated);
       setEditing(false);
@@ -684,6 +695,9 @@ function CompanyDetailModal({
             <>
               <Field label="縮寫" hint="銷貨統計表會顯示此縮寫">
                 <Input value={abbr} onChange={(e) => setAbbr(e.target.value)} placeholder={name} />
+              </Field>
+              <Field label="加工方式" hint="例:CNC、研磨、車工;建單時可依此分類篩選">
+                <Input value={method} onChange={(e) => setMethod(e.target.value)} placeholder="例:CNC" />
               </Field>
               <Field label="電話"><Input value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
               <Field label="傳真"><Input value={fax} onChange={(e) => setFax(e.target.value)} /></Field>

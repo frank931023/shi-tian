@@ -55,17 +55,20 @@ export function spec1Options(specs: Spec[]): string[] {
   return sortSpecNames(specs.filter((s) => s.kind !== "規格2").map((s) => s.name));
 }
 
-// 給定規格1,回傳「可搭配」的規格2(同 group);未選規格1 → 回全部規格2
+// 給定規格1,回傳「可搭配」的規格2;未選規格1 → 回全部規格2。
+// 連動規則(同時兼顧「主檔新增的規格也看得到」):
+//   - 沒有 group_index 的規格2 視為「通用」,一律顯示(例如使用者在主檔新增的)。
+//   - 選的規格1 有配對組時:顯示「同組 + 通用」的規格2;沒有配對組時:顯示全部。
 export function spec2Options(specs: Spec[], spec1: string): string[] {
-  let pool = specs.filter((s) => s.kind === "規格2");
+  const all2 = specs.filter((s) => s.kind === "規格2");
   const v = (spec1 ?? "").trim();
-  if (v) {
-    const groups = new Set(
-      specs
-        .filter((s) => s.kind === "規格1" && s.name === v && s.group_index != null)
-        .map((s) => s.group_index),
-    );
-    if (groups.size) pool = pool.filter((s) => s.group_index != null && groups.has(s.group_index));
-  }
+  if (!v) return sortSpecNames(all2.map((s) => s.name));
+  const groups = new Set(
+    specs
+      .filter((s) => s.kind === "規格1" && s.name === v && s.group_index != null)
+      .map((s) => s.group_index),
+  );
+  if (!groups.size) return sortSpecNames(all2.map((s) => s.name));
+  const pool = all2.filter((s) => s.group_index == null || groups.has(s.group_index));
   return sortSpecNames(pool.map((s) => s.name));
 }

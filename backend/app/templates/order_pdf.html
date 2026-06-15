@@ -39,8 +39,8 @@
   td.prod { text-align: left; font-size: 13px; letter-spacing: -0.3px; }
   /* 規格:絕不換行,縮字 + 字距塞進欄寬 */
   td.nowrap { font-size: 12px; letter-spacing: -0.3px; }
-  /* 加工項目:同樣強制單行,縮字塞進欄寬 */
-  td.proc { font-size: 11px; letter-spacing: -0.3px; text-align: left; }
+  /* 加工項目:強制單行;欄位加寬後字級放大,不再縮太小 */
+  td.proc { font-size: 13px; letter-spacing: -0.2px; text-align: left; }
   tfoot td { font-weight: 700; }
 
   .foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 14px; }
@@ -82,9 +82,9 @@
       <thead>
         <tr>
           <th style="width:12%">加工單號</th>
-          <th style="width:15%">品名</th>
+          <th style="width:11%">品名</th>
           <th style="width:21%">規格</th>
-          <th style="width:17%">加工項目</th>
+          <th style="width:21%">加工項目</th>
           <th style="width:9%">重量(KG)</th>
           <th style="width:8%">數量</th>
           <th style="width:7%">單位</th>
