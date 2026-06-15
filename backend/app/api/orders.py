@@ -11,10 +11,11 @@ from io import BytesIO, StringIO
 
 from flask import Blueprint, current_app, request, send_file
 from flask_login import current_user, login_required
+from sqlalchemy.exc import IntegrityError
 
 from app.core.db import db
 from app.core.responses import err, ok
-from app.core.security import admin_required
+from app.core.security import admin_required, limiter
 from app.core.validation import validate_body
 from app.models import Order, OrderItem
 from app.schemas.order import OrderIn
@@ -135,6 +136,7 @@ def _export_rows(orders):
 
 @orders_bp.get("/orders/export")
 @login_required
+@limiter.limit("30 per minute")
 def export_orders():
     """匯出目前篩選結果(全部,不分頁)成 CSV 或 Excel。?format=csv|xlsx,其餘篩選參數同 list。"""
     args = request.args
@@ -195,6 +197,7 @@ def statement_orders():
 
 @orders_bp.post("/orders/statement-pdf")
 @login_required
+@limiter.limit("30 per minute")
 def statement_pdf():
     """把前端目前的銷貨統計表(含使用者填的單價等)產成 PDF。"""
     data = request.get_json(silent=True) or {}
@@ -226,12 +229,23 @@ def get_order(order_id: int):
 @login_required
 @validate_body(OrderIn)
 def create_order(payload: OrderIn):
-    order = order_service.create_order(payload)
-    order.created_by = current_user.id  # 記錄建單者(權限與稽核用)
-    db.session.flush()
-    audit_service.record("create_order", "order", order.id, {"order_no": order.order_no})
-    db.session.commit()
-    return ok(order.to_dict(), 201)
+    # 併發或撞號時(order_no unique)重試:沒指定單號就重新產生序號再試
+    last_err = None
+    for _ in range(3):
+        try:
+            order = order_service.create_order(payload)
+            order.created_by = current_user.id  # 記錄建單者(權限與稽核用)
+            db.session.flush()
+            audit_service.record("create_order", "order", order.id, {"order_no": order.order_no})
+            db.session.commit()
+            return ok(order.to_dict(), 201)
+        except IntegrityError as e:
+            db.session.rollback()
+            last_err = e
+            if payload.order_no:  # 使用者自填的單號重複 → 不重試,直接回報
+                return err("duplicate_order_no", "單號已存在,請換一個", 409)
+            # 自動產號撞號 → 迴圈重新產生再試
+    return err("create_failed", "建立訂單失敗,請再試一次", 409)
 
 
 @orders_bp.put("/orders/<int:order_id>")
@@ -252,6 +266,7 @@ def update_order(order_id: int, payload: OrderIn):
 
 @orders_bp.get("/orders/<int:order_id>/pdf")
 @login_required
+@limiter.limit("60 per minute")
 def preview_pdf(order_id: int):
     """產生並回傳 PDF 供預覽/下載(不一定封存)。"""
     order = db.session.get(Order, order_id)
@@ -269,6 +284,7 @@ def preview_pdf(order_id: int):
 
 @orders_bp.post("/orders/<int:order_id>/pdf")
 @login_required
+@limiter.limit("60 per minute")
 def generate_pdf(order_id: int):
     """產生 PDF 並封存到 NAS 資料夾。"""
     order = db.session.get(Order, order_id)
@@ -297,6 +313,7 @@ def preview_dotmatrix(order_id: int):
 
 @orders_bp.post("/orders/<int:order_id>/print")
 @login_required
+@limiter.limit("60 per minute")
 def print_order(order_id: int):
     """送印到 CUPS 佇列。body: {"target": "normal"|"dotmatrix"}(預設 normal)。
 
@@ -310,8 +327,9 @@ def print_order(order_id: int):
 
     if target == "dotmatrix":
         queue = current_app.config["CUPS_DOTMATRIX_QUEUE"]
-        # 套表 overlay 寫到封存資料夾當列印來源
-        path = pdf_service.archive_path(order).with_name(f"{order.order_no}-dotmatrix.pdf")
+        # 套表 overlay 寫到封存資料夾當列印來源(用已清過的安全檔名,防路徑穿越)
+        ap = pdf_service.archive_path(order)
+        path = ap.with_name(f"{ap.stem}-dotmatrix.pdf")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(dotmatrix_service.render_overlay_pdf(order))
     else:
@@ -345,12 +363,27 @@ def delete_order(order_id: int):
     return ok({"deleted": order_id})
 
 
+def _int_id_list(raw) -> list[int]:
+    """把 body 的 ids 清成「整數清單」,忽略非數字,避免壞輸入造成 DB 例外。"""
+    if not isinstance(raw, list):
+        return []
+    out: list[int] = []
+    for x in raw:
+        if isinstance(x, bool):
+            continue
+        if isinstance(x, int):
+            out.append(x)
+        elif isinstance(x, str) and x.strip().isdigit():
+            out.append(int(x.strip()))
+    return out
+
+
 @orders_bp.post("/orders/trash/restore")
 @login_required
 @admin_required
 def restore_orders():
     """從垃圾桶復原(可多筆)。body: {"ids": [...]}"""
-    ids = (request.get_json(silent=True) or {}).get("ids") or []
+    ids = _int_id_list((request.get_json(silent=True) or {}).get("ids"))
     n = 0
     for oid in ids:
         o = db.session.get(Order, oid)
@@ -367,7 +400,7 @@ def restore_orders():
 @admin_required
 def purge_orders():
     """永久刪除(可多筆,僅垃圾桶內)。body: {"ids": [...]}"""
-    ids = (request.get_json(silent=True) or {}).get("ids") or []
+    ids = _int_id_list((request.get_json(silent=True) or {}).get("ids"))
     n = 0
     for oid in ids:
         o = db.session.get(Order, oid)

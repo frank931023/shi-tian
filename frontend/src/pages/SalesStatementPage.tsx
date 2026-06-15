@@ -90,6 +90,9 @@ export default function SalesStatementPage() {
     companiesApi.list("vendor").then(setVendors).catch(() => {});
   }, []);
 
+  // 換新的 pdfUrl 或離開頁面時,回收上一個 blob URL,避免記憶體累積
+  useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl); }, [pdfUrl]);
+
   const vendor = vendors.find((v) => String(v.id) === vendorId);
 
   // 換客戶 → 自動帶入主檔統編(可被使用者覆蓋)
@@ -171,7 +174,12 @@ export default function SalesStatementPage() {
       const url = URL.createObjectURL(await res.blob());
       const win = window.open(url, "_blank"); // 嘗試自動開新分頁
       setPdfBusy(false);
-      if (!win) setPdfUrl(url); // 被瀏覽器擋了 → 顯示按鈕讓使用者點開
+      if (!win) {
+        setPdfUrl(url); // 被瀏覽器擋了 → 顯示按鈕讓使用者點開(卸載/換新時會 revoke)
+      } else {
+        // 已開新分頁:稍後回收 blob,避免記憶體累積
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
     } catch {
       window.clearInterval(timer);
       setPdfBusy(false);

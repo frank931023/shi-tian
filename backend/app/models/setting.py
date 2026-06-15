@@ -22,9 +22,9 @@ def get_setting(key: str, default: str | None = None) -> str | None:
 
 
 def set_setting(key: str, value: str) -> None:
+    """寫入設定。刻意「不」自行 commit,讓呼叫端與稽核紀錄在同一交易一起提交。"""
     row = db.session.get(Setting, key)
     if row:
         row.value = value
     else:
         db.session.add(Setting(key=key, value=value))
-    db.session.commit()

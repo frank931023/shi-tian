@@ -30,16 +30,20 @@ def compute_item_amount(item: OrderItemIn) -> Decimal:
 def generate_order_no(order_date: date) -> str:
     """自動產生單號:YYYYMMDD-NNN(當日序號,從 001 起跳)。
 
-    用當天已存在的單數 + 1 當序號。家庭事業量不大,這個簡單作法足夠;
-    若未來要嚴格防併發,可改用資料庫序列(sequence)。
+    用「當天已用過的最大序號 + 1」而非「筆數 + 1」——這樣即使刪了中間幾筆,
+    也不會重新產生用過的號碼。併發撞號由 order_no 的 unique 約束擋下,
+    呼叫端(create_order)會捕捉 IntegrityError 後重試。
     """
     prefix = order_date.strftime("%Y%m%d")
-    count_today = db.session.scalar(
-        db.select(func.count(Order.id)).where(
-            Order.order_no.like(f"{prefix}-%")
-        )
-    ) or 0
-    return f"{prefix}-{count_today + 1:03d}"
+    existing = db.session.scalars(
+        db.select(Order.order_no).where(Order.order_no.like(f"{prefix}-%"))
+    ).all()
+    max_seq = 0
+    for no in existing:
+        suffix = (no or "").rsplit("-", 1)[-1]
+        if suffix.isdigit():
+            max_seq = max(max_seq, int(suffix))
+    return f"{prefix}-{max_seq + 1:03d}"
 
 
 def _apply_items(order: Order, items_in: list[OrderItemIn]) -> Decimal:

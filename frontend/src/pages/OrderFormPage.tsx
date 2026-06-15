@@ -16,6 +16,7 @@ import type { Company, ProcessItem, Product, Spec } from "../lib/types";
 // 表單內部用:數值欄位以字串保存,方便輸入(送出時再轉)
 // 規格分成 spec1 / spec2 兩欄輸入,送出時合併成單一 spec(「規格1 x 規格2」)
 interface RowState {
+  uid: string; // 穩定 key:上下移/移除時不會讓 React 重用錯 DOM、輸入框錯位
   process_no: string;
   product_name: string;
   spec1: string;
@@ -30,7 +31,11 @@ interface RowState {
 
 const MAX_ITEMS = 20; // 一張移轉單一次最多 20 筆品項(PDF 超過一張會自動分頁)
 
+const newUid = (): string =>
+  globalThis.crypto?.randomUUID?.() ?? `r-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
 const emptyRow = (): RowState => ({
+  uid: newUid(),
   process_no: "",
   product_name: "",
   spec1: "",
@@ -100,6 +105,7 @@ export default function OrderFormPage() {
             (o.items ?? []).map((it) => {
               const [spec1, spec2] = splitSpec(it.spec);
               return {
+              uid: newUid(),
               process_no: it.process_no ?? "",
               product_name: it.product_name,
               spec1,
@@ -113,6 +119,13 @@ export default function OrderFormPage() {
               };
             }),
           );
+        } else {
+          // 純新建(從編輯/複製切回「建單」時,React 會重用同一元件):清空殘留欄位
+          setVendorId("");
+          setReceiverId("");
+          setNote("");
+          setOrderDate(today());
+          setRows([emptyRow()]);
         }
       } catch (err) {
         if (alive) setError(err instanceof ApiError ? err.message : "載入資料失敗");
@@ -125,6 +138,17 @@ export default function OrderFormPage() {
       alive = false;
     };
   }, [editingId, copyId]);
+
+  // 回到此頁(視窗 focus)時重抓主檔,讓「剛去主檔新增的廠商/品名/規格」即時出現在下拉
+  useEffect(() => {
+    function refetchMasters() {
+      Promise.all([companiesApi.list(), productsApi.list(), processItemsApi.list(), specsApi.list()])
+        .then(([cs, ps, pis, ss]) => { setCompanies(cs); setProducts(ps); setProcessItems(pis); setSpecs(ss); })
+        .catch(() => {});
+    }
+    window.addEventListener("focus", refetchMasters);
+    return () => window.removeEventListener("focus", refetchMasters);
+  }, []);
 
   const vendors = companies.filter((c) => c.role_type === "vendor");
   const receivers = companies.filter((c) => c.role_type === "receiver");
@@ -277,7 +301,7 @@ export default function OrderFormPage() {
 
         {rows.map((r, idx) => {
           return (
-            <div key={idx} className="rounded-xl border border-slate-200 p-3">
+            <div key={r.uid} className="rounded-xl border border-slate-200 p-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-500">第 {idx + 1} 行</span>
                 <div className="flex items-center gap-1">

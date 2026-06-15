@@ -4,6 +4,7 @@
 就算前端硬塞,pydantic model 也沒有這些欄位,會被忽略。
 """
 
+import re
 from datetime import date
 from decimal import Decimal
 from typing import Optional
@@ -39,4 +40,14 @@ class OrderIn(BaseModel):
         allowed = {"draft", "confirmed", "printed", "void"}
         if v not in allowed:
             raise ValueError(f"status 必須是 {allowed} 之一")
+        return v
+
+    @field_validator("order_no")
+    @classmethod
+    def order_no_safe(cls, v: Optional[str]) -> Optional[str]:
+        # 單號會被當成 PDF 封存檔名,限定安全字元,杜絕路徑穿越(../ 等)
+        if v is None:
+            return v
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", v):
+            raise ValueError("單號只能包含英數字、減號(-)與底線(_)")
         return v

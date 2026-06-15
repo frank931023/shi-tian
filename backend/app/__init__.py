@@ -5,16 +5,30 @@
 - 各 blueprint(路由模組)與擴充套件在這裡集中初始化,結構清楚。
 """
 
+import logging
+import os
+
 from flask import Flask
 
 from app.core.config import Config
 from app.core.db import db, migrate
+from app.core.responses import err
 from app.core.security import csrf_protect, limiter, login_manager
+
+log = logging.getLogger(__name__)
+_INSECURE_SECRET = "dev-insecure-key-change-me"
 
 
 def create_app(config_object: type = Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_object)
+
+    # 正式環境若忘了設 SECRET_KEY,會用公開可知的預設值 → 任何人都能偽造 session 冒充 admin。
+    # 因此在 production 直接 fail-fast,不容許 silently 用 dev 預設。
+    if os.environ.get("FLASK_ENV", "").lower() == "production" and (
+        not app.config.get("SECRET_KEY") or app.config["SECRET_KEY"] == _INSECURE_SECRET
+    ):
+        raise RuntimeError("正式環境必須設定一組安全的 SECRET_KEY(不可用預設值)")
 
     # 後端在 Caddy 之後:信任 X-Forwarded-* 以取得真實 client IP(rate limit / audit 用)
     if app.config.get("TRUST_PROXY"):
@@ -61,5 +75,16 @@ def create_app(config_object: type = Config) -> Flask:
     from app.core.cli import register_cli
 
     register_cli(app)
+
+    # --- 全域錯誤處理:未預期的例外一律 rollback + 回統一 JSON(不洩漏堆疊)---
+    from werkzeug.exceptions import HTTPException
+
+    @app.errorhandler(Exception)
+    def handle_unexpected(e):
+        if isinstance(e, HTTPException):
+            return err("http_error", e.description or e.name, e.code or 500)
+        db.session.rollback()
+        log.exception("未預期的伺服器錯誤:%s", e)
+        return err("server_error", "伺服器發生問題,請稍後再試", 500)
 
     return app

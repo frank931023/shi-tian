@@ -80,7 +80,9 @@ def chat_message():
     if len(message) > 2000:
         return err("bad_request", "問題太長了,請精簡一下", 400)
 
-    result = chat_agent.run_chat(message, conversation_id)
+    # 對話記憶以「使用者 id : 對話 id」為鍵,避免他人猜到 conversation_id 讀到你的對話
+    scoped_conversation = f"{current_user.id}:{conversation_id}"
+    result = chat_agent.run_chat(message, scoped_conversation)
     audit_service.record("chat_query", "chat", None, {"intent": result.get("intent")})
     db.session.commit()
     return ok(result)

@@ -211,9 +211,9 @@ export default function OrdersListPage() {
       >
         <div className="space-y-3">
           <p className="text-slate-700">
-            此動作會<b className="text-red-600">永久刪除</b>單號
+            此動作會把單號
             <b className="mx-1">{delTarget?.order_no}</b>
-            及其所有品項,<b className="text-red-600">無法復原</b>。
+            <b className="text-amber-600">移到垃圾桶</b>(管理員可在垃圾桶<b>復原</b>或永久刪除)。
           </p>
           <p className="text-sm text-slate-500">請輸入此單號以確認刪除:</p>
           <Input

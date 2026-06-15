@@ -108,11 +108,47 @@ def order_to_pdf_bytes(order: Order) -> bytes:
     return HTML(string=_pages_html(data, company, pages)).write_pdf()
 
 
+def _num(s) -> float:
+    try:
+        return float(str(s).replace(",", "").strip() or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _fmt_money(n: float) -> str:
+    return "{:,.2f}".format(n).rstrip("0").rstrip(".")
+
+
+def _recompute_statement(data: dict) -> dict:
+    """後端重算金額/稅額/總計,不信任前端傳來的合計(對齊 CLAUDE.md §4)。
+
+    每列金額 = 數量 × 單價(由後端算);合計 = 各列金額和;
+    稅額 = 合計 × 稅率%(四捨五入);總計 = 合計 + 稅額。
+    """
+    data = dict(data)
+    rows = [dict(r) for r in (data.get("rows") or [])]
+    total = 0.0
+    for r in rows:
+        if str(r.get("unit_price", "")).strip() != "":
+            amt = _num(r.get("quantity")) * _num(r.get("unit_price"))
+            r["amount"] = _fmt_money(amt)
+            total += amt
+    pct = max(0.0, _num(data.get("tax_pct", "5")))
+    # 用「四捨五入」對齊前端 Math.round(避免 Python round 的銀行家捨入造成差 1)
+    import math
+    tax = math.floor(total * pct / 100 + 0.5)
+    data["rows"] = rows
+    data["total_amount"] = _fmt_money(total)
+    data["tax"] = _fmt_money(tax)
+    data["grand"] = _fmt_money(total + tax)
+    return data
+
+
 def render_statement_html(data: dict) -> str:
-    """銷貨統計表 HTML(資料由前端帶入:含使用者填的單價/加工單號等)。"""
+    """銷貨統計表 HTML(明細/單價由前端帶入,但金額/稅額/總計一律後端重算)。"""
     cfg = current_app.config
     company = {"name1": cfg["COMPANY_NAME_1"], "tel": cfg["COMPANY_TEL"], "fax": cfg["COMPANY_FAX"]}
-    return render_template("sales_statement_pdf.html", d=data, company=company)
+    return render_template("sales_statement_pdf.html", d=_recompute_statement(data), company=company)
 
 
 def statement_to_pdf_bytes(data: dict) -> bytes:
@@ -125,13 +161,20 @@ def statement_to_pdf_bytes(data: dict) -> bytes:
     return HTML(string=render_statement_html(data)).write_pdf()
 
 
+def _safe_name(s: str) -> str:
+    """把單號清成安全檔名(只留英數字、- 與 _),防路徑穿越;空字串退回 order。"""
+    cleaned = "".join(c for c in (s or "") if c.isalnum() or c in "-_")
+    return cleaned or "order"
+
+
 def archive_path(order: Order) -> Path:
     """PDF 封存路徑:archive/<YYYY-MM>/<order_no>.pdf。"""
     base = Path(current_app.config["ARCHIVE_DIR"])
     month = order.order_date.strftime("%Y-%m") if order.order_date else "unknown"
     folder = base / month
     folder.mkdir(parents=True, exist_ok=True)
-    return folder / f"{order.order_no}.pdf"
+    # 雙重保險:即使單號驗證有疏漏,檔名也已清過,不會跳出封存資料夾
+    return folder / f"{_safe_name(order.order_no)}.pdf"
 
 
 def generate_and_archive(order: Order) -> Path:

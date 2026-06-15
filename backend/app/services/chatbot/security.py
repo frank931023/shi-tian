@@ -45,6 +45,10 @@ FORBIDDEN_KEYWORDS = (
     "current_setting", "set_config", "pg_sleep", "pg_read_file",
     "pg_read_binary_file", "pg_ls_dir", "pg_stat_file", "lo_import",
     "lo_export", "dblink", "dblink_connect", "to_regclass", "pg_terminate_backend",
+    # 基礎設施 / 連線資訊揭露(版本、連線帳號、伺服器位址…)一律不給查
+    "version", "current_user", "session_user", "current_database",
+    "current_catalog", "current_schema", "inet_server_addr", "inet_client_addr",
+    "txid_current",
 )
 
 MAX_SQL_LEN = 4000
