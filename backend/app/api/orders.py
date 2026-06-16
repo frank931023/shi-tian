@@ -276,10 +276,13 @@ def preview_pdf(order_id: int):
         pdf = pdf_service.order_to_pdf_bytes(order)
     except pdf_service.PdfUnavailable as e:
         return err("pdf_unavailable", str(e), 503)
-    return send_file(
+    resp = send_file(
         BytesIO(pdf), mimetype="application/pdf",
         as_attachment=False, download_name=f"{order.order_no}.pdf",
     )
+    # 不要快取:改了版面後重產才不會看到瀏覽器留著的舊 PDF
+    resp.headers["Cache-Control"] = "no-store, must-revalidate"
+    return resp
 
 
 @orders_bp.post("/orders/<int:order_id>/pdf")
