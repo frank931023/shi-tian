@@ -328,6 +328,7 @@ def print_order(order_id: int):
         return err("not_found", "找不到該訂單", 404)
     target = (request.get_json(silent=True) or {}).get("target", "normal")
 
+    media = None
     if target == "dotmatrix":
         queue = current_app.config["CUPS_DOTMATRIX_QUEUE"]
         # 套表 overlay 寫到封存資料夾當列印來源(用已清過的安全檔名,防路徑穿越)
@@ -337,13 +338,15 @@ def print_order(order_id: int):
         path.write_bytes(dotmatrix_service.render_overlay_pdf(order))
     else:
         queue = current_app.config["CUPS_NORMAL_QUEUE"]
+        # 移轉單是橫式 21×14cm:明確指定紙張尺寸,避免 CUPS 用 A4 直式套而轉成直式
+        media = current_app.config["CUPS_ORDER_MEDIA"]
         try:
             path = pdf_service.generate_and_archive(order)
         except pdf_service.PdfUnavailable as e:
             return err("pdf_unavailable", str(e), 503)
 
     try:
-        job = print_service.print_pdf(path, queue)
+        job = print_service.print_pdf(path, queue, media=media)
     except print_service.PrintError as e:
         return err(e.code, str(e), 503)
     order.status = "printed"

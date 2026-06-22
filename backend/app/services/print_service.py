@@ -19,15 +19,24 @@ class PrintError(RuntimeError):
         self.code = code
 
 
-def print_pdf(path: Path, queue: str) -> str:
-    """送印,回傳 CUPS job 字串。失敗拋 PrintError。"""
+def print_pdf(path: Path, queue: str, media: str | None = None) -> str:
+    """送印,回傳 CUPS job 字串。失敗拋 PrintError。
+
+    media:CUPS 紙張尺寸名稱(如 Custom.210x140mm)。有指定時明確告知 CUPS 頁面尺寸,
+    避免它用印表機預設(通常 A4 直式)去套、自動旋轉/縮放,造成「長寬顛倒」。
+    """
     if shutil.which("lp") is None:
         raise PrintError("cups_unavailable", "找不到 CUPS 的 lp 指令(需在已裝 CUPS 的主機/容器執行)")
     if not path.exists():
         raise PrintError("file_missing", f"找不到要列印的檔案:{path}")
+    cmd = ["lp", "-d", queue]
+    if media:
+        # 告訴 CUPS 實際紙張尺寸 + 不要自動縮放(以實際大小印,不旋轉)
+        cmd += ["-o", f"media={media}", "-o", "fit-to-page=false"]
+    cmd.append(str(path))
     try:
         result = subprocess.run(
-            ["lp", "-d", queue, str(path)],
+            cmd,
             capture_output=True, text=True, timeout=30,
         )
     except Exception as e:  # pragma: no cover

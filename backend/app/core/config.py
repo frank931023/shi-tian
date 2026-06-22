@@ -33,6 +33,9 @@ class Config:
     # CUPS 佇列名稱(列印走伺服器端)
     CUPS_NORMAL_QUEUE = os.environ.get("CUPS_NORMAL_QUEUE", "normal")
     CUPS_DOTMATRIX_QUEUE = os.environ.get("CUPS_DOTMATRIX_QUEUE", "dotmatrix")
+    # 移轉單紙張尺寸(橫式 21×14cm)。送印時明確告訴 CUPS,避免它用 A4 直式去套、把頁面轉成直式。
+    # 若你的印表機紙張不同,改這個環境變數即可(CUPS media 名稱,例:Custom.210x140mm、A5)。
+    CUPS_ORDER_MEDIA = os.environ.get("CUPS_ORDER_MEDIA", "Custom.210x140mm")
 
     # 點陣套表的座標設定檔(可微調 offset/欄位座標而不改程式;Phase 7)
     DOTMATRIX_LAYOUT = os.environ.get("DOTMATRIX_LAYOUT", "config/dotmatrix_layout.json")
